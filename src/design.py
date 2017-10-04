@@ -93,21 +93,22 @@ class Design:
         self.projectiles, self.beam_energy = parse_system(system)
         self.type = 'validation' if validation else 'main'
 
-        # 5.02 TeV has ~1.2x particle production as 2.76 TeV
         # [https://inspirehep.net/record/1410589]
         norm_range = {
-            2760: (8., 20.),
+            2760: (10., 25.),
             5020: (10., 25.),
         }[self.beam_energy]
 
         self.keys, labels, self.range = map(list, zip(*[
+            ('grid_step',     r'grid step [{fm}]',            (0.020,  0.500)),  
             ('norm',          r'{Norm}',                      (norm_range   )),
-            ('trento_p',      r'p',                           ( -0.5,    0.5)),
+            ('trento_p',      r'p',                           ( -1.0,    1.0)),
             ('fluct_std',     r'\sigma {fluct}',              (  0.0,    2.0)),
-            ('nucleon_width', r'w [{fm}]',                    (  0.4,    1.0)),
+            ('nucleon_width', r'w [{fm}]',                    (  0.4,    1.2)),
+            ('nparton_exp',   r'\log n {partons}',            (  0.0,    4.0)),
+            ('parton_struct', r'\chi',                        (  0.0,    1.0)),
             ('dmin3',         r'd {min} [{fm}]',              (  0.0, 1.7**3)),
-            ('tau_fs',        r'\tau {fs} [{fm}/c]',          (  0.0,    1.5)),
-            ('etas_hrg',      r'\eta/s {hrg}',                (  0.1,    0.5)),
+            ('tau_fs',        r'\tau {fs} [{fm}/c]',          (  0.1,    1.5)),
             ('etas_min',      r'\eta/s {min}',                (  0.0,    0.2)),
             ('etas_slope',    r'\eta/s {slope} [{GeV}^{-1}]', (  0.0,    8.0)),
             ('etas_crv',      r'\eta/s {crv}',                ( -1.0,    1.0)),
@@ -135,34 +136,9 @@ class Design:
         fmt = '{:0' + str(len(str(npoints - 1))) + 'd}'
         self.points = [fmt.format(i) for i in range(npoints)]
 
-        # XXX OK, what the heck is going on here?
-        #
-        # The original design transformed etas_slope to arctangent space, i.e.,
-        # atan(slope) was sampled uniformly in (0, pi/2).  This was intended to
-        # help place an upper bound on the slope, but it backfired, instead
-        # making it almost impossible to train the GPs, since the model changed
-        # so rapidly as atan(slope) approach pi/2.  It also turned out that
-        # slope >~ 8 is clearly excluded, since this suppresses flow far too
-        # much, regardless of the other parameters.
-        #
-        # As a result, I decided to re-run with the slope uniform in (0, 8),
-        # and use the old design for validation.
-
-        # While working with the original design data, I noticed that very
-        # small tau_fs values were problematic, presumably due to numerical
-        # issues (dividing by a small number, large initial energy densities,
-        # etc).  I also realized that similar things could happen for other
-        # parameters.  Thus, for the new design, I have set small but nonzero
-        # minima for several parameters (and the emulators can extrapolate to
-        # zero).
+        # adjust range so bulk peak does not become a delta function
         lhsmin = self.min.copy()
-        if not validation:
-            for k, m in [
-                    ('fluct_std', 1e-3),
-                    ('tau_fs', 1e-3),
-                    ('zetas_width', 1e-4),
-            ]:
-                lhsmin[self.keys.index(k)] = m
+        lhsmin[self.keys.index('zetas_width')] = 1e-3
 
         if seed is None:
             seed = 751783496 if validation else 450829120
@@ -171,67 +147,6 @@ class Design:
             npoints=npoints, ndim=self.ndim, seed=seed
         )
 
-        # As it turns out, the minimum for tau_fs (above) was not high
-        # enough.  For reasons I don't quite understand, including low
-        # tau_fs points in the design messes with GP training, leading to
-        # bad predictions (with a smaller length scale, larger noise term,
-        # and lower marginal likelihood).
-        #
-        # I chose this new minimum value by excluding points until GP
-        # training stabilized.  This doesn't really matter because tau_fs
-        # smaller than this is extremely unlikely.
-        #
-        # Future projects like this should definitely NOT reuse this code --
-        # just set good parameter ranges to begin with!
-        tau_fs_min = .03
-        tau_fs_idx = self.keys.index('tau_fs')
-
-        if validation:
-            # Transform etas_slope from arctan space and remove points outside
-            # the design range (see above).
-            slope_idx = self.keys.index('etas_slope')
-            slope_max = self.max[slope_idx]
-            self.array[:, slope_idx] = \
-                np.tan(np.pi/2/slope_max*self.array[:, slope_idx])
-            keep = (
-                (self.array[:, tau_fs_idx] >= tau_fs_min) &
-                (self.array[:, slope_idx] <= slope_max)
-            )
-            # Remove outlier point.  Probably caused by bug in hydro code
-            # related to very low eta/s min ~ 2e-6.  Despite having the lowest
-            # eta/s min in the design, this point had very low flow and
-            # anomalous energy / particle production.
-            keep[281] = False
-            self.array = self.array[keep]
-            self.points = list(itertools.compress(self.points, keep))
-            logging.debug(
-                'removed validation points with tau_fs < %s and '
-                'etas_slope > %s (%d points remaining)',
-                tau_fs_min, slope_max, len(self.points)
-            )
-        else:
-            # Resample ONLY the points with tau_fs below the minimum, leaving
-            # other parameters unchanged.  Sample one new tau_fs value in each
-            # equal subdivision of the new range (Latin sample).
-            resample = self.array[:, tau_fs_idx] < tau_fs_min
-            nresample = np.count_nonzero(resample)
-            array_rs = self.array[resample]
-            bins = np.linspace(
-                tau_fs_min, self.max[tau_fs_idx],
-                nresample + 1
-            )
-            array_rs[:, tau_fs_idx] = \
-                np.random.RandomState(2603139165).uniform(bins[:-1], bins[1:])
-            # Move the resampled points to the end of the design.
-            self.array = np.concatenate([self.array[~resample], array_rs])
-            self.points = (
-                list(itertools.compress(self.points, ~resample)) +
-                [fmt.format(n) for n in range(npoints, npoints + nresample)]
-            )
-            logging.debug(
-                'resampled points %s which had tau_fs < %s',
-                resample.nonzero()[0].tolist(), tau_fs_min
-            )
 
     def __array__(self):
         return self.array
@@ -239,6 +154,8 @@ class Design:
     _template = ''.join(
         '{} = {}\n'.format(key, ' '.join(args)) for (key, *args) in
         [[
+            'grid-step', '{grid_step}',
+        ], [
             'trento-args',
             '{projectiles[0]} {projectiles[1]}',
             '--cross-section {cross_section}',
@@ -246,8 +163,8 @@ class Design:
             '--reduced-thickness {trento_p}',
             '--fluctuation {fluct}',
             '--nucleon-min-dist {dmin}',
-        ], [
-            'nucleon-width', '{nucleon_width}'
+            '--nucleon-width', '{nucleon_width}',
+            '--parton-width', '{parton_width}',
         ], [
             'tau-fs', '{tau_fs}'
         ], [
@@ -283,9 +200,23 @@ class Design:
                     5020: 7.0,
                 }[self.beam_energy]
             )
+
+            # parton number
+            nparton_exp = kwargs.pop('nparton_exp')
+            npartons = int(np.exp(nparton_exp))
+
+            # parton width
+            nucleon_width = kwargs.get('nucleon_width')
+            x_struct = kwargs.pop('parton_struct') if npartons > 1 else 1
+
+            # minimum and maximum parton sizes
+            vmin, vmax = (0.2, nucleon_width)
+
             kwargs.update(
                 fluct=1/kwargs.pop('fluct_std')**2,
                 dmin=kwargs.pop('dmin3')**(1/3),
+                parton_number = npartons,
+                parton_width = vmin + x_struct*(vmax - vmin)
             )
             filepath = outdir / point
             with filepath.open('w') as f:

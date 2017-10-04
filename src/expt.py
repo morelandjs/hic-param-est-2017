@@ -3,12 +3,16 @@
 from collections import defaultdict
 import logging
 import pickle
+import re
+from statistics import mean
 from urllib.request import urlopen
 
 import numpy as np
 import yaml
 
 from . import cachedir, systems
+
+import matplotlib.pyplot as plt
 
 
 class HEPData:
@@ -49,6 +53,17 @@ class HEPData:
             for v in self._data.values():
                 for d in v:
                     d['values'].reverse()
+    
+    @property
+    def names(self):
+        """
+        Get the independent variable names.
+
+        """
+        data = self._data['dependent_variables']
+
+        return [d['header']['name'] for d in data]
+
 
     def x(self, name, case=True):
         """
@@ -175,6 +190,103 @@ class HEPData:
         )
 
 
+def pPb5020_yield():
+    """
+    p going side: eta < 0
+    Pb going side: eta > 0
+    eta cms = -0.465
+
+    eta = eta_lab - eta_cms
+
+    Thus if we want -0.5 < eta < 0.5, then
+    -0.5 + eta_cms < eta_lab < 0.5 + eta_cms.
+
+    """
+    eta_cms = -0.465
+    eta_cut = 0.5
+
+    dset = HEPData(1335350, 3)
+    
+    cent = [tuple(map(float, re.findall(r'\d+', name)))
+            for name in dset.names]
+
+    eta_lab_min, eta_lab_max = [eta + eta_cms for eta in (-eta_cut, eta_cut)]
+
+    y, stat, sys = np.array([[
+        (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])
+        for (x, y) in zip(dset.x('$\eta_{lab}$'), dset.y(name))
+        if eta_lab_min < x['low'] and x['high'] < eta_lab_max
+    ] for name in dset.names]).T
+
+    return dict(
+        cent=cent,
+        x=np.array([(a + b)/2 for a, b in cent]),
+        y=y.mean(axis=0),
+        yerr=dict(
+            stat=np.sqrt(np.square(stat).sum(axis=0))/len(stat),
+            sys=sys.mean(axis=0)),
+    )
+
+
+def pPb5020_mean_pT():
+    """
+    Charged particle mean pT as a function of charged particle multiplicity
+    divided by mean multiplicity with mean pT in 0.15-10 GeV/c and |eta| < 0.3.
+
+    """
+
+    # <Nch>
+    mean_Nch = 11.9
+
+    # number of desired bins
+    bins = 7
+
+    dset = HEPData(1241423, 4)
+
+    mult = np.array([
+        ([x[edge]/mean_Nch for edge in ('low', 'high')])
+        for x in dset.x('MULT(P=3)')
+    ])
+
+    x = [0.5*(x['low'] + x['high'])/mean_Nch for x in dset.x('MULT(P=3)')]
+
+    y, stat, sys = np.array([
+        (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])
+        for y in dset.y('MEAN(NAME=PT)')
+    ]).T
+
+    return dict(
+        mult=[(min(edges), max(edges)) for edges in mult.reshape(bins, -1)],
+        x=x.reshape(bins, -1).mean(axis=1),
+        y=y.reshape(bins, -1).mean(axis=1),
+        yerr=dict(
+            stat=np.sqrt(np.square(stat).reshape(bins, -1).sum(axis=1))/bins,
+            sys=sys.reshape(bins, -1).mean(axis=1),
+        )
+    )
+
+
+def pPb5020_flows(mode):
+    """
+    The CMS p+Pb flows are not posted on HEP data so the data files are included
+    in the git repo parent directory under expt.
+
+    The publications can be found at https://inspirehep.net/record/1231945 
+
+    """
+    # Mean Ntrk offline 0-100% centrality
+    Ntrk_avg = 40.
+
+    xlo, xhi, x, y, stat, sys = np.loadtxt('../expt/flow_v{}.dat'.format(mode)).T
+
+    return dict(
+        mult=list(zip(xlo/Ntrk_avg, xhi/Ntrk_avg)),
+        x=x/Ntrk_avg,
+        y=y,
+        yerr=dict(stat=stat, sys=sys),
+    )
+
+
 def _data():
     """
     Acquire all experimental data.
@@ -182,109 +294,32 @@ def _data():
     """
     data = {s: {} for s in systems}
 
-    # PbPb2760 and PbPb5020 dNch/deta
-    for system, args, name in [
-            ('PbPb2760', (880049, 1), 'D(N)/DETARAP'),
-            ('PbPb5020', (1410589, 2),
-             r'$\mathrm{d}N_\mathrm{ch}/\mathrm{d}\eta$'),
-    ]:
-        data[system]['dNch_deta'] = {None: HEPData(*args).dataset(name)}
+    # PbPb5020 dNch/deta
+    name = r'$\mathrm{d}N_\mathrm{ch}/\mathrm{d}\eta$'
+    data['PbPb5020']['dNch_deta'] = {None: HEPData(1410589, 2).dataset(name)}
 
-    # PbPb2760 transverse energy
-    # ignore bin 0-5 since it's redundant with 0-2.5 and 2.5-5
-    dset = HEPData(1427723, 1).dataset('$E_{T}$', ignore_bins=[(0, 5)])
-    dset['yerr']['sys'] = dset['yerr'].pop('sys,total')
-    data['PbPb2760']['dET_deta'] = {None: dset}
+    # pPb5020 dNch/deta
+    data['pPb5020']['dNch_deta'] = {None: pPb5020_yield()}
 
-    # PbPb2760 identified dN/dy and mean pT
-    system = 'PbPb2760'
+    # pPb5020 mean pT
+    data['pPb5020']['mean_pT'] = {None: pPb5020_mean_pT()}
 
-    for obs, table, combine_func in [
-            ('dN_dy', 31, np.sum),
-            ('mean_pT', 32, np.mean),
-    ]:
-        data[system][obs] = {}
-        d = HEPData(1222333, table)
-        for key, re_products in [
-            ('pion', ['PI+', 'PI-']),
-            ('kaon', ['K+', 'K-']),
-            ('proton', ['P', 'PBAR']),
-        ]:
-            dsets = [
-                d.dataset(RE='PB PB --> {} X'.format(i))
-                for i in re_products
-            ]
+    # PbPb5020 flows
+    system, tables_nk = ('PbPb5020', [(1, [(2, 2), (2, 4)]), (2, [(3, 2), (4, 2)]),])
 
-            data[system][obs][key] = dict(
-                dsets[0],
-                y=combine_func([d['y'] for d in dsets], axis=0),
-                yerr={
-                    e: combine_func([d['yerr'][e] for d in dsets], axis=0)
-                    for e in dsets[0]['yerr']
-                }
+    data[system]['vnk'] = {}
+    for table, nk in tables_nk:
+        d = HEPData(1419244, table)
+        for n, k in nk:
+            data[system]['vnk'][n, k] = d.dataset(
+                'V{}{{{}{}}}'.format(
+                    n, k, ', |DELTAETA|>1' if k == 2 else ''
+                ),
+                maxcent=(70 if n == 2 else 50)
             )
 
-    # PbPb2760 strange baryon yields
-    data['PbPb2760']['dN_dy']['Lambda'] = HEPData(1243863, 23).dataset(
-        RE='PB PB --> LAMBDA X'
-    )
-
-    d = HEPData(1243865, 11)
-    for s in ['Xi', 'Omega']:
-        data[system]['dN_dy'][s] = d.dataset(
-            RE='PB PB --> ({0}- + {0}BAR+) X'.format(s.upper())
-        )
-
-    # PbPb2760 mean pT fluctuations
-    d = HEPData(1307102, 6, reverse=True)
-    name = r'$\sqrt{C_m}/M(p_{\rm T})_m$'
-    # the table only has Npart, but they are actually 5% centrality bins
-    width = 5.
-    d.cent = [(n*width, (n+1)*width) for n, _ in enumerate(d.y(name))]
-    data['PbPb2760']['pT_fluct'] = {None: d.dataset(name, maxcent=60)}
-
-    # PbPb2760 and PbPb5020 flows
-    for system, tables_nk in [
-            ('PbPb5020', [
-                (1, [(2, 2), (2, 4)]),
-                (2, [(3, 2), (4, 2)]),
-            ]),
-            ('PbPb2760', [
-                (3, [(2, 2), (2, 4)]),
-                (4, [(3, 2), (4, 2)]),
-            ]),
-    ]:
-        data[system]['vnk'] = {}
-
-        for table, nk in tables_nk:
-            d = HEPData(1419244, table)
-            for n, k in nk:
-                data[system]['vnk'][n, k] = d.dataset(
-                    'V{}{{{}{}}}'.format(
-                        n, k, ', |DELTAETA|>1' if k == 2 else ''
-                    ),
-                    maxcent=(70 if n == 2 else 50)
-                )
-
-    # PbPb2760 central flows vn{2}
-    system, obs = 'PbPb2760', 'vnk_central'
-    data[system][obs] = {}
-
-    for n, table, sys_err_frac in [(2, 11, .025), (3, 12, .040)]:
-        dset = HEPData(900651, table).dataset()
-        # the (unlabeled) errors in the dataset are actually stat
-        dset['yerr']['stat'] = dset['yerr'].pop('sum')
-        # sys error is not provided -- use estimated fractions
-        dset['yerr']['sys'] = sys_err_frac * dset['y']
-        data[system][obs][n, 2] = dset
-
-    # PbPb2760 flow correlations
-    for obs, table in [('sc', 1), ('sc_central', 3)]:
-        d = HEPData(1452590, table)
-        data['PbPb2760'][obs] = {
-            mn: d.dataset('SC({},{})'.format(*mn))
-            for mn in [(3, 2), (4, 2)]
-        }
+    # TODO write function for pPb5020 flows
+    # data['pPb5020']['vnk'][2, 2] = 
 
     return data
 

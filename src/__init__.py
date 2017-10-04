@@ -18,7 +18,7 @@ workdir = Path(os.getenv('WORKDIR', '.'))
 cachedir = workdir / 'cache'
 cachedir.mkdir(parents=True, exist_ok=True)
 
-systems = ['PbPb2760', 'PbPb5020']
+systems = ['pPb5020', 'PbPb5020']
 
 
 def parse_system(system):

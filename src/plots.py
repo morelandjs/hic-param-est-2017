@@ -82,7 +82,7 @@ plt.rcParams.update({
     'legend.frameon': False,
     'image.cmap': 'Blues',
     'image.interpolation': 'none',
-    'pdf.fonttype': 42
+    'pdf.fonttype': 3
 })
 
 
@@ -184,13 +184,13 @@ def obs_color_hsluv(obs, subobs):
     Use obs_color() to obtain an RGB color.
 
     """
-    if obs in {'dNch_deta', 'pT_fluct'}:
+    if obs in {'dNch_deta', 'pT_fluct', 'mean_pT'}:
         return 250, 90, 55
 
     if obs == 'dET_deta':
         return 10, 65, 55
 
-    if obs in {'dN_dy', 'mean_pT'}:
+    if obs in {'dN_dy'}:
         return dict(
             pion=(210, 85, 70),
             kaon=(130, 88, 68),
@@ -231,27 +231,30 @@ def _observables_plots():
             ylabel=(
                 r'$dN_\mathrm{ch}/d\eta,\ dN/dy,\ dE_T/d\eta\ [\mathrm{GeV}]$'
             ),
-            ylim=(1, 1e5),
+            ylim=(2, 5e3),
             yscale='log',
-            height_ratio=1.5,
+            height_ratio=1,
             subplots=[
-                ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$', scale=25)),
-                ('dET_deta', None, dict(label=r'$E_T$', scale=5)),
+                ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$', scale=1)),
+                ('dET_deta', None, dict(label=r'$E_T$', scale=.7)),
                 *id_parts_plots('dN_dy')
             ]
         ),
         dict(
             title='Mean $p_T$',
             ylabel=r'$\langle p_T \rangle$ [GeV]',
-            ylim=(0, 1.7),
-            subplots=id_parts_plots('mean_pT')
+            ylim=(0, 1),
+            subplots=[
+                ('mean_pT', None, dict(label=r'$\mathrm{mean} p_T$')),
+                *id_parts_plots('mean_pT')
+            ]
         ),
-        dict(
-            title='Mean $p_T$ fluctuations',
-            ylabel=r'$\delta p_T/\langle p_T \rangle$',
-            ylim=(0, .04),
-            subplots=[('pT_fluct', None, dict())]
-        ),
+        #dict(
+        #    title='Mean $p_T$ fluctuations',
+        #    ylabel=r'$\delta p_T/\langle p_T \rangle$',
+        #    ylim=(0, .04),
+        #    subplots=[('pT_fluct', None, dict())]
+        #),
         dict(
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
@@ -290,30 +293,31 @@ def _observables(posterior=False):
             color = obs_color(obs, subobs)
             scale = opts.get('scale')
 
-            x = model.data[system][obs][subobs]['x']
-            Y = (
-                samples[system][obs][subobs]
-                if posterior else
-                model.data[system][obs][subobs]['Y']
-            )
+            #x = model.data[system][obs][subobs]['x']
+            #Y = (
+            #    samples[system][obs][subobs]
+            #    if posterior else
+            #    model.data[system][obs][subobs]['Y']
+            #)
 
-            if scale is not None:
-                Y = Y*scale
+            #if scale is not None:
+            #    Y = Y*scale
 
-            for y in Y:
-                ax.plot(x, y, color=color, alpha=.08, lw=.3)
+            #for y in Y:
+            #    ax.plot(x, y, color=color, alpha=.08, lw=.3)
 
-            if 'label' in opts:
-                ax.text(
-                    x[-1] + 3,
-                    np.median(Y[:, -1]),
-                    opts['label'],
-                    color=darken(color), ha='left', va='center'
-                )
+            #if 'label' in opts:
+            #    ax.text(
+            #        x[-1] + 3,
+            #        np.median(Y[:, -1]),
+            #        opts['label'],
+            #        color=darken(color), ha='left', va='center'
+            #    )
 
             try:
                 dset = expt.data[system][obs][subobs]
             except KeyError:
+                print(system, obs, subobs, 'not found')
                 continue
 
             x = dset['x']
@@ -331,21 +335,31 @@ def _observables(posterior=False):
                 capsize=0, color='.25', zorder=1000
             )
 
+            if 'mult' in dset.keys() and obs == 'mean_pT':
+                ax.set_xlim(0, 6.5)
+                ax.set_xlabel(r'$N_\mathrm{ch}\,/\langle N_\mathrm{ch} \rangle$')
+            elif 'mult' in dset.keys() and obs == 'vnk':
+                ax.set_xlim(0, 6.5)
+                ax.set_xlabel('/'.join([
+                    r'$N^\mathrm{offline}_\mathrm{trk}$',
+                    r'$\langle N^\mathrm{offline}_\mathrm{trk} \rangle$',
+                ]))
+            else:
+                ax.set_xlim(0, 75)
+                ax.set_xlabel('Centrality %')
+
         if plot.get('yscale') == 'log':
             ax.set_yscale('log')
             ax.minorticks_off()
         else:
             auto_ticks(ax, 'y', nbins=4, minor=2)
 
-        ax.set_xlim(0, 80)
         auto_ticks(ax, 'x', nbins=5, minor=2)
 
         ax.set_ylim(plot['ylim'])
 
         if ax.is_first_row():
             ax.set_title(format_system(system))
-        elif ax.is_last_row():
-            ax.set_xlabel('Centrality %')
 
         if ax.is_first_col():
             ax.set_ylabel(plot['ylabel'])

@@ -248,7 +248,9 @@ def pPb5020_mean_pT():
         for x in dset.x('MULT(P=3)')
     ])
 
-    x = [0.5*(x['low'] + x['high'])/mean_Nch for x in dset.x('MULT(P=3)')]
+    x = np.array([
+        0.5*(x['low'] + x['high'])/mean_Nch for x in dset.x('MULT(P=3)')
+    ])
 
     y, stat, sys = np.array([
         (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])
@@ -277,7 +279,7 @@ def pPb5020_flows(mode):
     # Mean Ntrk offline 0-100% centrality
     Ntrk_avg = 40.
 
-    xlo, xhi, x, y, stat, sys = np.loadtxt('../expt/flow_v{}.dat'.format(mode)).T
+    xlo, xhi, x, y, stat, sys = np.loadtxt('expt/flow_v{}.dat'.format(mode)).T
 
     return dict(
         mult=list(zip(xlo/Ntrk_avg, xhi/Ntrk_avg)),
@@ -318,8 +320,10 @@ def _data():
                 maxcent=(70 if n == 2 else 50)
             )
 
-    # TODO write function for pPb5020 flows
-    # data['pPb5020']['vnk'][2, 2] = 
+    # pPb5020 flows
+    data['pPb5020']['vnk'] = {}
+    for mode in 2, 3:
+        data['pPb5020']['vnk'][mode, 2] = pPb5020_flows(mode) 
 
     return data
 

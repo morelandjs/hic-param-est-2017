@@ -100,7 +100,7 @@ class Design:
         }[self.beam_energy]
 
         self.keys, labels, self.range = map(list, zip(*[
-            ('grid_step',     r'grid step [{fm}]',            (0.020,  0.500)),  
+            ('grid_scale',    r'grid scale',                  (0.1,      1.0)),  
             ('norm',          r'{Norm}',                      (norm_range   )),
             ('trento_p',      r'p',                           ( -1.0,    1.0)),
             ('fluct_std',     r'\sigma {fluct}',              (  0.0,    2.0)),
@@ -154,7 +154,9 @@ class Design:
     _template = ''.join(
         '{} = {}\n'.format(key, ' '.join(args)) for (key, *args) in
         [[
-            'grid-step', '{grid_step}',
+            'grid-scale', '{grid_scale}',
+        ], [
+            'parton-width', '{parton_width}',
         ], [
             'trento-args',
             '{projectiles[0]} {projectiles[1]}',
@@ -164,12 +166,10 @@ class Design:
             '--fluctuation {fluct}',
             '--nucleon-min-dist {dmin}',
             '--nucleon-width', '{nucleon_width}',
-            '--parton-width', '{parton_width}',
         ], [
             'tau-fs', '{tau_fs}'
         ], [
             'hydro-args',
-            'etas_hrg={etas_hrg}',
             'etas_min={etas_min}',
             'etas_slope={etas_slope}',
             'etas_curv={etas_crv}',

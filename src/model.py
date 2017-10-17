@@ -95,9 +95,10 @@ class ModelData:
     computes centrality-binned observables.
 
     """
-    species = ['pion', 'kaon', 'proton', 'Lambda', 'Sigma0', 'Xi', 'Omega']
+    species = ['charged', 'pion', 'kaon', 'proton', 'Lambda', 'Sigma0', 'Xi', 'Omega']
 
     dtype = np.dtype([
+        ('trigger', (float_t, 2)),
         ('initial_entropy', float_t),
         ('nsamples', int_t),
         ('dNch_deta', float_t),
@@ -109,8 +110,7 @@ class ModelData:
     ])
 
     def __init__(self, *files):
-        # read each file using the above dtype and treat each as a minimum-bias
-        # event sample
+        # read each file using the above dtype
         def load_events(f):
             logging.debug('loading %s', f)
             d = np.fromfile(str(f), dtype=self.dtype)
@@ -128,8 +128,17 @@ class ModelData:
 
         """
         try:
-            x = data['x']
-            cent = data['cent']
+            if 'cent' in data.keys():
+                x = data['x']
+                bin_type = 'cent'
+            elif 'mult' in data.keys():
+                x = data['x']
+                bin_type = 'mult'
+            else:
+                raise KeyError
+
+            bins = data[bin_type]
+
         except KeyError:
             return {
                 k: self.observables_like(v, k, *keys)
@@ -156,7 +165,7 @@ class ModelData:
                 species = obs_stack.pop()
                 return lambda events: np.average(
                     events[obs][species],
-                    weights=events['dN_dy'][species]
+                    weights=(events['dN_dy'][species])
                 )
 
             if obs == 'pT_fluct':
@@ -175,18 +184,32 @@ class ModelData:
         compute_bin = _compute_bin()
 
         def compute_all_bins(events):
-            n = events.size
-            bins = [
-                events[int((1 - b/100)*n):int((1 - a/100)*n)]
-                for a, b in cent
-            ]
 
-            return list(map(compute_bin, bins))
+            trigger = events['trigger']
+            minbias = (0, float('inf'))
 
-        return dict(
-            x=x, cent=cent,
-            Y=np.array(list(map(compute_all_bins, self.events))).squeeze()
-        )
+            if bin_type == 'cent':
+                minbias_events = events[[all(b) for b in (trigger == minbias)]]
+                n = minbias_events.size
+                binned_events = [
+                    minbias_events[int((1 - b/100)*n):int((1 - a/100)*n)]
+                    for a, b in bins
+                ]
+            elif bin_type == 'mult':
+                binned_events = [
+                    events[[all(b) for b in (trigger == mult_bin)]]
+                    for mult_bin in bins
+                ]
+                print([len(b) for b in binned_events])
+            else:
+                raise ValueError("no such bin type")
+
+
+            return list(map(compute_bin, binned_events))
+
+        Y = np.array(list(map(compute_all_bins, self.events))).squeeze()
+
+        return {'x': x, bin_type: bins, 'Y': Y}
 
 
 def _data(system, validation=False):
@@ -226,12 +249,12 @@ def _data(system, validation=False):
 
     data = expt.data[system]
 
-    # some data are not yet available for PbPb5020
+    # some data are not yet available for either system
     # create dummy entries so that they are computed for the model
     if system == 'PbPb5020':
         data = dict(
             ((obs, obsdata) for obs, obsdata in
-             expt.data['PbPb2760'].items() if obs not in data),
+                expt.data['pPb5020'].items() if obs not in data),
             **data
         )
 
@@ -251,6 +274,6 @@ validation_data = lazydict(_data, validation=True)
 if __name__ == '__main__':
     from pprint import pprint
     for s in systems:
-        d = data[s]
         print(s)
+        d = data[s]
         pprint(d)

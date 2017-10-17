@@ -224,7 +224,8 @@ def pPb5020_yield():
         y=y.mean(axis=0),
         yerr=dict(
             stat=np.sqrt(np.square(stat).sum(axis=0))/len(stat),
-            sys=sys.mean(axis=0)),
+            sys=sys.mean(axis=0)
+        ),
     )
 
 
@@ -304,7 +305,7 @@ def _data():
     data['pPb5020']['dNch_deta'] = {None: pPb5020_yield()}
 
     # pPb5020 mean pT
-    data['pPb5020']['mean_pT'] = {None: pPb5020_mean_pT()}
+    data['pPb5020']['mean_pT'] = {'charged': pPb5020_mean_pT()}
 
     # PbPb5020 flows
     system, tables_nk = ('PbPb5020', [(1, [(2, 2), (2, 4)]), (2, [(3, 2), (4, 2)]),])

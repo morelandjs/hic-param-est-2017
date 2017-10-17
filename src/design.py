@@ -100,12 +100,12 @@ class Design:
         }[self.beam_energy]
 
         self.keys, labels, self.range = map(list, zip(*[
-            ('grid_scale',    r'grid scale',                  (0.1,      1.0)),  
+            ('grid_scale',    r'grid scale',                  (0.2,      1.0)),  
             ('norm',          r'{Norm}',                      (norm_range   )),
             ('trento_p',      r'p',                           ( -1.0,    1.0)),
-            ('fluct_std',     r'\sigma {fluct}',              (  0.0,    2.0)),
+            ('fluct_std',     r'\sigma {fluct}',              (  0.7,    2.0)),
             ('nucleon_width', r'w [{fm}]',                    (  0.4,    1.2)),
-            ('nparton_exp',   r'\log n {partons}',            (  0.0,    4.0)),
+            ('parton_number', r'n {partons}',                 (    1,   10.0)),
             ('parton_struct', r'\chi',                        (  0.0,    1.0)),
             ('dmin3',         r'd {min} [{fm}]',              (  0.0, 1.7**3)),
             ('tau_fs',        r'\tau {fs} [{fm}/c]',          (  0.1,    1.5)),
@@ -166,6 +166,7 @@ class Design:
             '--fluctuation {fluct}',
             '--nucleon-min-dist {dmin}',
             '--nucleon-width', '{nucleon_width}',
+            '--parton-number', '{parton_number}',
         ], [
             'tau-fs', '{tau_fs}'
         ], [
@@ -202,21 +203,22 @@ class Design:
             )
 
             # parton number
-            nparton_exp = kwargs.pop('nparton_exp')
-            npartons = int(np.exp(nparton_exp))
+            parton_number = int(kwargs.pop('parton_number'))
 
             # parton width
             nucleon_width = kwargs.get('nucleon_width')
-            x_struct = kwargs.pop('parton_struct') if npartons > 1 else 1
-
-            # minimum and maximum parton sizes
+            x_struct = kwargs.pop('parton_struct') if parton_number > 1 else 1
             vmin, vmax = (0.2, nucleon_width)
+            parton_width = vmin + x_struct*(vmax - vmin)
+
+            # parton fluctuations
+            fluct_std = kwargs.pop('fluct_std')*np.sqrt(parton_number)
 
             kwargs.update(
-                fluct=1/kwargs.pop('fluct_std')**2,
+                fluct=1/fluct_std**2,
                 dmin=kwargs.pop('dmin3')**(1/3),
-                parton_number = npartons,
-                parton_width = vmin + x_struct*(vmax - vmin)
+                parton_number=parton_number,
+                parton_width=parton_width,
             )
             filepath = outdir / point
             with filepath.open('w') as f:

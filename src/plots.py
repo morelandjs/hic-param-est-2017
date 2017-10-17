@@ -192,6 +192,7 @@ def obs_color_hsluv(obs, subobs):
 
     if obs in {'dN_dy'}:
         return dict(
+            charged=(250, 90, 55),
             pion=(210, 85, 70),
             kaon=(130, 88, 68),
             proton=(30, 90, 62),
@@ -222,7 +223,7 @@ def _observables_plots():
     """
     def id_parts_plots(obs):
         return [(obs, species, dict(label=label)) for species, label in [
-            ('pion', '$\pi$'), ('kaon', '$K$'), ('proton', '$p$')
+            ('charged', '$\pm$'), ('pion', '$\pi$'), ('kaon', '$K$'), ('proton', '$p$')
         ]]
 
     return [
@@ -236,8 +237,8 @@ def _observables_plots():
             height_ratio=1,
             subplots=[
                 ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$', scale=1)),
-                ('dET_deta', None, dict(label=r'$E_T$', scale=.7)),
-                *id_parts_plots('dN_dy')
+                #('dET_deta', None, dict(label=r'$E_T$', scale=.7)),
+                #*id_parts_plots('dN_dy')
             ]
         ),
         dict(
@@ -245,8 +246,8 @@ def _observables_plots():
             ylabel=r'$\langle p_T \rangle$ [GeV]',
             ylim=(0, 1),
             subplots=[
-                ('mean_pT', None, dict(label=r'$\mathrm{mean} p_T$')),
-                *id_parts_plots('mean_pT')
+                ('mean_pT', 'charged', dict(label=r'$\mathrm{mean} p_T$', scale=1)),
+                #*id_parts_plots('mean_pT')
             ]
         ),
         #dict(
@@ -261,7 +262,7 @@ def _observables_plots():
             ylim=(0, .12),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
-                for n in [2, 3, 4]
+                for n in [2, 3]
             ]
         )
     ]
@@ -292,19 +293,19 @@ def _observables(posterior=False):
         for obs, subobs, opts in plot['subplots']:
             color = obs_color(obs, subobs)
             scale = opts.get('scale')
+            print(system, obs, subobs)
+            x = model.data[system][obs][subobs]['x']
+            Y = (
+                samples[system][obs][subobs]
+                if posterior else
+                model.data[system][obs][subobs]['Y']
+            )
 
-            #x = model.data[system][obs][subobs]['x']
-            #Y = (
-            #    samples[system][obs][subobs]
-            #    if posterior else
-            #    model.data[system][obs][subobs]['Y']
-            #)
+            if scale is not None:
+                Y = Y*scale
 
-            #if scale is not None:
-            #    Y = Y*scale
-
-            #for y in Y:
-            #    ax.plot(x, y, color=color, alpha=.08, lw=.3)
+            for y in Y:
+                ax.plot(x, y, color=color, alpha=.08, lw=.3)
 
             #if 'label' in opts:
             #    ax.text(

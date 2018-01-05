@@ -136,7 +136,7 @@ class HEPData:
             .format(name, quals)
         )
 
-    def dataset(self, name=None, maxcent=70, ignore_bins=[], **quals):
+    def dataset(self, name=None, maxcent=100, ignore_bins=[], **quals):
         """
         Return a dict containing:
 
@@ -194,23 +194,29 @@ def pPb5020_yield():
     """
     p going side: eta < 0
     Pb going side: eta > 0
-    eta cms = -0.465
+    eta_beam = -.465
 
-    eta = eta_lab - eta_cms
+    eta_cms = eta_lab - eta_beam
+    i.e. eta_cms = eta_lab + .465
 
-    Thus if we want -0.5 < eta < 0.5, then
-    -0.5 + eta_cms < eta_lab < 0.5 + eta_cms.
+    Thus if we want
+    -0.5 < eta_cms < 0.5, then
+    -0.5 < eta_lab - eta_beam < 0.5, and
+    -0.5 + eta_beam < eta_lab < 0.5 + eta_beam
+
+    reference: https://inspirehep.net/record/1335350
 
     """
-    eta_cms = -0.465
-    eta_cut = 0.5
+    eta_beam = -0.465
+    eta_cut = 1.4
 
-    dset = HEPData(1335350, 3)
+    # use the V0M centrality estimator
+    dset = HEPData(1335350, 2)
     
     cent = [tuple(map(float, re.findall(r'\d+', name)))
             for name in dset.names]
 
-    eta_lab_min, eta_lab_max = [eta + eta_cms for eta in (-eta_cut, eta_cut)]
+    eta_lab_min, eta_lab_max = [eta + eta_beam for eta in (-eta_cut, eta_cut)]
 
     y, stat, sys = np.array([[
         (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])
@@ -234,6 +240,8 @@ def pPb5020_mean_pT():
     Charged particle mean pT as a function of charged particle multiplicity
     divided by mean multiplicity with mean pT in 0.15-10 GeV/c and |eta| < 0.3.
 
+    reference: https://inspirehep.net/record/1241423
+
     """
 
     # <Nch>
@@ -247,7 +255,7 @@ def pPb5020_mean_pT():
     mult = np.array([
         ([x[edge]/mean_Nch for edge in ('low', 'high')])
         for x in dset.x('MULT(P=3)')
-    ])
+    ]).reshape(bins, -1)
 
     x = np.array([
         0.5*(x['low'] + x['high'])/mean_Nch for x in dset.x('MULT(P=3)')
@@ -259,7 +267,7 @@ def pPb5020_mean_pT():
     ]).T
 
     return dict(
-        mult=[(min(edges), max(edges)) for edges in mult.reshape(bins, -1)],
+        mult=[(min(m), max(m)) for m in mult],
         x=x.reshape(bins, -1).mean(axis=1),
         y=y.reshape(bins, -1).mean(axis=1),
         yerr=dict(
@@ -274,13 +282,15 @@ def pPb5020_flows(mode):
     The CMS p+Pb flows are not posted on HEP data so the data files are included
     in the git repo parent directory under expt.
 
-    The publications can be found at https://inspirehep.net/record/1231945 
+    reference: https://inspirehep.net/record/1231945 
 
     """
     # Mean Ntrk offline 0-100% centrality
     Ntrk_avg = 40.
 
-    xlo, xhi, x, y, stat, sys = np.loadtxt('expt/flow_v{}.dat'.format(mode)).T
+    xlo, xhi, x, y, stat, sys = np.loadtxt(
+        'expt/CMS_pPb5020_v{}2.txt'.format(mode)
+    ).T
 
     return dict(
         mult=list(zip(xlo/Ntrk_avg, xhi/Ntrk_avg)),
@@ -297,34 +307,38 @@ def _data():
     """
     data = {s: {} for s in systems}
 
-    # PbPb5020 dNch/deta
-    name = r'$\mathrm{d}N_\mathrm{ch}/\mathrm{d}\eta$'
-    data['PbPb5020']['dNch_deta'] = {None: HEPData(1410589, 2).dataset(name)}
+    if 'pPb5020' in systems:
 
-    # pPb5020 dNch/deta
-    data['pPb5020']['dNch_deta'] = {None: pPb5020_yield()}
+        # pPb5020 dNch/deta
+        data['pPb5020']['dNch_deta'] = {None: pPb5020_yield()}
 
-    # pPb5020 mean pT
-    data['pPb5020']['mean_pT'] = {'charged': pPb5020_mean_pT()}
+        # pPb5020 mean pT
+        data['pPb5020']['mean_pT'] = {'charged': pPb5020_mean_pT()}
 
-    # PbPb5020 flows
-    system, tables_nk = ('PbPb5020', [(1, [(2, 2), (2, 4)]), (2, [(3, 2), (4, 2)]),])
+        # pPb5020 flows
+        data['pPb5020']['vnk'] = {}
+        for mode in 2, 3:
+            data['pPb5020']['vnk'][mode, 2] = pPb5020_flows(mode) 
 
-    data[system]['vnk'] = {}
-    for table, nk in tables_nk:
-        d = HEPData(1419244, table)
-        for n, k in nk:
-            data[system]['vnk'][n, k] = d.dataset(
-                'V{}{{{}{}}}'.format(
-                    n, k, ', |DELTAETA|>1' if k == 2 else ''
-                ),
-                maxcent=(70 if n == 2 else 50)
-            )
+    if 'PbPb5020' in systems:
 
-    # pPb5020 flows
-    data['pPb5020']['vnk'] = {}
-    for mode in 2, 3:
-        data['pPb5020']['vnk'][mode, 2] = pPb5020_flows(mode) 
+        # PbPb5020 dNch/deta
+        name = r'$\mathrm{d}N_\mathrm{ch}/\mathrm{d}\eta$'
+        data['PbPb5020']['dNch_deta'] = {None: HEPData(1410589, 2).dataset(name)}
+
+        # PbPb5020 flows
+        system, tables_nk = ('PbPb5020', [(1, [(2, 2)]), (2, [(3, 2), (4, 2)]),])
+
+        data[system]['vnk'] = {}
+        for table, nk in tables_nk:
+            d = HEPData(1419244, table)
+            for n, k in nk:
+                data[system]['vnk'][n, k] = d.dataset(
+                    'V{}{{{}{}}}'.format(
+                        n, k, ', |DELTAETA|>1' if k == 2 else ''
+                    ),
+                    maxcent=100
+                )
 
     return data
 

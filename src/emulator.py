@@ -13,6 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from . import cachedir, lazydict, model
 from .design import Design
 
+import matplotlib.pyplot as plt
 
 class _Covariance:
     """
@@ -53,13 +54,15 @@ class Emulator:
     """
     # observables to emulate
     # list of 2-tuples: (obs, [list of subobs])
-    observables = [
+
+    PbPb5020 = [
         ('dNch_deta', [None]),
-        ('dET_deta', [None]),
-        ('dN_dy', ['pion', 'kaon', 'proton']),
-        ('mean_pT', ['pion', 'kaon', 'proton']),
-        ('pT_fluct', [None]),
+        ('mean_pT', ['charged']),
         ('vnk', [(2, 2), (3, 2), (4, 2)]),
+    ]
+
+    pPb5020 = [
+        ('dNch_deta', [None]),
     ]
 
     def __init__(self, system, npc=10, nrestarts=0):
@@ -71,9 +74,15 @@ class Emulator:
         Y = []
         self._slices = {}
 
+        # system specific observables
+        observables = {
+            'pPb5020': self.pPb5020,
+            'PbPb5020': self.PbPb5020,
+        }[system] 
+
         # Build an array of all observables to emulate.
         nobs = 0
-        for obs, subobslist in self.observables:
+        for obs, subobslist in observables:
             self._slices[obs] = {}
             for subobs in subobslist:
                 Y.append(model.data[system][obs][subobs]['Y'])
@@ -81,7 +90,14 @@ class Emulator:
                 self._slices[obs][subobs] = slice(nobs, nobs + n)
                 nobs += n
 
-        Y = np.concatenate(Y, axis=1)
+        
+        design = Design(system)
+
+        # modify grid scale range
+        design.max[0] = .6
+        cut = (design.array[:, 0] < .6)
+        design.array = design.array[cut]
+        Y = np.concatenate(Y, axis=1)[cut]
 
         self.npc = npc
         self.nobs = nobs
@@ -94,7 +110,7 @@ class Emulator:
 
         # Define kernel (covariance function):
         # Gaussian correlation (RBF) plus a noise term.
-        design = Design(system)
+        #design = Design(system)
         ptp = design.max - design.min
         kernel = (
             1. * kernels.RBF(

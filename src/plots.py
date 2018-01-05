@@ -14,6 +14,9 @@ import matplotlib.pyplot as plt
 from matplotlib import lines
 from matplotlib import patches
 from matplotlib import ticker
+from matplotlib import colors
+from matplotlib import cm
+
 from scipy import special
 from scipy.interpolate import PchipInterpolator
 from sklearn.decomposition import PCA
@@ -82,7 +85,7 @@ plt.rcParams.update({
     'legend.frameon': False,
     'image.cmap': 'Blues',
     'image.interpolation': 'none',
-    'pdf.fonttype': 3
+    'pdf.fonttype': 42
 })
 
 
@@ -244,7 +247,7 @@ def _observables_plots():
         dict(
             title='Mean $p_T$',
             ylabel=r'$\langle p_T \rangle$ [GeV]',
-            ylim=(0, 1),
+            ylim=(0, 1.5),
             subplots=[
                 ('mean_pT', 'charged', dict(label=r'$\mathrm{mean} p_T$', scale=1)),
                 #*id_parts_plots('mean_pT')
@@ -259,10 +262,10 @@ def _observables_plots():
         dict(
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
-            ylim=(0, .12),
+            ylim=(0, .2),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
-                for n in [2, 3]
+                for n in [2, 3, 4]
             ]
         )
     ]
@@ -293,13 +296,16 @@ def _observables(posterior=False):
         for obs, subobs, opts in plot['subplots']:
             color = obs_color(obs, subobs)
             scale = opts.get('scale')
-            print(system, obs, subobs)
-            x = model.data[system][obs][subobs]['x']
-            Y = (
-                samples[system][obs][subobs]
-                if posterior else
-                model.data[system][obs][subobs]['Y']
-            )
+
+            try:
+                x = model.data[system][obs][subobs]['x']
+                Y = (
+                    samples[system][obs][subobs]
+                    if posterior else
+                    model.data[system][obs][subobs]['Y']
+                )
+            except KeyError:
+                continue
 
             if scale is not None:
                 Y = Y*scale
@@ -307,39 +313,31 @@ def _observables(posterior=False):
             for y in Y:
                 ax.plot(x, y, color=color, alpha=.08, lw=.3)
 
-            #if 'label' in opts:
-            #    ax.text(
-            #        x[-1] + 3,
-            #        np.median(Y[:, -1]),
-            #        opts['label'],
-            #        color=darken(color), ha='left', va='center'
-            #    )
-
             try:
                 dset = expt.data[system][obs][subobs]
             except KeyError:
                 print(system, obs, subobs, 'not found')
-                continue
+                pass
+            else:
+                x = dset['x']
+                y = dset['y']
+                yerr = np.sqrt(sum(
+                    e**2 for e in dset['yerr'].values()
+                ))
 
-            x = dset['x']
-            y = dset['y']
-            yerr = np.sqrt(sum(
-                e**2 for e in dset['yerr'].values()
-            ))
+                if scale is not None:
+                    y = y*scale
+                    yerr = yerr*scale
 
-            if scale is not None:
-                y = y*scale
-                yerr = yerr*scale
+                ax.errorbar(
+                    x, y, yerr=yerr, fmt='o', ms=1.7,
+                    capsize=0, color='.25', zorder=1000
+                )
 
-            ax.errorbar(
-                x, y, yerr=yerr, fmt='o', ms=1.7,
-                capsize=0, color='.25', zorder=1000
-            )
-
-            if 'mult' in dset.keys() and obs == 'mean_pT':
+            if system == 'pPb5020' and obs == 'mean_pT':
                 ax.set_xlim(0, 6.5)
                 ax.set_xlabel(r'$N_\mathrm{ch}\,/\langle N_\mathrm{ch} \rangle$')
-            elif 'mult' in dset.keys() and obs == 'vnk':
+            elif system == 'pPb5020' and obs == 'vnk':
                 ax.set_xlim(0, 6.5)
                 ax.set_xlabel('/'.join([
                     r'$N^\mathrm{offline}_\mathrm{trk}$',
@@ -371,6 +369,7 @@ def _observables(posterior=False):
                 transform=ax.transAxes, ha='left', va='center',
                 size=plt.rcParams['axes.labelsize'], rotation=-90
             )
+            ax.set_yticklabels([])
 
     set_tight(fig, rect=[0, 0, .97, 1])
 
@@ -1295,7 +1294,7 @@ def boxplot(
 
 
 @plot
-def validation_all(system='PbPb2760'):
+def validation_all(system='PbPb5020'):
     """
     Emulator validation: normalized residuals and RMS error for each
     observable.
@@ -1584,6 +1583,83 @@ def diag_emu(system=default_system):
             ax.set_xlabel(label)
             ax.set_ylabel('PC {}'.format(ny))
 
+@plot
+def grid_extrap_obs(system='PbPb5020'):
+    """
+    Train the emulator to predict the 5% smallest grids in the design
+
+    """
+    figsize = (textwidth, 3*aspect*textwidth)
+    fig, axes = plt.subplots(nrows=3, figsize=figsize, sharex=True)
+
+    design = Design(system)
+    X = []
+
+    grid_scales = np.linspace(0, .6, 100)
+    for gs in grid_scales:
+        x = [gs] + [0.5*(a + b) for (a, b) in design.range[1:]]
+        X.append(x)
+
+    emu = emulators[system]
+    mean, cov = emu.predict(np.array(X), return_cov=True)
+
+    for ax, (obs, subobslist) in zip(axes, emu.PbPb5020):
+        for subobs in subobslist:
+            pred = mean[obs][subobs][:, 0]
+            C = cov[(obs, subobs), (obs, subobs)]
+            err = np.sqrt(np.diagonal(C, axis1=1, axis2=2))[:, 0]
+            ax.plot(grid_scales, pred, color=plt.cm.Blues(.6))
+            ax.fill_between(grid_scales, pred - err, pred + err,
+                            color=plt.cm.Blues(.6), alpha=.4)
+
+        ax.set_ylabel(obs)
+        if ax.is_last_row():
+            ax.set_xlabel('Grid scale')
+
+@plot
+def grid_extrap_pc(system='PbPb5020'):
+    """
+    Train the emulator to predict the 5% smallest grids in the design
+
+    """
+    figsize = (2*textwidth, aspect*textwidth)
+    fig, axes = plt.subplots(nrows=2, ncols=5, figsize=figsize, sharex=True)
+
+    design = Design(system)
+    X = []
+
+    grid_scales = np.linspace(0, .6, 100)
+    for gs in grid_scales:
+        x = [gs] + [0.5*(a + b) for (a, b) in design.range[1:]]
+        X.append(x)
+
+    gps = emulators[system].gps
+
+    for ny, (gp, ax) in enumerate(zip(gps, axes.flat)):
+        x = gp.X_train_.T
+        y = gp.y_train_
+        ax.plot(x[0], y, 'o', color='.8', ms=1.5)
+
+        mean, error = gp.predict(np.array(X), return_std=True)
+        ax.plot(grid_scales, mean, color=plt.cm.Blues(.6))
+        ax.fill_between(grid_scales, mean - error, mean + error,
+                        color=plt.cm.Blues(.6), alpha=.4, lw=0)
+
+        ax.set_title('PC {}'.format(ny))
+        ax.set_ylim(-4, 4)
+
+        if ax.is_last_row():
+            ax.set_xlabel('Grid scale')
+
+    #for ny, (gp, row) in enumerate(zip(gps, axes)):
+    #    y = gp.y_train_
+
+    #    for nx, (x, label, xlim, ax) in enumerate(zip(
+    #            gp.X_train_.T, design.labels, design.range, row
+    #    )):
+    #        ax.plot(x, y, 'o', ms=.8, color='.75', zorder=10)
+
+    set_tight()
 
 if __name__ == '__main__':
     import argparse

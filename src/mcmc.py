@@ -95,50 +95,39 @@ class Chain:
     system designs have the same parameters and ranges (except for the norms).
 
     """
-    # calibration observables
+    # observables to emulate
     # list of 2-tuples: (obs, [list of subobs])
-    # each obs is checked for each system and silently ignored if not found
-    observables = [
+    PbPb5020 = [
         ('dNch_deta', [None]),
-        ('dET_deta', [None]),
-        ('dN_dy', ['pion', 'kaon', 'proton']),
-        ('mean_pT', ['pion', 'kaon', 'proton']),
-        ('pT_fluct', [None]),
+        ('mean_pT', ['charged']),
         ('vnk', [(2, 2), (3, 2), (4, 2)]),
+    ]
+
+    pPb5020 = [
+        ('dNch_deta', [None]),
     ]
 
     def __init__(self, path=workdir / 'mcmc' / 'chain.hdf'):
         self.path = path
         self.path.parent.mkdir(exist_ok=True)
 
-        # parameter order:
-        #  - normalizations (one for each system)
-        #  - all other physical parameters (same for all systems)
-        #  - model sys error
-        def keys_labels_range():
-            for sys in systems:
-                d = Design(sys)
-                klr = zip(d.keys, d.labels, d.range)
-                k, l, r = next(klr)
-                assert k == 'norm'
-                yield (
-                    '{} {}'.format(k, sys),
-                    '{}\n{:.2f} TeV'.format(l, d.beam_energy/1000),
-                    r
-                )
+        # assert that the parameter design is the same for all systems
+        designs = [Design(sys) for sys in systems]
+        attr = [(d.keys, d.labels, d.range) for d in designs]
+        assert all(klr == next(iter(attr)) for klr in attr)
 
-            yield from klr
+        # append model systematic error
+        d = Design(next(iter(systems)))
+        d.keys.append('model_sys_err')
+        d.labels.append(r'$\sigma\ \mathrm{model\ sys}$')
+        d.range.append((0., .4))
 
-            yield 'model_sys_err', r'$\sigma\ \mathrm{model\ sys}$', (0., .4)
-
-        self.keys, self.labels, self.range = map(
-            list, zip(*keys_labels_range())
-        )
-
+        self.keys = d.keys
+        self.labels = d.labels
+        self.range = d.range
+        
         self.ndim = len(self.range)
         self.min, self.max = map(np.array, zip(*self.range))
-
-        self._common_indices = list(range(len(systems), self.ndim - 1))
 
         self._slices = {}
         self._expt_y = {}
@@ -146,11 +135,18 @@ class Chain:
 
         # pre-compute the experimental data vectors and covariance matrices
         for sys, sysdata in expt.data.items():
+
+            # system specific observables
+            observables = {
+                'pPb5020': self.pPb5020,
+                'PbPb5020': self.PbPb5020,
+            }[sys] 
+
             nobs = 0
 
             self._slices[sys] = []
 
-            for obs, subobslist in self.observables:
+            for obs, subobslist in observables:
                 try:
                     obsdata = sysdata[obs]
                 except KeyError:
@@ -183,11 +179,11 @@ class Chain:
         Call each system emulator to predict model output at X.
 
         """
+        # extrapolate to zero grid step size
+        X[:, 0] = 1e-3
+
         return {
-            sys: emulators[sys].predict(
-                X[:, [n] + self._common_indices],
-                **kwargs
-            )
+            sys: emulators[sys].predict(X[:, :-1], **kwargs)
             for n, sys in enumerate(systems)
         }
 

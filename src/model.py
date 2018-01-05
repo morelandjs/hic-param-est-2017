@@ -11,6 +11,7 @@ from sklearn.externals import joblib
 from . import workdir, cachedir, systems, lazydict, expt
 from .design import Design
 
+import matplotlib.pyplot as plt
 
 def pT_fluct(events):
     """
@@ -128,17 +129,9 @@ class ModelData:
 
         """
         try:
-            if 'cent' in data.keys():
-                x = data['x']
-                bin_type = 'cent'
-            elif 'mult' in data.keys():
-                x = data['x']
-                bin_type = 'mult'
-            else:
-                raise KeyError
-
+            x = data['x']
+            bin_type = [k for k in data.keys() if k in ('mult', 'cent')].pop()
             bins = data[bin_type]
-
         except KeyError:
             return {
                 k: self.observables_like(v, k, *keys)
@@ -163,10 +156,14 @@ class ModelData:
 
             if obs == 'mean_pT':
                 species = obs_stack.pop()
-                return lambda events: np.average(
-                    events[obs][species],
-                    weights=(events['dN_dy'][species])
-                )
+                def functor(events):
+                    if sum(events['dN_dy'][species]) > 0:
+                        return np.average(
+                            events[obs][species],
+                            weights=(events['dN_dy'][species])
+                        )
+                    return 0
+                return functor
 
             if obs == 'pT_fluct':
                 return pT_fluct
@@ -197,13 +194,11 @@ class ModelData:
                 ]
             elif bin_type == 'mult':
                 binned_events = [
-                    events[[all(b) for b in (trigger == mult_bin)]]
-                    for mult_bin in bins
+                    events[(abs(events['trigger'] - mbin) < 1e-3).all(axis=1)]
+                    for mbin in bins
                 ]
-                print([len(b) for b in binned_events])
             else:
                 raise ValueError("no such bin type")
-
 
             return list(map(compute_bin, binned_events))
 
@@ -249,19 +244,21 @@ def _data(system, validation=False):
 
     data = expt.data[system]
 
-    # some data are not yet available for either system
-    # create dummy entries so that they are computed for the model
-    if system == 'PbPb5020':
-        data = dict(
-            ((obs, obsdata) for obs, obsdata in
-                expt.data['pPb5020'].items() if obs not in data),
-            **data
+    # Add dummy expt data for PbPb5020 mean pT so that
+    # the model predictions are still calculated.
+    if system.startswith('PbPb'):
+        bins = np.linspace(0, 80, 9)
+        cent = [(a, b) for a, b in zip(bins[:-1], bins[1:])]
+        mean_pT = dict(
+            cent=cent,
+            x=np.array([(a + b)/2 for a, b in cent]),
         )
+        data = dict(mean_pT=dict(charged=mean_pT), **data)
 
     data = ModelData(*files).observables_like(data)
 
     logging.info('writing cache file %s', cachefile)
-    cachefile.parent.mkdir(exist_ok=True)
+    cachefile.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(data, cachefile, protocol=pickle.HIGHEST_PROTOCOL)
 
     return data

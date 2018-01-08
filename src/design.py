@@ -88,28 +88,14 @@ class Design:
     project, if not completely rewritten.
 
     """
-    def __init__(self, system, npoints=500, validation=False, seed=None):
+    def __init__(self, system, npoints=60, validation=False, seed=None):
         self.system = system
         self.projectiles, self.beam_energy = parse_system(system)
         self.type = 'validation' if validation else 'main'
 
         self.keys, labels, self.range = map(list, zip(*[
-            ('grid_scale',    r'grid scale',                  (  0.1,    0.5)),  
-            ('norm',          r'{Norm}',                      (   12,     28)),
-            ('trento_p',      r'p',                           ( -1.0,    1.0)),
-            ('fluct_std',     r'\sigma {fluct}',              (  0.0,    2.0)),
-            ('nucleon_width', r'w [{fm}]',                    (  0.4,    1.2)),
-            ('parton_number', r'n {partons}',                 (    1,     10)),
-            ('parton_struct', r'\chi',                        (  0.0,    1.0)),
-            ('dmin3',         r'd {min} [{fm}]',              (  0.0, 1.7**3)),
-            ('tau_fs',        r'\tau {fs} [{fm}/c]',          (  0.1,    1.5)),
-            ('etas_min',      r'\eta/s {min}',                (  0.0,    0.2)),
-            ('etas_slope',    r'\eta/s {slope} [{GeV}^{-1}]', (  0.0,    8.0)),
-            ('etas_crv',      r'\eta/s {crv}',                ( -1.0,    1.0)),
-            ('zetas_max',     r'\zeta/s {max}',               (  0.0,    0.1)),
-            ('zetas_width',   r'\zeta/s {width} [{GeV}]',     (  0.0,    0.1)),
-            ('zetas_t0',      r'\zeta/s T_0 [{GeV}]',         (0.150,  0.200)),
-            ('Tswitch',       r'T {switch} [{GeV}]',          (0.135,  0.165)),
+            ('grid_scale',    r'grid scale', (0.1, 0.5)),  
+            ('parton_struct', r'\chi',       (0.0, 1.0)),
         ]))
 
         # convert labels into TeX:
@@ -130,9 +116,7 @@ class Design:
         fmt = '{:0' + str(len(str(npoints - 1))) + 'd}'
         self.points = [fmt.format(i) for i in range(npoints)]
 
-        # adjust range so bulk peak does not become a delta function
         lhsmin = self.min.copy()
-        lhsmin[self.keys.index('zetas_width')] = 1e-3
 
         if seed is None:
             seed = 751783496 if validation else 450829120
@@ -154,25 +138,25 @@ class Design:
         ], [
             'trento-args',
             '{projectiles[0]} {projectiles[1]}',
-            '--cross-section {cross_section}',
-            '--normalization {norm}',
-            '--reduced-thickness {trento_p}',
+            '--cross-section 7.0',
+            '--normalization 20.',
+            '--reduced-thickness 0.',
             '--fluctuation {fluct}',
-            '--nucleon-min-dist {dmin}',
-            '--nucleon-width', '{nucleon_width}',
-            '--parton-number', '{parton_number}',
+            '--nucleon-min-dist 1.2',
+            '--nucleon-width 0.88',
+            '--parton-number 3',
         ], [
-            'tau-fs', '{tau_fs}'
+            'tau-fs', '0.5',
         ], [
             'hydro-args',
-            'etas_min={etas_min}',
-            'etas_slope={etas_slope}',
-            'etas_curv={etas_crv}',
-            'zetas_max={zetas_max}',
-            'zetas_width={zetas_width}',
-            'zetas_t0={zetas_t0}',
+            'etas_min=0.08',
+            'etas_slope=1.113',
+            'etas_curv=-0.479',
+            'zetas_max=0.052',
+            'zetas_width=0.022',
+            'zetas_t0=0.183',
         ], [
-            'Tswitch', '{Tswitch}'
+            'Tswitch', '0.151',
         ]]
     )
 
@@ -197,20 +181,17 @@ class Design:
             )
 
             # parton number
-            parton_number = int(kwargs.pop('parton_number'))
-
-            # parton width
-            nucleon_width = kwargs.get('nucleon_width')
+            parton_number = 3
+            nucleon_width = 0.88
             x_struct = kwargs.pop('parton_struct') if parton_number > 1 else 1
             vmin, vmax = (0.2, nucleon_width)
             parton_width = vmin + x_struct*(vmax - vmin)
 
             # parton fluctuations
-            fluct_std = kwargs.pop('fluct_std')*np.sqrt(parton_number)
+            fluct_std = np.sqrt(parton_number)
 
             kwargs.update(
                 fluct=1/fluct_std**2,
-                dmin=kwargs.pop('dmin3')**(1/3),
                 parton_number=parton_number,
                 parton_width=min(parton_width, nucleon_width),
             )

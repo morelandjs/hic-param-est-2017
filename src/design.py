@@ -97,7 +97,7 @@ class Design:
             ('grid_scale',    r'grid scale',                  (  0.1,    0.5)),  
             ('norm',          r'{Norm}',                      (   12,     28)),
             ('trento_p',      r'p',                           ( -1.0,    1.0)),
-            ('fluct_std',     r'\sigma {fluct}',              (  0.7,    2.0)),
+            ('fluct_std',     r'\sigma {fluct}',              (  0.0,    2.0)),
             ('nucleon_width', r'w [{fm}]',                    (  0.4,    1.2)),
             ('parton_number', r'n {partons}',                 (    1,     10)),
             ('parton_struct', r'\chi',                        (  0.0,    1.0)),

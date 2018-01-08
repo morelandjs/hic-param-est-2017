@@ -45,7 +45,6 @@ plt.rcParams.update({
     'mathtext.fontset': 'custom',
     'mathtext.default': 'it',
     'mathtext.rm': 'sans',
-    'mathtext.it': 'sans:italic:medium',
     'mathtext.cal': 'sans',
     'font.size': fontnormal,
     'legend.fontsize': fontnormal,

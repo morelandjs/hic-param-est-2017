@@ -243,36 +243,36 @@ def pPb5020_mean_pT():
     reference: https://inspirehep.net/record/1241423
 
     """
-
-    # <Nch>
-    mean_Nch = 11.9
-
-    # number of desired bins
-    bins = 7
-
     dset = HEPData(1241423, 4)
+    mean_nch = 11.9
 
-    mult = np.array([
-        ([x[edge]/mean_Nch for edge in ('low', 'high')])
+    mult = [
+        (x['low']/mean_nch, x['high']/mean_nch)
         for x in dset.x('MULT(P=3)')
-    ]).reshape(bins, -1)
+    ]
 
-    x = np.array([
-        0.5*(x['low'] + x['high'])/mean_Nch for x in dset.x('MULT(P=3)')
-    ])
+    x = [
+        0.5*(x['low'] + x['high'])/mean_nch
+        for x in dset.x('MULT(P=3)')
+    ]
 
     y, stat, sys = np.array([
         (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])
         for y in dset.y('MEAN(NAME=PT)')
     ]).T
 
+    # skip every 7th data point,
+    # and drop first two bins
+    nskip = 7
+    ndrop = 2
+
     return dict(
-        mult=[(min(m), max(m)) for m in mult],
-        x=x.reshape(bins, -1).mean(axis=1),
-        y=y.reshape(bins, -1).mean(axis=1),
+        mult=mult[::nskip][ndrop:],
+        x=x[::nskip][ndrop:],
+        y=y[::nskip][ndrop:],
         yerr=dict(
-            stat=np.sqrt(np.square(stat).reshape(bins, -1).sum(axis=1))/bins,
-            sys=sys.reshape(bins, -1).mean(axis=1),
+            stat=stat[::nskip][ndrop:],
+            sys=sys[::nskip][ndrop:],
         )
     )
 
@@ -288,9 +288,10 @@ def pPb5020_flows(mode):
     # Mean Ntrk offline 0-100% centrality
     Ntrk_avg = 40.
 
+    # Drop top-5 most central bins
     xlo, xhi, x, y, stat, sys = np.loadtxt(
-        'expt/CMS_pPb5020_v{}2.txt'.format(mode)
-    ).T
+        'expt/CMS_pPb5020_v{}2_sub.txt'.format(mode)
+    )[:-5].T
 
     return dict(
         mult=list(zip(xlo/Ntrk_avg, xhi/Ntrk_avg)),

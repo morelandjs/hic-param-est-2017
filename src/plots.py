@@ -261,7 +261,7 @@ def _observables_plots():
         dict(
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
-            ylim=(0, .2),
+            ylim=(0, .15),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
                 for n in [2, 3, 4]
@@ -334,16 +334,16 @@ def _observables(posterior=False):
                 )
 
             if system == 'pPb5020' and obs == 'mean_pT':
-                ax.set_xlim(0, 6.5)
+                ax.set_xlim(1, 6)
                 ax.set_xlabel(r'$N_\mathrm{ch}\,/\langle N_\mathrm{ch} \rangle$')
             elif system == 'pPb5020' and obs == 'vnk':
-                ax.set_xlim(0, 6.5)
+                ax.set_xlim(1, 6)
                 ax.set_xlabel('/'.join([
                     r'$N^\mathrm{offline}_\mathrm{trk}$',
                     r'$\langle N^\mathrm{offline}_\mathrm{trk} \rangle$',
                 ]))
             else:
-                ax.set_xlim(0, 75)
+                ax.set_xlim(0, 80)
                 ax.set_xlabel('Centrality %')
 
         if plot.get('yscale') == 'log':

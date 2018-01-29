@@ -192,7 +192,7 @@ def obs_color_hsluv(obs, subobs):
     if obs == 'dET_deta':
         return 10, 65, 55
 
-    if obs in {'dN_dy'}:
+    if obs in {'iden_dN_dy'}:
         return dict(
             charged=(250, 90, 55),
             pion=(210, 85, 70),
@@ -225,7 +225,7 @@ def _observables_plots():
     """
     def id_parts_plots(obs):
         return [(obs, species, dict(label=label)) for species, label in [
-            ('charged', '$\pm$'), ('pion', '$\pi$'), ('kaon', '$K$'), ('proton', '$p$')
+            ('pion', '$\pi$'), ('kaon', '$K$'), ('proton', '$p$')
         ]]
 
     return [
@@ -248,7 +248,7 @@ def _observables_plots():
             ylabel=r'$\langle p_T \rangle$ [GeV]',
             ylim=(0, 1.5),
             subplots=[
-                ('mean_pT', 'charged', dict(label=r'$\mathrm{mean} p_T$', scale=1)),
+                ('mean_pT', None, dict(label=r'$\mathrm{mean} p_T$', scale=1)),
                 #*id_parts_plots('mean_pT')
             ]
         ),

@@ -247,12 +247,12 @@ def pPb5020_mean_pT():
     mean_nch = 11.9
 
     mult = [
-        (x['low']/mean_nch, x['high']/mean_nch)
+        tuple(round(nch/mean_nch, 3) for nch in (x['low'], x['high']))
         for x in dset.x('MULT(P=3)')
     ]
 
     x = [
-        0.5*(x['low'] + x['high'])/mean_nch
+        round(0.5*(x['low'] + x['high'])/mean_nch, 3)
         for x in dset.x('MULT(P=3)')
     ]
 
@@ -314,7 +314,7 @@ def _data():
         data['pPb5020']['dNch_deta'] = {None: pPb5020_yield()}
 
         # pPb5020 mean pT
-        data['pPb5020']['mean_pT'] = {'charged': pPb5020_mean_pT()}
+        data['pPb5020']['mean_pT'] = {None: pPb5020_mean_pT()}
 
         # pPb5020 flows
         data['pPb5020']['vnk'] = {}

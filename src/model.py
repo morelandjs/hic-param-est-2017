@@ -65,8 +65,8 @@ def symmetric_cumulant(events, m, n):
     Compute the symmetric cumulant SC(m, n).
 
     """
-    N = np.asarray(events['flow']['N'], dtype=float)
-    Q = dict(enumerate(events['flow']['Qn'].T, start=1))
+    N = np.asarray(events['alice_flow']['N'], dtype=float)
+    Q = dict(enumerate(events['alice_flow']['Qn'].T, start=1))
 
     cm2n2 = (
         csq(Q[m]) * csq(Q[n])
@@ -96,21 +96,22 @@ class ModelData:
     computes centrality-binned observables.
 
     """
-    species = ['charged', 'pion', 'kaon', 'proton', 'Lambda', 'Sigma0', 'Xi', 'Omega']
+    species = ['pion', 'kaon', 'proton', 'Lambda', 'Sigma0', 'Xi', 'Omega']
 
     dtype = np.dtype([
         ('trigger', (float_t, 2)),
-        ('initial_entropy', float_t),
+        ('init_entropy', float_t),
         ('nsamples', int_t),
         ('dNch_deta', float_t),
         ('dET_deta', float_t),
-        ('dN_dy', [(s, float_t) for s in species]),
-        ('mean_pT', [(s, float_t) for s in species]),
+        ('mean_pT', [('N', float_t), ('pT', float_t)]),
+        ('iden_dN_dy', [(s, float_t) for (s, _) in species]),
+        ('iden_mean_pT', [(s, [('N', float_t), ('pT', float_t)]) for (s, _) in species]),
         ('pT_fluct', [('N', int_t), ('sum_pT', float_t), ('sum_pTsq', float_t)]),
-        ('flow', [('N', int_t), ('Qn', complex_t, 8)]),
+        ('flow', [(expt, [('N', int_t), ('Qn', complex_t, 8)]) for expt in ('alice', 'cms')]),
     ])
 
-    def __init__(self, *files):
+    def __init__(self, system, *files):
         # read each file using the above dtype
         def load_events(f):
             logging.debug('loading %s', f)
@@ -119,6 +120,7 @@ class ModelData:
             return d
 
         self.events = [load_events(f) for f in files]
+        self.pPb_event = (system == 'pPb5020')
 
     def observables_like(self, data, *keys):
         """
@@ -150,28 +152,32 @@ class ModelData:
             if obs in ['dNch_deta', 'dET_deta']:
                 return lambda events: events[obs].mean()
 
-            if obs == 'dN_dy':
+            if obs == 'mean_pT':
+                return lambda events: np.average(
+                    events[obs]['pT'],
+                    weights=events[obs]['N']
+                )
+
+            if obs == 'iden_dN_dy':
                 species = obs_stack.pop()
                 return lambda events: events[obs][species].mean()
 
-            if obs == 'mean_pT':
+            if obs == 'iden_mean_pT':
                 species = obs_stack.pop()
-                def functor(events):
-                    if sum(events['dN_dy'][species]) > 0:
-                        return np.average(
-                            events[obs][species],
-                            weights=(events['dN_dy'][species])
-                        )
-                    return 0
-                return functor
+                return lambda events: np.average(
+                    events[obs][species]['pT'],
+                    weights=events[obs][species]['N']
+                )
 
             if obs == 'pT_fluct':
                 return pT_fluct
 
             if obs.startswith('vnk'):
+                expt = ('cms' if self.pPb_event else 'alice')
                 nk = obs_stack.pop()
                 return lambda events: flow.Cumulant(
-                    events['flow']['N'], *events['flow']['Qn'].T[1:]
+                    events['flow'][expt]['N'],
+                    *events['flow'][expt]['Qn'].T[1:]
                 ).flow(*nk, imaginary='zero')
 
             if obs.startswith('sc'):
@@ -255,7 +261,7 @@ def _data(system, validation=False):
         )
         data = dict(mean_pT=dict(charged=mean_pT), **data)
 
-    data = ModelData(*files).observables_like(data)
+    data = ModelData(system, *files).observables_like(data)
 
     logging.info('writing cache file %s', cachefile)
     cachefile.parent.mkdir(parents=True, exist_ok=True)

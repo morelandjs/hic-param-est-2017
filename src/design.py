@@ -59,16 +59,12 @@ class Design:
     Latin-hypercube model design.
 
     Creates a design for the given system with the given number of points.
-    Creates the main (training) design if `validation` is false (default);
-    creates the validation design if `validation` is true.  If `seed` is not
-    given, a default random seed is used (different defaults for the main and
-    validation designs).
+    If `seed` is not given, a default random seed is used.
 
     Public attributes:
 
         system: the system string
         projectiles, beam energy: system projectile pair and beam energy
-        type: 'main' or 'validation'
         keys: list of parameter keys
         labels: list of parameter display labels (for TeX / matplotlib)
         range: list of parameter (min, max) tuples
@@ -88,13 +84,11 @@ class Design:
     project, if not completely rewritten.
 
     """
-    def __init__(self, system, npoints=60, validation=False, seed=None):
+    def __init__(self, system, npoints=40, seed=None):
         self.system = system
         self.projectiles, self.beam_energy = parse_system(system)
-        self.type = 'validation' if validation else 'main'
-
         self.keys, labels, self.range = map(list, zip(*[
-            ('grid_scale',    r'grid scale', (0.1, 0.5)),  
+            ('grid_scale',    r'grid scale', (0.1, 0.6)),  
             ('parton_struct', r'\chi',       (0.0, 1.0)),
         ]))
 
@@ -117,9 +111,7 @@ class Design:
         self.points = [fmt.format(i) for i in range(npoints)]
 
         lhsmin = self.min.copy()
-
-        if seed is None:
-            seed = 751783496 if validation else 450829120
+        seed = 751783496
 
         self.array = lhsmin + (self.max - lhsmin)*generate_lhs(
             npoints=npoints, ndim=self.ndim, seed=seed
@@ -132,7 +124,7 @@ class Design:
     _template = ''.join(
         '{} = {}\n'.format(key, ' '.join(args)) for (key, *args) in
         [[
-            'collision-system', '{collision_system}',
+            'projectiles', '{projectiles}',
         ], [
             'grid-scale', '{grid_scale}',
         ], [
@@ -166,13 +158,13 @@ class Design:
         Write input files for each design point to `basedir`.
 
         """
-        outdir = basedir / self.type / self.system
+        outdir = basedir / self.system
         outdir.mkdir(parents=True, exist_ok=True)
 
         for point, row in zip(self.points, self.array):
             kwargs = dict(
                 zip(self.keys, row),
-                projectiles=self.projectiles,
+                projectiles=' '.join(self.projectiles),
                 cross_section={
                     # sqrt(s) [GeV] : sigma_NN [fm^2]
                     200: 4.2,
@@ -213,8 +205,8 @@ def main():
     )
     args = parser.parse_args()
 
-    for system, validation in itertools.product(systems, [False, True]):
-        Design(system, validation=validation).write_files(args.inputs_dir)
+    for system in systems:
+        Design(system).write_files(args.inputs_dir)
 
     logging.info('wrote all files to %s', args.inputs_dir)
 

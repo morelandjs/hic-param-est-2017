@@ -126,6 +126,8 @@ class Design:
         [[
             'projectiles', '{projectiles}',
         ], [
+            'nevents', '10',
+        ], [
             'grid-scale', '{grid_scale}',
         ], [
             'parton-width', '{parton_width}',

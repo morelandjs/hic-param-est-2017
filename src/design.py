@@ -132,12 +132,13 @@ class Design:
     _template = ''.join(
         '{} = {}\n'.format(key, ' '.join(args)) for (key, *args) in
         [[
+            'collision-system', '{collision_system}',
+        ], [
             'grid-scale', '{grid_scale}',
         ], [
             'parton-width', '{parton_width}',
         ], [
             'trento-args',
-            '{projectiles[0]} {projectiles[1]}',
             '--cross-section 7.0',
             '--normalization 20.',
             '--reduced-thickness 0.',

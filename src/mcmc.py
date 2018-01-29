@@ -99,12 +99,13 @@ class Chain:
     # list of 2-tuples: (obs, [list of subobs])
     PbPb5020 = [
         ('dNch_deta', [None]),
-        ('mean_pT', ['charged']),
         ('vnk', [(2, 2), (3, 2), (4, 2)]),
     ]
 
     pPb5020 = [
         ('dNch_deta', [None]),
+        ('mean_pT', [None]),
+        ('vnk', [(2, 2), (3, 2)),
     ]
 
     def __init__(self, path=workdir / 'mcmc' / 'chain.hdf'):

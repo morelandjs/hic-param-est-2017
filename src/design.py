@@ -84,12 +84,15 @@ class Design:
     project, if not completely rewritten.
 
     """
-    def __init__(self, system, npoints=40, seed=None):
+    def __init__(self, system, npoints=40, validation=False, seed=None):
         self.system = system
         self.projectiles, self.beam_energy = parse_system(system)
+        self.type = 'validation' if validation else 'main'
+        self.grid_scale = (0.2, 0.6) if self.type == 'main' else (0.1, 0.3)
+
         self.keys, labels, self.range = map(list, zip(*[
-            ('grid_scale',    r'grid scale', (0.1, 0.6)),  
-            ('parton_struct', r'\chi',       (0.0, 1.0)),
+            ('grid_scale',    r'grid scale', self.grid_scale),  
+            ('parton_struct', r'\chi',            (0.0, 1.0)),
         ]))
 
         # convert labels into TeX:
@@ -111,7 +114,9 @@ class Design:
         self.points = [fmt.format(i) for i in range(npoints)]
 
         lhsmin = self.min.copy()
-        seed = 751783496
+
+        if seed is None:
+            seed = 751783496 if validation else 450829120
 
         self.array = lhsmin + (self.max - lhsmin)*generate_lhs(
             npoints=npoints, ndim=self.ndim, seed=seed
@@ -126,14 +131,12 @@ class Design:
         [[
             'projectiles', '{projectiles}',
         ], [
-            'nevents', '10',
-        ], [
             'grid-scale', '{grid_scale}',
         ], [
             'parton-width', '{parton_width}',
         ], [
             'trento-args',
-            '--cross-section 7.0',
+            '--cross-section 7.',
             '--normalization 20.',
             '--reduced-thickness 0.',
             '--fluctuation {fluct}',
@@ -160,7 +163,7 @@ class Design:
         Write input files for each design point to `basedir`.
 
         """
-        outdir = basedir / self.system
+        outdir = basedir / self.type / self.system
         outdir.mkdir(parents=True, exist_ok=True)
 
         for point, row in zip(self.points, self.array):
@@ -207,8 +210,14 @@ def main():
     )
     args = parser.parse_args()
 
-    for system in systems:
-        Design(system).write_files(args.inputs_dir)
+    designs = zip([40, 10], [False, True])
+
+    for system, (npoints, validation) in itertools.product(systems, designs):
+        Design(
+            system,
+            npoints=npoints,
+            validation=validation
+        ).write_files(args.inputs_dir)
 
     logging.info('wrote all files to %s', args.inputs_dir)
 

@@ -1293,7 +1293,7 @@ def boxplot(
 
 
 @plot
-def validation_all(system='PbPb5020'):
+def validation_all(system='pPb5020'):
     """
     Emulator validation: normalized residuals and RMS error for each
     observable.
@@ -1397,7 +1397,7 @@ def validation_all(system='PbPb5020'):
 
 @plot
 def validation_example(
-        system='PbPb2760',
+        system='pPb5020',
         obs='dNch_deta', subobs=None,
         label=r'$dN_\mathrm{ch}/d\eta$',
         cent=(20, 30)
@@ -1583,7 +1583,7 @@ def diag_emu(system=default_system):
             ax.set_ylabel('PC {}'.format(ny))
 
 @plot
-def grid_extrap_obs(system='PbPb5020'):
+def grid_extrap_obs(system='pPb5020'):
     """
     Train the emulator to predict the 5% smallest grids in the design
 
@@ -1602,7 +1602,7 @@ def grid_extrap_obs(system='PbPb5020'):
     emu = emulators[system]
     mean, cov = emu.predict(np.array(X), return_cov=True)
 
-    for ax, (obs, subobslist) in zip(axes, emu.PbPb5020):
+    for ax, (obs, subobslist) in zip(axes, emu.pPb5020):
         for subobs in subobslist:
             pred = mean[obs][subobs][:, 0]
             C = cov[(obs, subobs), (obs, subobs)]
@@ -1616,7 +1616,7 @@ def grid_extrap_obs(system='PbPb5020'):
             ax.set_xlabel('Grid scale')
 
 @plot
-def grid_extrap_pc(system='PbPb5020'):
+def grid_extrap_pc(system='pPb5020'):
     """
     Train the emulator to predict the 5% smallest grids in the design
 

@@ -105,8 +105,8 @@ class ModelData:
         ('dNch_deta', float_t),
         ('dET_deta', float_t),
         ('mean_pT', [('N', float_t), ('pT', float_t)]),
-        ('iden_dN_dy', [(s, float_t) for (s, _) in species]),
-        ('iden_mean_pT', [(s, [('N', float_t), ('pT', float_t)]) for (s, _) in species]),
+        ('iden_dN_dy', [(s, float_t) for s in species]),
+        ('iden_mean_pT', [(s, [('N', float_t), ('pT', float_t)]) for s in species]),
         ('pT_fluct', [('N', int_t), ('sum_pT', float_t), ('sum_pTsq', float_t)]),
         ('flow', [(expt, [('N', int_t), ('Qn', complex_t, 8)]) for expt in ('alice', 'cms')]),
     ])

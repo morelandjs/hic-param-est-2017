@@ -213,8 +213,10 @@ def pPb5020_yield():
     # use the V0M centrality estimator
     dset = HEPData(1335350, 2)
     
-    cent = [tuple(map(float, re.findall(r'\d+', name)))
-            for name in dset.names]
+    cent = [
+        tuple(map(float, re.findall(r'\d+', name)))
+        for name in dset.names
+    ]
 
     eta_lab_min, eta_lab_max = [eta + eta_beam for eta in (-eta_cut, eta_cut)]
 
@@ -251,10 +253,10 @@ def pPb5020_mean_pT():
         for x in dset.x('MULT(P=3)')
     ]
 
-    x = [
+    x = np.array([
         round(0.5*(x['low'] + x['high'])/mean_nch, 3)
         for x in dset.x('MULT(P=3)')
-    ]
+    ])
 
     y, stat, sys = np.array([
         (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])
@@ -351,15 +353,15 @@ def cov(
         system, obs1, subobs1, obs2, subobs2,
         stat_frac=1e-4, sys_corr_length=100, cross_factor=.8,
         corr_obs={
-            frozenset({'dNch_deta', 'dET_deta', 'dN_dy'}),
+            frozenset({'dNch_deta', 'dET_deta', 'iden_dN_dy'}),
         }
 ):
     """
     Estimate a covariance matrix for the given system and pair of observables,
     e.g.:
 
-    >>> cov('PbPb2760', 'dN_dy', 'pion', 'dN_dy', 'pion')
-    >>> cov('PbPb5020', 'dN_dy', 'pion', 'dNch_deta', None)
+    >>> cov('PbPb2760', 'iden_dN_dy', 'pion', 'dN_dy', 'pion')
+    >>> cov('PbPb5020', 'iden_dN_dy', 'pion', 'dNch_deta', None)
 
     For each dataset, stat and sys errors are used if available.  If only
     "summed" error is available, it is treated as sys error, and `stat_frac`

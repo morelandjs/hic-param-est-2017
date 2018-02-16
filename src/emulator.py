@@ -1,4 +1,17 @@
-""" Gaussian process emulator """
+"""
+Trains Gaussian process emulators.
+
+When run as a script, allows retraining emulators, specifying the number of
+principal components, and other options (however it is not necessary to do this
+explicitly --- the emulators will be trained automatically when needed).  Run
+``python -m src.emulator --help`` for usage information.
+
+Uses the `scikit-learn <http://scikit-learn.org>`_ implementations of
+`principal component analysis (PCA)
+<http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
+and `Gaussian process regression
+<http://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
+"""
 
 import logging
 import pickle
@@ -76,14 +89,14 @@ class Emulator:
         self._slices = {}
 
         # system specific observables
-        observables = {
+        self.observables = {
             'pPb5020': self.pPb5020,
             'PbPb5020': self.PbPb5020,
         }[system] 
 
         # Build an array of all observables to emulate.
         nobs = 0
-        for obs, subobslist in observables:
+        for obs, subobslist in self.observables:
             self._slices[obs] = {}
             for subobs in subobslist:
                 Y.append(model.data[system][obs][subobs]['Y'])
@@ -91,14 +104,7 @@ class Emulator:
                 self._slices[obs][subobs] = slice(nobs, nobs + n)
                 nobs += n
 
-        
-        design = Design(system)
-
-        # modify grid scale range
-        design.max[0] = .6
-        cut = (design.array[:, 0] < .6)
-        design.array = design.array[cut]
-        Y = np.concatenate(Y, axis=1)[cut]
+        Y = np.concatenate(Y, axis=1)
 
         self.npc = npc
         self.nobs = nobs
@@ -111,7 +117,7 @@ class Emulator:
 
         # Define kernel (covariance function):
         # Gaussian correlation (RBF) plus a noise term.
-        #design = Design(system)
+        design = Design(system)
         ptp = design.max - design.min
         kernel = (
             1. * kernels.RBF(
@@ -171,8 +177,8 @@ class Emulator:
     @classmethod
     def from_cache(cls, system, retrain=False, **kwargs):
         """
-        Load from the cache if available, otherwise create and cache a new
-        instance.
+        Load the emulator for `system` from the cache if available, otherwise
+        train and cache a new instance.
 
         """
         cachefile = cachedir / 'emulator' / '{}.pkl'.format(system)
@@ -215,16 +221,16 @@ class Emulator:
 
     def predict(self, X, return_cov=False, extra_std=0):
         """
-        Predict model output at X.
+        Predict model output at `X`.
 
-        X must be a 2D array-like with shape (nsamples, ndim).  It is passed
-        directly to sklearn GaussianProcessRegressor.predict().
+        X must be a 2D array-like with shape ``(nsamples, ndim)``.  It is passed
+        directly to sklearn :meth:`GaussianProcessRegressor.predict`.
 
-        If return_cov is true, return a tuple (mean, cov), otherwise only
+        If `return_cov` is true, return a tuple ``(mean, cov)``, otherwise only
         return the mean.
 
         The mean is returned as a nested dict of observable arrays, each with
-        shape (nsamples, n_cent_bins).
+        shape ``(nsamples, n_cent_bins)``.
 
         The covariance is returned as a proxy object which extracts observable
         sub-blocks using a dict-like interface:
@@ -241,12 +247,12 @@ class Emulator:
         <covariance matrix between pion dN/dy and kaon mean pT>
 
         The shape of the extracted covariance blocks are
-        (nsamples, n_cent_bins_1, n_cent_bins_2).
+        ``(nsamples, n_cent_bins_1, n_cent_bins_2)``.
 
         NB: the covariance is only computed between observables and centrality
         bins, not between sample points.
 
-        extra_std is additional uncertainty which is added to each GP's
+        `extra_std` is additional uncertainty which is added to each GP's
         predictive uncertainty, e.g. to account for model systematic error.  It
         may either be a scalar or an array-like of length nsamples.
 
@@ -284,10 +290,10 @@ class Emulator:
 
     def sample_y(self, X, n_samples=1, random_state=None):
         """
-        Sample model output at X.
+        Sample model output at `X`.
 
         Returns a nested dict of observable arrays, each with shape
-        (n_samples_X, n_samples, n_cent_bins).
+        ``(n_samples_X, n_samples, n_cent_bins)``.
 
         """
         # Sample the GP for each emulated PC.  The remaining components are

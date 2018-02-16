@@ -1,4 +1,23 @@
-""" Latin-hypercube parameter design """
+"""
+Generates Latin-hypercube parameter designs.
+
+When run as a script, writes input files for use with my
+`heavy-ion collision event generator
+<https://github.com/jbernhard/heavy-ion-collisions-osg>`_.
+Run ``python -m src.design --help`` for usage information.
+
+.. warning::
+
+    This module uses the R `lhs package
+    <https://cran.r-project.org/package=lhs>`_ to generate maximin
+    Latin-hypercube samples.  As far as I know, there is no equivalent library
+    for Python (I am aware of `pyDOE <https://pythonhosted.org/pyDOE>`_, but
+    that uses a much more rudimentary algorithm for maximin sampling).
+
+    This means that R must be installed with the lhs package (run
+    ``install.packages('lhs')`` in an R session).
+
+"""
 
 import itertools
 import logging
@@ -13,7 +32,8 @@ from . import cachedir, parse_system
 
 def generate_lhs(npoints, ndim, seed):
     """
-    Generate a maximin LHS.
+    Generate a maximin Latin-hypercube sample (LHS) with the given number of
+    points, dimensions, and random seed.
 
     """
     logging.debug(

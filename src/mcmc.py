@@ -1,4 +1,28 @@
-""" Markov chain Monte Carlo model calibration """
+"""
+Markov chain Monte Carlo model calibration using the `affine-invariant ensemble
+sampler (emcee) <http://dfm.io/emcee>`_.
+
+This module must be run explicitly to create the posterior distribution.
+Run ``python -m src.mcmc --help`` for complete usage information.
+
+On first run, the number of walkers and burn-in steps must be specified, e.g.
+::
+
+    python -m src.mcmc --nwalkers 500 --nburnsteps 100 200
+
+would run 500 walkers for 100 burn-in steps followed by 200 production steps.
+This will create the HDF5 file :file:`mcmc/chain.hdf` (default path).
+
+On subsequent runs, the chain resumes from the last point and the number of
+walkers is inferred from the chain, so only the number of production steps is
+required, e.g. ::
+
+    python -m src.mcmc 300
+
+would run an additional 300 production steps (total of 500).
+
+To restart the chain, delete (or rename) the chain HDF5 file.
+"""
 
 import argparse
 from contextlib import contextmanager
@@ -190,10 +214,10 @@ class Chain:
 
     def log_posterior(self, X, extra_std_prior_scale=.05):
         """
-        Evaluate the posterior at X.
+        Evaluate the posterior at `X`.
 
-        extra_std_prior_scale is the scale parameter for the prior distribution
-        on the model sys error parameter:
+        `extra_std_prior_scale` is the scale parameter for the prior
+        distribution on the model sys error parameter:
 
             prior ~ sigma^2 * exp(-sigma/scale)
 
@@ -244,7 +268,7 @@ class Chain:
 
     def random_pos(self, n=1):
         """
-        Generate random positions in parameter space.
+        Generate `n` random positions in parameter space.
 
         """
         return np.random.uniform(self.min, self.max, (n, self.ndim))
@@ -253,7 +277,7 @@ class Chain:
     def map(f, args):
         """
         Dummy function so that this object can be used as a 'pool' for
-        emcee.EnsembleSampler.
+        :meth:`emcee.EnsembleSampler`.
 
         """
         return f(args)
@@ -338,7 +362,10 @@ class Chain:
     @contextmanager
     def dataset(self, mode='r', name='chain'):
         """
-        Return a dataset object in the chain HDF5 file.
+        Context manager for quickly accessing a dataset in the chain HDF5 file.
+
+        >>> with Chain().dataset() as dset:
+                # do something with dset object
 
         """
         with self.open(mode) as f:
@@ -346,8 +373,8 @@ class Chain:
 
     def load(self, *keys, thin=1):
         """
-        Read the chain from file.  If 'keys' are given, read only those
-        parameters.
+        Read the chain from file.  If `keys` are given, read only those
+        parameters.  Read only every `thin`'th sample from the chain.
 
         """
         if keys:
@@ -364,7 +391,8 @@ class Chain:
 
     def samples(self, n=1):
         """
-        Predict model output at parameter points randomly drawn from the chain.
+        Predict model output at `n` parameter points randomly drawn from the
+        chain.
 
         """
         with self.dataset() as d:
@@ -379,7 +407,8 @@ class Chain:
 
 def credible_interval(samples, ci=.9):
     """
-    Compute the HPD credible interval (default 90%) for an array of samples.
+    Compute the highest-posterior density (HPD) credible interval (default 90%)
+    for an array of samples.
 
     """
     # number of intervals to compute

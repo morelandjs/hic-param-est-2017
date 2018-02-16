@@ -1,7 +1,0 @@
-projectiles = p Pb
-grid-scale = 0.5695579591416752
-parton-width = 0.8315234516304917
-trento-args = --cross-section 7. --normalization 20. --reduced-thickness 0. --fluctuation 0.33333333333333337 --nucleon-min-dist 1.2 --nucleon-width 0.88 --parton-number 3
-tau-fs = 0.5
-hydro-args = etas_min=0.08 etas_slope=1.113 etas_curv=-0.479 zetas_max=0.052 zetas_width=0.022 zetas_t0=0.183
-Tswitch = 0.151

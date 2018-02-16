@@ -1,4 +1,7 @@
-""" experimental data """
+"""
+Downloads, processes, and stores experimental data.
+Prints all data when run as a script.
+"""
 
 from collections import defaultdict
 import logging
@@ -17,15 +20,19 @@ import matplotlib.pyplot as plt
 
 class HEPData:
     """
-    Interface to a HEPData yaml file.
+    Interface to a `HEPData <https://hepdata.net>`_ YAML data table.
 
     Downloads and caches the dataset specified by the INSPIRE record and table
-    number.  The web UI for `inspire_rec` may be found at:
-
-        https://hepdata.net/record/ins`inspire_rec`
+    number.  The web UI for `inspire_rec` may be found at
+    :file:`https://hepdata.net/record/ins{inspire_rec}`.
 
     If `reverse` is true, reverse the order of the data table (useful for
     tables that are given as a function of Npart).
+
+    .. note::
+
+        Datasets are assumed to be a function of centrality.  Other kinds of
+        datasets will require code modifications.
 
     """
     def __init__(self, inspire_rec, table, reverse=False):
@@ -84,7 +91,7 @@ class HEPData:
     @property
     def cent(self):
         """
-        Return a list of centrality bins as (low, high) tuples.
+        The centrality bins as a list of (low, high) tuples.
 
         """
         try:
@@ -126,7 +133,7 @@ class HEPData:
 
         """
         for y in self._data['dependent_variables']:
-            if name is None or y['header']['name'] == name:
+            if name is None or y['header']['name'].startswith(name):
                 y_quals = {q['name']: q['value'] for q in y['qualifiers']}
                 if all(y_quals[k] == v for k, v in quals.items()):
                     return y['values']
@@ -140,12 +147,12 @@ class HEPData:
         """
         Return a dict containing:
 
-            cent : list of centrality bins
-            x : np.array of centrality bin midpoints
-            y : np.array of y values
-            yerr : subdict of np.arrays of y errors
+        - **cent:** list of centrality bins
+        - **x:** numpy array of centrality bin midpoints
+        - **y:** numpy array of y values
+        - **yerr:** subdict of numpy arrays of y errors
 
-        `name` and `quals` are passed to HEPData.y()
+        `name` and `quals` are passed to `HEPData.y()`.
 
         Missing y values are skipped.
 
@@ -305,7 +312,22 @@ def pPb5020_flows(mode):
 
 def _data():
     """
-    Acquire all experimental data.
+    Curate the experimental data using the `HEPData` class and return a nested
+    dict with levels
+
+    - system
+    - observable
+    - subobservable
+    - dataset (created by :meth:`HEPData.dataset`)
+
+    For example, ``data['PbPb2760']['dN_dy']['pion']`` retrieves the dataset
+    for pion dN/dy in Pb+Pb collisions at 2.76 TeV.
+
+    Some observables, such as charged-particle multiplicity, don't have a
+    natural subobservable, in which case the subobservable is set to `None`.
+
+    The best way to understand the nested dict structure is to explore the
+    object in an interactive Python session.
 
     """
     data = {s: {} for s in systems}
@@ -346,6 +368,8 @@ def _data():
     return data
 
 
+#: A nested dict containing all the experimental data, created by the
+#: :func:`_data` function.
 data = _data()
 
 

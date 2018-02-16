@@ -104,11 +104,12 @@ class Design:
     project, if not completely rewritten.
 
     """
-    def __init__(self, system, npoints=40, validation=False, seed=None):
+    def __init__(self, system, validation=False, seed=None):
         self.system = system
         self.projectiles, self.beam_energy = parse_system(system)
         self.type = 'validation' if validation else 'main'
-        self.grid_scale = (0.2, 0.6) if self.type == 'main' else (0.1, 0.3)
+        self.npoints = 10 if validation else 40
+        self.grid_scale = (.1, .3) if validation else (.2, .5)
 
         self.keys, labels, self.range = map(list, zip(*[
             ('grid_scale',    r'grid scale', self.grid_scale),  
@@ -130,8 +131,8 @@ class Design:
         self.min, self.max = map(np.array, zip(*self.range))
 
         # use padded numbers for design point names
-        fmt = '{:0' + str(len(str(npoints - 1))) + 'd}'
-        self.points = [fmt.format(i) for i in range(npoints)]
+        fmt = '{:0' + str(len(str(self.npoints - 1))) + 'd}'
+        self.points = [fmt.format(i) for i in range(self.npoints)]
 
         lhsmin = self.min.copy()
 
@@ -139,7 +140,7 @@ class Design:
             seed = 751783496 if validation else 450829120
 
         self.array = lhsmin + (self.max - lhsmin)*generate_lhs(
-            npoints=npoints, ndim=self.ndim, seed=seed
+            npoints=self.npoints, ndim=self.ndim, seed=seed
         )
 
 
@@ -230,14 +231,12 @@ def main():
     )
     args = parser.parse_args()
 
-    designs = zip([40, 10], [False, True])
-
-    for system, (npoints, validation) in itertools.product(systems, designs):
-        Design(
-            system,
-            npoints=npoints,
-            validation=validation
-        ).write_files(args.inputs_dir)
+    for system in systems:
+        for validation in (False, True):
+            Design(
+                system,
+                validation=validation
+            ).write_files(args.inputs_dir)
 
     logging.info('wrote all files to %s', args.inputs_dir)
 

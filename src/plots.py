@@ -815,7 +815,8 @@ def _posterior(
     fig, axes = plt.subplots(
         nrows=ndim, ncols=ndim,
         sharex='col', sharey='row',
-        figsize=2*(scale*fullheight,)
+        # figsize=2*(scale*fullheight,)
+        figsize=figsize(.15*ndim, aspect=1)
     )
 
     for samples, key, lim, ax in zip(data, keys, ranges, axes.diagonal()):
@@ -826,7 +827,7 @@ def _posterior(
         interp = PchipInterpolator(x, y)
         x = np.linspace(x[0], x[-1], 10*x.size)
         y = interp(x)
-        ax.plot(x, y, lw=.5, color=line_color)
+        ax.plot(x, y, linewidth=1, color=line_color)
         ax.fill_between(x, lim[0], y, color=fill_color, zorder=-10)
 
         ax.set_xlim(lim)
@@ -837,7 +838,7 @@ def _posterior(
 
         ax.annotate(
             format_ci(samples), (.62, .92), xycoords='axes fraction',
-            ha='center', va='bottom', fontsize=4.5
+            ha='center', va='bottom', fontsize=fontsize['large']
         )
 
     for ny, nx in zip(*np.tril_indices_from(axes, k=-1)):
@@ -850,8 +851,11 @@ def _posterior(
 
     for key, label, axb, axl in zip(keys, labels, axes[-1], axes[:, 0]):
         for axis in [axb.xaxis, axl.yaxis]:
-            axis.set_label_text(label.replace(r'\ [', '$\n$['), fontsize=4)
-            axis.set_tick_params(labelsize=3)
+            axis.set_label_text(
+                label.replace(r'\ [', '$\n$['),
+                # fontsize=fontsize['tiny']
+            )
+            axis.set_tick_params(labelsize=7/8*fontsize['tiny'])
             if key == 'dmin3':
                 ticks = [0., 1.2, 1.5, 1.7]
                 axis.set_ticklabels(list(map(str, ticks)))
@@ -1617,7 +1621,8 @@ def trento_events():
 
 
 def boxplot(
-        ax, percentiles, x=0, y=0, box_width=1, line_width=1,
+        ax, percentiles, x=0, y=0, box_width=1,
+        line_width=plt.rcParams['lines.linewidth'],
         color=(0, 0, 0), alpha=.6, zorder=10
 ):
     """
@@ -1660,7 +1665,7 @@ def validation_all(system='PbPb2760'):
 
     """
     fig, (ax_box, ax_rms) = plt.subplots(
-        nrows=2, figsize=figsize(1.4, aspect=.4),
+        nrows=2, figsize=figsize(1.25, aspect=.4),
         gridspec_kw=dict(height_ratios=[1.5, 1])
     )
 
@@ -1689,7 +1694,7 @@ def validation_all(system='PbPb2760'):
                     np.percentile(Z, [10, 25, 50, 75, 90], axis=0).T,
                     start=index
             ):
-                boxplot(ax_box, percentiles, x=i, box_width=.75, color=color)
+                boxplot(ax_box, percentiles, x=i, box_width=.8, color=color)
 
             rms = 100*np.sqrt(np.square(Y_/Y - 1).mean(axis=0))
             ax_rms.plot(
@@ -1705,7 +1710,7 @@ def validation_all(system='PbPb2760'):
     ax_box.set_xticklabels(ticklabels)
     ax_box.tick_params('x', bottom=False, labelsize=plt.rcParams['font.size'])
 
-    ax_box.set_ylim(-2.5, 2.5)
+    ax_box.set_ylim(-2.25, 2.25)
     ax_box.set_ylabel(r'Normalized residuals')
 
     q, p = np.sqrt(2) * special.erfinv(2*np.array([.75, .90]) - 1)
@@ -1721,7 +1726,7 @@ def validation_all(system='PbPb2760'):
     ax_q.set_ylabel(
         'Normal quantiles',
         fontdict=dict(rotation=-90),
-        labelpad=3*plt.rcParams['axes.labelpad']
+        labelpad=4*plt.rcParams['axes.labelpad']
     )
 
     ax_rms.set_xticks([])
@@ -1751,7 +1756,7 @@ def validation_example(
 
     """
     fig, axes = plt.subplots(
-        ncols=2, figsize=(4., 2.5),
+        ncols=2, figsize=figsize(.9, aspect=.6),
         gridspec_kw=dict(width_ratios=[3, 1])
     )
 
@@ -1774,7 +1779,7 @@ def validation_example(
     ax_scatter.set_aspect('equal')
     ax_scatter.errorbar(
         y_, y, xerr=std_,
-        fmt='o', ms=2.5, mew=.1, mec='white',
+        fmt='o', mew=.2, mec='white',
         color=color, alpha=alpha
     )
     dy = .03*y.ptp()
@@ -1794,7 +1799,7 @@ def validation_example(
     z = (y_ - y)/std_
 
     ax_hist.hist(
-        z, bins=30, range=zrange, normed=True,
+        z, bins=30, range=zrange, normed=True, histtype='stepfilled',
         orientation='horizontal', color=color, alpha=alpha
     )
     x = np.linspace(-zmax, zmax, 1000)
@@ -1805,7 +1810,9 @@ def validation_example(
 
     boxplot(
         ax_hist, np.percentile(z, [10, 25, 50, 75, 90]),
-        x=box_x, box_width=box_width, color=color, alpha=alpha
+        x=box_x, box_width=box_width,
+        line_width=2*plt.rcParams['lines.linewidth'],
+        color=color, alpha=alpha
     )
 
     guide_width = 2.5*box_width
@@ -1836,7 +1843,7 @@ def validation_example(
     ax_q.set_ylabel(
         'Normal quantiles',
         fontdict=dict(rotation=-90),
-        labelpad=3*plt.rcParams['axes.labelpad']
+        labelpad=4*plt.rcParams['axes.labelpad']
     )
 
 

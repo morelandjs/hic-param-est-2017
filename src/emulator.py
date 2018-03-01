@@ -94,12 +94,6 @@ class Emulator:
         
         design = Design(system)
 
-        # modify grid scale range
-        design.max[0] = .6
-        cut = (design.array[:, 0] < .6)
-        design.array = design.array[cut]
-        Y = np.concatenate(Y, axis=1)[cut]
-
         self.npc = npc
         self.nobs = nobs
         self.scaler = StandardScaler(copy=False)

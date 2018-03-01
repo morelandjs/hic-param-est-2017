@@ -94,7 +94,6 @@ class Design:
         self.type = 'validation' if validation else 'main'
 
         self.keys, labels, self.range = map(list, zip(*[
-            ('grid_scale',    r'grid scale',                  (  0.1,    0.5)),  
             ('norm',          r'{Norm}',                      (   12,     28)),
             ('trento_p',      r'p',                           ( -1.0,    1.0)),
             ('fluct_std',     r'\sigma {fluct}',              (  0.0,    2.0)),
@@ -148,8 +147,6 @@ class Design:
     _template = ''.join(
         '{} = {}\n'.format(key, ' '.join(args)) for (key, *args) in
         [[
-            'grid-scale', '{grid_scale}',
-        ], [
             'parton-width', '{parton_width}',
         ], [
             'trento-args',

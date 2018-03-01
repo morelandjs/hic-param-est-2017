@@ -296,21 +296,21 @@ def _observables(posterior=False):
             color = obs_color(obs, subobs)
             scale = opts.get('scale')
 
-            try:
-                x = model.data[system][obs][subobs]['x']
-                Y = (
-                    samples[system][obs][subobs]
-                    if posterior else
-                    model.data[system][obs][subobs]['Y']
-                )
-            except KeyError:
-                continue
+            #try:
+            #    x = model.data[system][obs][subobs]['x']
+            #    Y = (
+            #        samples[system][obs][subobs]
+            #        if posterior else
+            #        model.data[system][obs][subobs]['Y']
+            #    )
+            #except KeyError:
+            #    continue
 
-            if scale is not None:
-                Y = Y*scale
+            #if scale is not None:
+            #    Y = Y*scale
 
-            for y in Y:
-                ax.plot(x, y, color=color, alpha=.08, lw=.3)
+            #for y in Y:
+            #    ax.plot(x, y, color=color, alpha=.08, lw=.3)
 
             try:
                 dset = expt.data[system][obs][subobs]

@@ -204,9 +204,6 @@ class Chain:
         Call each system emulator to predict model output at X.
 
         """
-        # extrapolate to zero grid step size
-        X[:, 0] = 1e-3
-
         return {
             sys: emulators[sys].predict(X[:, :-1], **kwargs)
             for n, sys in enumerate(systems)

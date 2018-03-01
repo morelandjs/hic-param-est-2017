@@ -402,7 +402,7 @@ def observables_posterior():
     _observables(posterior=True)
 
 
-@plot
+#@plot
 def observables_map():
     """
     Model observables and ratio to experiment at the maximum a posteriori
@@ -555,7 +555,7 @@ def observables_map():
     set_tight(fig)
 
 
-@plot
+#@plot
 def find_map():
     """
     Find the maximum a posteriori (MAP) point and compare emulator predictions
@@ -831,7 +831,7 @@ def posterior():
     _posterior(ignore={'etas_hrg'}, scale=1.6, padr=1., padt=.99)
 
 
-@plot
+#@plot
 def posterior_shear():
     _posterior(
         scale=.35, padt=.96, padr=1.,
@@ -839,7 +839,7 @@ def posterior_shear():
     )
 
 
-@plot
+#@plot
 def posterior_bulk():
     _posterior(
         scale=.3, padt=.96, padr=1.,
@@ -847,7 +847,7 @@ def posterior_bulk():
     )
 
 
-@plot
+#@plot
 def posterior_p():
     """
     Distribution of trento p parameter with annotations for other models.
@@ -983,17 +983,17 @@ def _region_shear(mode='full', scale=.6):
     ]), loc='upper left', bbox_to_anchor=(0, 1.03))
 
 
-@plot
+#@plot
 def region_shear():
     _region_shear()
 
 
-@plot
+#@plot
 def region_shear_empty():
     _region_shear('empty')
 
 
-@plot
+#@plot
 def region_shear_examples():
     _region_shear('examples', scale=.5)
 
@@ -1071,22 +1071,22 @@ def _region_bulk(mode='full', scale=.6):
     ax.legend(loc='upper left')
 
 
-@plot
+#@plot
 def region_bulk():
     _region_bulk()
 
 
-@plot
+#@plot
 def region_bulk_empty():
     _region_bulk('empty')
 
 
-@plot
+#@plot
 def region_bulk_examples():
     _region_bulk('examples', scale=.5)
 
 
-@plot
+#@plot
 def flow_corr():
     """
     Symmetric cumulants SC(m, n) at the MAP point compared to experiment.
@@ -1189,7 +1189,7 @@ def flow_corr():
             ax.set_xlabel('Centrality %')
 
 
-@plot
+#@plot
 def flow_extra():
     """
     vn{2} in central bins and v2{4}.
@@ -1261,7 +1261,7 @@ def flow_extra():
     ax.legend(loc='lower right')
 
 
-@plot
+#@plot
 def design():
     """
     Projection of a LH design into two dimensions.
@@ -1369,7 +1369,7 @@ def gp():
     set_tight(fig, h_pad=1)
 
 
-@plot
+#@plot
 def pca():
     fig = plt.figure(figsize=(.45*textwidth, .45*textwidth))
     ratio = 5
@@ -1550,7 +1550,7 @@ def validation_all(system='pPb5020'):
             return r'$d{}/d\eta$'.format(
                 {'Nch': r'N_\mathrm{ch}', 'ET': r'E_T'}[obs[1:-5]])
 
-        id_parts_labels = {'dN_dy': 'dN/dy', 'mean_pT': r'\langle p_T \rangle'}
+        id_parts_labels = {'iden_dN_dy': 'dN/dy', 'iden_mean_pT': r'\langle p_T \rangle'}
         if obs in id_parts_labels:
             return '${}\ {}$'.format(
                 id_parts_labels[obs],
@@ -1630,7 +1630,7 @@ def validation_example(
         system='pPb5020',
         obs='dNch_deta', subobs=None,
         label=r'$dN_\mathrm{ch}/d\eta$',
-        cent=(20, 30)
+        ibin=4
 ):
     """
     Example of emulator validation for a single observable.  Scatterplot of
@@ -1646,15 +1646,14 @@ def validation_example(
     ax_scatter, ax_hist = axes
 
     vdata = model.validation_data[system][obs][subobs]
-    cent_slc = (slice(None), vdata['cent'].index(cent))
-    y = vdata['Y'][cent_slc]
+    y = vdata['Y'][ibin]
 
     mean, cov = emulators[system].predict(
         Design(system, validation=True).array,
         return_cov=True
     )
-    y_ = mean[obs][subobs][cent_slc]
-    std_ = np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal()[cent_slc])
+    y_ = mean[obs][subobs][ibin]
+    std_ = np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal()[ibin])
 
     color = obs_color(obs, subobs)
     alpha = .6
@@ -1671,7 +1670,7 @@ def validation_example(
     ax_scatter.set_xlabel('Emulator prediction')
     ax_scatter.set_ylabel('Model calculation')
     ax_scatter.text(
-        .04, .96, '{} {}–{}%'.format(label, *cent),
+        .04, .96, '{} bin {}'.format(label, ibin),
         horizontalalignment='left', verticalalignment='top',
         transform=ax_scatter.transAxes
     )
@@ -1728,7 +1727,7 @@ def validation_example(
     )
 
 
-default_system = 'PbPb2760'
+default_system = 'pPb5020'
 
 
 @plot
@@ -1812,17 +1811,19 @@ def diag_emu(system=default_system):
             ax.set_xlabel(label)
             ax.set_ylabel('PC {}'.format(ny))
 
+
 @plot
-def validate_grid_extrap(system='pPb5020'):
+def validate_grid_extrap(system=default_system):
     """
     Compare emulator predictions to validation data.
 
     """
     figsize = (textwidth, .4*aspect*textwidth)
     fig, axes = plt.subplots(ncols=4, figsize=figsize)
+    blue = plt.cm.Blues(.6)
 
     emu = emulators[system]
-    X = Design(system, npoints=10, validation=True).array
+    X = Design(system, validation=True).array
     mean, cov = emu.predict(X, return_cov=True)
 
     observables = [
@@ -1832,20 +1833,18 @@ def validate_grid_extrap(system='pPb5020'):
         ('vnk', (3, 2), r'$v_3\{2\}$')
     ]
 
+    # loop over observables
     for ax, (obs, subobs, label) in zip(axes, observables):
 
         # validation data
-        vdata = model.validation_data[system][obs][subobs]
-        Y = vdata['Y']
+        Y = model.validation_data[system][obs][subobs]['Y']
 
         # emulator predictions
         Y_ = mean[obs][subobs]
         S_ = np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal())
 
         # scatter plot predicted against observed
-        for (grid_scale, parton_struct), y, y_, yerr_ in zip(X, Y, Y_, S_):
-            vmin, vmax = (.2, .88)
-            parton_width = vmin + parton_struct*(vmax - vmin)
+        for y, y_, yerr_ in zip(Y, Y_, S_):
             ax.errorbar(y_, y, xerr=2*yerr_, fmt='o', ms=2)
 
         # plot line y=x
@@ -1863,32 +1862,29 @@ def validate_grid_extrap(system='pPb5020'):
 
 
 @plot
-def grid_extrap_obs(system='pPb5020'):
+def grid_extrap_obs(system=default_system, ibin=4):
     """
-    Show the emulator predictions as a function of grid scale.
+    Show the emulator predictions as a function of grid scale
+    in physical space.
 
     """
     figsize = (textwidth, 3*aspect*textwidth)
     fig, axes = plt.subplots(nrows=3, figsize=figsize, sharex=True)
 
-    design = Design(system)
-    X = []
-
-    grid_scales = np.linspace(0, .6, 100)
-    for gs in grid_scales:
-        x = [gs] + [0.5*(a + b) for (a, b) in design.range[1:]]
-        X.append(x)
+    grid_scales = np.linspace(0, .5, 1000)
+    X = [[gs, .5] for gs in grid_scales]
 
     emu = emulators[system]
     mean, cov = emu.predict(np.array(X), return_cov=True)
 
     for ax, (obs, subobslist) in zip(axes, emu.pPb5020):
         for subobs in subobslist:
-            pred = mean[obs][subobs][:, 0]
+            pred = mean[obs][subobs][:, ibin]
             C = cov[(obs, subobs), (obs, subobs)]
-            err = np.sqrt(np.diagonal(C, axis1=1, axis2=2))[:, 0]
+            err = np.sqrt(np.diagonal(C, axis1=1, axis2=2))[:, ibin]
+
             ax.plot(grid_scales, pred, color=plt.cm.Blues(.6))
-            ax.fill_between(grid_scales, pred - err, pred + err,
+            ax.fill_between(grid_scales, pred - 2*err, pred + 2*err,
                             color=plt.cm.Blues(.6), alpha=.4)
 
         ax.axvline(0.2, color=offblack)
@@ -1898,50 +1894,15 @@ def grid_extrap_obs(system='pPb5020'):
         if ax.is_last_row():
             ax.set_xlabel('Grid scale')
 
-@plot
-def grid_extrap_pc(system='pPb5020'):
-    """
-    Train the emulator to predict the 5% smallest grids in the design
-
-    """
-    figsize = (2*textwidth, aspect*textwidth)
-    emu = emulators[system]
-    fig, axes = plt.subplots(ncols=emu.npc, figsize=figsize, sharex=True)
-
-    design = Design(system)
-    X = []
-
-    grid_scales = np.linspace(0, .6, 100)
-    for gs in grid_scales:
-        x = [gs] + [0.5*(a + b) for (a, b) in design.range[1:]]
-        X.append(x)
-
-    gps = emulators[system].gps
-
-    for ny, (gp, ax) in enumerate(zip(gps, axes.flat)):
-        x = gp.X_train_.T
-        y = gp.y_train_
-        ax.plot(x[0], y, 'o', color='.8', ms=1.5)
-
-        mean, error = gp.predict(np.array(X), return_std=True)
-        ax.plot(grid_scales, mean, color=plt.cm.Blues(.6))
-        ax.fill_between(grid_scales, mean - error, mean + error,
-                        color=plt.cm.Blues(.6), alpha=.4, lw=0)
-
-        ax.set_title('PC {}'.format(ny))
-        ax.set_ylim(-4, 4)
-
-        if ax.is_last_row():
-            ax.set_xlabel('Grid scale')
-
-    set_tight()
-
 
 @plot
-def pc_scatter(system='pPb5020'):
+def pc_scatter(system=default_system):
+    """
+    Scatter plot the observable principal components
+    for the design and validation training points.
 
+    """
     emu = emulators[system]
-
     figsize = (textwidth, .5*aspect*textwidth)
     fig = plt.figure(figsize=plt.figaspect(1/emu.npc))
 
@@ -1949,21 +1910,25 @@ def pc_scatter(system='pPb5020'):
     green = plt.cm.Greens(.6)
     orange = plt.cm.Oranges(.6)
 
-    X = Design(system, npoints=40, validation=False).array
-    Zsamples = np.array([gp.sample_y(X, n_samples=10**3) for gp in emu.gps]).T
-    Z = Zsamples.mean(axis=0)
-    dZ = Zsamples.std(axis=0)
+    # emulator predictions
+    X = Design(system, validation=True).array
+    Zsamples = np.array([gp.sample_y(X, n_samples=10**4) for gp in emu.gps])
+    Z = Zsamples.mean(axis=-1)
+    dZ = Zsamples.std(axis=-1)
 
+    # validation results
     Yval = []
     for obs, subobslist in emu.observables:
         for subobs in subobslist:
-            Yval.append(model.validation_data[system][obs][subobs]['Y'])
+            Yobs = model.validation_data[system][obs][subobs]['Y']
+            Yval.append(Yobs)
 
-    Xval = Design(system, npoints=10, validation=True).array
+    Xval = Design(system, validation=True).array
     Yval = np.concatenate(Yval, axis=1)
-    Zval = emu.pca.fit_transform(emu.scaler.fit_transform(Yval))[:, :emu.npc]
+    Zval = emu.pca.transform(emu.scaler.transform(Yval))[:, :emu.npc].T
 
-    for n, (zval, z, dz) in enumerate(zip(Zval.T, Z.T, dZ.T), start=1):
+    # create scatter plot for each PC
+    for n, (z, dz, zval) in enumerate(zip(Z, dZ, Zval), start=1):
         ax = fig.add_subplot(1, emu.npc, n, projection='3d')
 
         # validation
@@ -1981,8 +1946,6 @@ def pc_scatter(system='pPb5020'):
         ax.view_init(15, 200)
 
     plt.show()
-
-
 
 if __name__ == '__main__':
     import argparse

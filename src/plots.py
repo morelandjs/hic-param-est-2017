@@ -1498,7 +1498,7 @@ def validation_example(
     )
 
 
-default_system = 'PbPb2760'
+default_system = 'PbPb5020'
 
 
 @plot
@@ -1582,83 +1582,6 @@ def diag_emu(system=default_system):
             ax.set_xlabel(label)
             ax.set_ylabel('PC {}'.format(ny))
 
-@plot
-def grid_extrap_obs(system='PbPb5020'):
-    """
-    Train the emulator to predict the 5% smallest grids in the design
-
-    """
-    figsize = (textwidth, 3*aspect*textwidth)
-    fig, axes = plt.subplots(nrows=3, figsize=figsize, sharex=True)
-
-    design = Design(system)
-    X = []
-
-    grid_scales = np.linspace(0, .6, 100)
-    for gs in grid_scales:
-        x = [gs] + [0.5*(a + b) for (a, b) in design.range[1:]]
-        X.append(x)
-
-    emu = emulators[system]
-    mean, cov = emu.predict(np.array(X), return_cov=True)
-
-    for ax, (obs, subobslist) in zip(axes, emu.PbPb5020):
-        for subobs in subobslist:
-            pred = mean[obs][subobs][:, 0]
-            C = cov[(obs, subobs), (obs, subobs)]
-            err = np.sqrt(np.diagonal(C, axis1=1, axis2=2))[:, 0]
-            ax.plot(grid_scales, pred, color=plt.cm.Blues(.6))
-            ax.fill_between(grid_scales, pred - err, pred + err,
-                            color=plt.cm.Blues(.6), alpha=.4)
-
-        ax.set_ylabel(obs)
-        if ax.is_last_row():
-            ax.set_xlabel('Grid scale')
-
-@plot
-def grid_extrap_pc(system='PbPb5020'):
-    """
-    Train the emulator to predict the 5% smallest grids in the design
-
-    """
-    figsize = (2*textwidth, aspect*textwidth)
-    fig, axes = plt.subplots(nrows=2, ncols=5, figsize=figsize, sharex=True)
-
-    design = Design(system)
-    X = []
-
-    grid_scales = np.linspace(0, .6, 100)
-    for gs in grid_scales:
-        x = [gs] + [0.5*(a + b) for (a, b) in design.range[1:]]
-        X.append(x)
-
-    gps = emulators[system].gps
-
-    for ny, (gp, ax) in enumerate(zip(gps, axes.flat)):
-        x = gp.X_train_.T
-        y = gp.y_train_
-        ax.plot(x[0], y, 'o', color='.8', ms=1.5)
-
-        mean, error = gp.predict(np.array(X), return_std=True)
-        ax.plot(grid_scales, mean, color=plt.cm.Blues(.6))
-        ax.fill_between(grid_scales, mean - error, mean + error,
-                        color=plt.cm.Blues(.6), alpha=.4, lw=0)
-
-        ax.set_title('PC {}'.format(ny))
-        ax.set_ylim(-4, 4)
-
-        if ax.is_last_row():
-            ax.set_xlabel('Grid scale')
-
-    #for ny, (gp, row) in enumerate(zip(gps, axes)):
-    #    y = gp.y_train_
-
-    #    for nx, (x, label, xlim, ax) in enumerate(zip(
-    #            gp.X_train_.T, design.labels, design.range, row
-    #    )):
-    #        ax.plot(x, y, 'o', ms=.8, color='.75', zorder=10)
-
-    set_tight()
 
 if __name__ == '__main__':
     import argparse

@@ -12,8 +12,6 @@ import yaml
 
 from . import cachedir, systems
 
-import matplotlib.pyplot as plt
-
 
 class HEPData:
     """

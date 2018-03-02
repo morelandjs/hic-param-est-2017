@@ -228,8 +228,8 @@ def main():
     )
     args = parser.parse_args()
 
-    for system, validation in itertools.product(systems, [False, True]):
-        Design(system, validation=validation).write_files(args.inputs_dir)
+    for system in systems:
+        Design(system, validation=False).write_files(args.inputs_dir)
 
     logging.info('wrote all files to %s', args.inputs_dir)
 

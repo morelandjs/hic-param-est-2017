@@ -185,7 +185,7 @@ class Design:
         for point, row in zip(self.points, self.array):
             kwargs = dict(
                 zip(self.keys, row),
-                projectiles=self.projectiles,
+                projectiles=' '.join(self.projectiles),
                 cross_section={
                     # sqrt(s) [GeV] : sigma_NN [fm^2]
                     200: 4.2,

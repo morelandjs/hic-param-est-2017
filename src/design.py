@@ -147,10 +147,11 @@ class Design:
     _template = ''.join(
         '{} = {}\n'.format(key, ' '.join(args)) for (key, *args) in
         [[
+            'projectiles', '{projectiles}',
+        ], [
             'parton-width', '{parton_width}',
         ], [
             'trento-args',
-            '{projectiles[0]} {projectiles[1]}',
             '--cross-section {cross_section}',
             '--normalization {norm}',
             '--reduced-thickness {trento_p}',

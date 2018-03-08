@@ -48,13 +48,13 @@ from .design import Design
 from .emulator import emulators
 
 
-# fontsmall, fontnormal, fontlarge = 5, 6, 7
-# aspect = 1/1.618
-# resolution = 72.27
-# textwidth = 307.28987/resolution
-# textheight = 261.39864/resolution
-# fullwidth = 350/resolution
-# fullheight = 270/resolution
+fontsmall, fontnormal, fontlarge = 5, 6, 7
+aspect = 1/1.618
+resolution = 72.27
+textwidth = 307.28987/resolution
+textheight = 261.39864/resolution
+fullwidth = 350/resolution
+fullheight = 270/resolution
 
 fontsize = dict(
     large=11,
@@ -2102,6 +2102,9 @@ def cms_radius(npartons=1, sampling_radius=.88, parton_width=.88, size=10**4):
         return np.sqrt(np.average(rr_sq, weights=rho/rr))
 
     # ensemble averaged rms radius
+    logging.info(
+        "calculating rms proton radius, npartons = {}".format(npartons)
+    )
     return np.mean([rms_radius(proton(quarks)) for quarks in protons.T], axis=0)
 
 
@@ -2126,7 +2129,7 @@ def proton_radius():
             npartons=npartons,
             sampling_radius=sampling_radius,
             parton_width=parton_width,
-            size=10**5
+            size=10**6
         ) for npartons in nparton_values
     ]
 
@@ -2143,8 +2146,8 @@ def proton_radius():
     )
 
     # plot attributes
-    plt.xlabel('Parton number')
-    plt.ylabel('Proton rms radius [fm]')
+    plt.xlabel('parton number')
+    plt.ylabel('proton rms radius [fm]')
     plt.ylim(0, 1)
     set_tight()
 

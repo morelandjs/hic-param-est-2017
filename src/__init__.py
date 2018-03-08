@@ -1,4 +1,4 @@
-""" Bayesian parameter estimation for relativistic heavy-ion collisions """
+""" Project initialization and common objects. """
 
 import logging
 import os
@@ -18,6 +18,12 @@ workdir = Path(os.getenv('WORKDIR', '.'))
 cachedir = workdir / 'cache'
 cachedir.mkdir(parents=True, exist_ok=True)
 
+#: Sets the collision systems for the entire project,
+#: where each system is a string of the form
+#: ``'<projectile 1><projectile 2><beam energy in GeV>'``,
+#: such as ``'PbPb2760'``, ``'AuAu200'``, ``'pPb5020'``.
+#: Even if the project uses only a single system,
+#: this should still be a list of one system string.
 systems = ['pPb5020', 'PbPb5020']
 
 

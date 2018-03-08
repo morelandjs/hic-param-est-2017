@@ -1,4 +1,40 @@
-""" model output """
+"""
+Computes model observables to match experimental data.
+Prints all model data when run as a script.
+
+Model data files are expected with the file structure
+:file:`model_output/{design}/{system}/{design_point}.dat`, where
+:file:`{design}` is a design type, :file:`{system}` is a system string, and
+:file:`{design_point}` is a design point name.
+
+For example, the structure of my :file:`model_output` directory is ::
+
+    model_output
+    ├── main
+    │   ├── PbPb2760
+    │   │   ├── 000.dat
+    │   │   └── 001.dat
+    │   └── PbPb5020
+    │       ├── 000.dat
+    │       └── 001.dat
+    └── validation
+        ├── PbPb2760
+        │   ├── 000.dat
+        │   └── 001.dat
+        └── PbPb5020
+            ├── 000.dat
+            └── 001.dat
+
+I have two design types (main and validation), two systems, and my design
+points are numbered 000-499 (most numbers omitted for brevity).
+
+Data files are expected to have the binary format created by my `heavy-ion
+collision event generator
+<https://github.com/jbernhard/heavy-ion-collisions-osg>`_.
+
+Of course, if you have a different data organization scheme and/or format,
+that's fine.  Modify the code for your needs.
+"""
 
 import logging
 from pathlib import Path
@@ -60,7 +96,7 @@ def corr2(Qn, N):
     return (csq(Qn) - N).sum() / (N*(N - 1)).sum()
 
 
-def symmetric_cumulant(events, m, n):
+def symmetric_cumulant(events, m, n, normalize=False):
     """
     Compute the symmetric cumulant SC(m, n).
 
@@ -80,7 +116,12 @@ def symmetric_cumulant(events, m, n):
     cm2 = corr2(Q[m], N)
     cn2 = corr2(Q[n], N)
 
-    return cm2n2 - cm2*cn2
+    sc = cm2n2 - cm2*cn2
+
+    if normalize:
+        sc /= cm2*cn2
+
+    return sc
 
 
 # fully specify numeric data types, including endianness and size, to
@@ -98,6 +139,7 @@ class ModelData:
     """
     species = ['pion', 'kaon', 'proton', 'Lambda', 'Sigma0', 'Xi', 'Omega']
 
+    #: The expected binary data type.
     dtype = np.dtype([
         ('trigger', (float_t, 2)),
         ('init_entropy', float_t),
@@ -182,7 +224,9 @@ class ModelData:
 
             if obs.startswith('sc'):
                 mn = obs_stack.pop()
-                return lambda events: symmetric_cumulant(events, *mn)
+                return lambda events: symmetric_cumulant(
+                    events, *mn, normalize='normed' in obs
+                )
 
         compute_bin = _compute_bin()
 
@@ -213,21 +257,31 @@ class ModelData:
         return {'x': x, bin_type: bins, 'Y': Y}
 
 
-def _data(system, validation=False):
+def _data(system, dataset='main'):
     """
-    Compute training or validation data (model observables at all design
-    points) for the given system.
+    Compute model observables for the given system and dataset.
+
+    dataset may be one of:
+
+        - 'main' (training design)
+        - 'validation' (validation design)
+        - 'map' (maximum a posteriori, i.e. "best-fit" point)
 
     """
-    design = Design(system, validation=validation)
+    if dataset not in {'main', 'validation', 'map'}:
+        raise ValueError('invalid dataset: {}'.format(dataset))
 
-    # expected filenames for each design point
-    files = [
-        Path(workdir, 'model_output', design.type, system, '{}.dat'.format(p))
-        for p in design.points
-    ]
+    files = (
+        [Path(workdir, 'model_output', dataset, '{}.dat'.format(system))]
+        if dataset == 'map' else
+        [
+            Path(workdir, 'model_output', dataset, system, '{}.dat'.format(p))
+            for p in
+            Design(system, validation=(dataset == 'validation')).points
+        ]
+    )
 
-    cachefile = Path(cachedir, 'model', design.type, '{}.pkl'.format(system))
+    cachefile = Path(cachedir, 'model', dataset, '{}.pkl'.format(system))
 
     if cachefile.exists():
         # use the cache unless any of the model data files are newer
@@ -245,7 +299,7 @@ def _data(system, validation=False):
 
     logging.info(
         'loading %s/%s data and computing observables',
-        system, design.type
+        system, dataset
     )
 
     data = expt.data[system]
@@ -270,8 +324,9 @@ def _data(system, validation=False):
     return data
 
 
-data = lazydict(_data)
-validation_data = lazydict(_data, validation=True)
+data = lazydict(_data, 'main')
+validation_data = lazydict(_data, 'validation')
+map_data = lazydict(_data, 'map')
 
 
 if __name__ == '__main__':

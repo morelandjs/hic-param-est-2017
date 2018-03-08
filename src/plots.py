@@ -19,6 +19,7 @@ from matplotlib import cm
 
 from scipy import special
 from scipy.interpolate import PchipInterpolator
+from scipy.ndimage.measurements import center_of_mass
 from sklearn.decomposition import PCA
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
@@ -1581,6 +1582,94 @@ def diag_emu(system=default_system):
 
             ax.set_xlabel(label)
             ax.set_ylabel('PC {}'.format(ny))
+
+
+def cms_radius(npartons=1, sampling_radius=.88, parton_width=.88, size=10**4):
+    """
+    Find center-of-mass RMS radius for an ensemble of sampled protons
+    with partonic substructure
+
+    """
+    # parton sampling radius
+    size = 2*npartons*int(size / (2*npartons))
+    parton_radius = np.sqrt(sampling_radius**2 - parton_width**2)
+
+    # sample protons
+    protons = np.random.normal(
+        scale=parton_radius, size=size
+    ).reshape(npartons, 2, -1)
+
+    # recenter
+    centers = protons.mean(axis=0)
+    protons -= centers
+
+    # mesh grid
+    l = np.linspace(-4*sampling_radius, 4*sampling_radius, 10**2)
+    xx, yy = np.meshgrid(l, l)
+
+    # mesh grid radii
+    rr_sq = xx**2 + yy**2
+    rr = np.sqrt(rr_sq)
+
+    # place a quark
+    def quark(xx, yy):
+        norm = 1/(2*np.pi*parton_width**2*npartons)
+        return norm * np.exp(-(xx**2 + yy**2)/(2*parton_width**2))
+
+    # place a proton
+    def proton(quarks):
+        return np.sum([quark(xx-xi, yy-yi) for (xi, yi) in quarks.T], axis=0)
+
+    # proton rms radius in cms frame
+    def rms_radius(rho):
+        return np.sqrt(np.average(rr_sq, weights=rho/rr))
+
+    # ensemble averaged rms radius
+    return np.mean([rms_radius(proton(quarks)) for quarks in protons.T], axis=0)
+
+
+@plot
+def proton_radius():
+    """
+    Protons rms radius in the center of mass frame, as a function of parton
+    number
+
+    """
+    # figure size
+    plt.figure(figsize=(textwidth, aspect*textwidth))
+
+    # proton dimensions
+    sampling_radius = .88
+    parton_width = .2
+    nparton_values = list(range(1, 11))
+
+    # protons rms radii in com frame
+    radii = [
+        cms_radius(
+            npartons=npartons,
+            sampling_radius=sampling_radius,
+            parton_width=parton_width,
+            size=10**5
+        ) for npartons in nparton_values
+    ]
+
+    # plot model results
+    plt.plot(nparton_values, radii, 'o', label='parton number')
+    plt.axhline(sampling_radius, color=offblack, label='sampling radius')
+
+    # annotate parameters
+    plt.annotate(
+        '\n'.join([
+            r'proton sampling radius${} = .88$ fm',
+            r'parton width${} = .2$ fm'
+        ]), xy=(.95, .05), xycoords='axes fraction', ha='right'
+    )
+
+    # plot attributes
+    plt.xlabel('Parton number')
+    plt.ylabel('Proton rms radius [fm]')
+    plt.ylim(0, 1)
+    set_tight()
 
 
 if __name__ == '__main__':

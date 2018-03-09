@@ -159,14 +159,14 @@ def plot(f):
     return wrapper
 
 
-def figsize(relwidth=1, aspect=.618, refwidth=6):
+def figsize(relwidth=1, aspect=.618, refwidth=6, nrows=1, ncols=1):
     """
     Return figure dimensions from a relative width (to a reference width) and
     aspect ratio (default: 1/golden ratio).
 
     """
     width = relwidth * refwidth
-    return width, width*aspect
+    return width, width*aspect/ncols*nrows
 
 
 def set_tight(fig=None, **kwargs):
@@ -2149,6 +2149,57 @@ def proton_radius():
     plt.xlabel('parton number')
     plt.ylabel('proton rms radius [fm]')
     plt.ylim(0, 1)
+    set_tight()
+
+
+@plot
+def grid_error():
+    """
+    Scatter plot observables calculated on a grid with grid scale = 0.2 against
+    observables calculated on a grid with grid scale = 0.1.
+
+    """
+    obs_list = [
+        (['dNch_deta'], r'$dN_\mathrm{ch}/d\eta$'),
+        (['mean_pT', 'pT'], r'mean $p_T$ [GeV]'),
+        (['flow', 'cms', 'Qn', 1], r'$|Q_2|$'),
+        (['flow', 'cms', 'Qn', 2], r'$|Q_3|$'),
+    ]
+
+    fig, axes = plt.subplots(
+        ncols=2, nrows=2, figsize=figsize(aspect=1, nrows=2, ncols=2)
+    )
+
+    events_dir = Path("/var/phy/project/nukeserv/jsm55/hic-events/qm18-grid-size")
+
+    fine_grid, coarse_grid = [
+        model.ModelData(
+            'pPb5020', *Path(events_dir / "grid-scale-{}".format(gs)).glob('*.dat')
+        ).events for gs in (0.1, 0.2)
+    ]
+
+    def read(events, obs):
+        obs = obs.copy()
+        if obs:
+            events = events[obs.pop(0)]
+            return read(events, obs)
+        return np.absolute(events) if any(np.iscomplex(events)) else events
+
+    for ax, (obs, label) in zip(axes.flat, obs_list):
+        x = read(fine_grid[0], obs)
+        y = read(coarse_grid[0], obs)
+        ax.scatter(x, y)
+
+        xy_max = np.max(np.append(x, y))
+        ax.plot((0, xy_max), (0, xy_max), color=offblack)
+
+        if ax.is_last_row():
+            ax.set_xlabel('grid scale 0.2')
+        if ax.is_first_col():
+            ax.set_ylabel('grid scale 0.1')
+
+        ax.set_title(label, y=.9)
+
     set_tight()
 
 

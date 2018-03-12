@@ -45,12 +45,13 @@ from .emulator import emulators
 
 
 # fontsmall, fontnormal, fontlarge = 5, 6, 7
-# aspect = 1/1.618
-# resolution = 72.27
-# textwidth = 307.28987/resolution
-# textheight = 261.39864/resolution
-# fullwidth = 350/resolution
-# fullheight = 270/resolution
+# XXX deprecated variables
+aspect = 1/1.618
+resolution = 72.27
+textwidth = 307.28987/resolution
+textheight = 261.39864/resolution
+fullwidth = 350/resolution
+fullheight = 270/resolution
 
 fontsize = dict(
     large=11,
@@ -201,10 +202,10 @@ def format_system(system):
     Format a system string into a display name, e.g.:
 
     >>> format_system('PbPb2760')
-    'Pb+Pb 2.76 TeV'
+    'Pb-Pb 2.76 TeV'
 
     >>> format_system('AuAu200')
-    'Au+Au 200 GeV'
+    'Au-Au 200 GeV'
 
     """
     proj, energy = parse_system(system)
@@ -215,7 +216,7 @@ def format_system(system):
     else:
         prefix = 'G'
 
-    return '{} {} {}eV'.format('+'.join(proj), energy, prefix)
+    return '{} {} {}eV'.format('-'.join(proj), energy, prefix)
 
 
 def darken(rgb, amount=.5):
@@ -353,7 +354,6 @@ def _observables(posterior=False):
 
     fig, axes = plt.subplots(
         nrows=len(plots), ncols=len(systems),
-        # figsize=(.8*fullwidth, fullwidth),
         figsize=figsize(1.1, aspect=1.25),
         gridspec_kw=dict(
             height_ratios=[p.get('height_ratio', 1) for p in plots]
@@ -407,7 +407,7 @@ def _observables(posterior=False):
                 yerr = yerr*scale
 
             ax.errorbar(
-                x, y, yerr=yerr, fmt='o',# ms=1.7,
+                x, y, yerr=yerr, fmt='o',
                 capsize=0, color='.25', zorder=1000
             )
 
@@ -485,7 +485,7 @@ def observables_map():
 
     fig, axes = plt.subplots(
         nrows=4, ncols=ncols,
-        figsize=(.8*fullwidth, .4*ncols*fullwidth),
+        figsize=figsize(1.1, aspect=2/ncols),
         gridspec_kw=dict(
             height_ratios=list(itertools.chain.from_iterable(
                 (p.get('height_ratio', 1), .4) for p in plots[::ncols]
@@ -543,11 +543,13 @@ def observables_map():
                 if yerrsys is not None:
                     yerrsys = yerrsys*scale
 
+            c = '.25'
             handles['expt'][system] = ax.errorbar(
-                x, yexp, yerr=yerrstat, fmt='o', ms=1.7,
-                capsize=0, color=offblack,
-                mfc=(offblack if fill_markers else '.9'),
-                mec=offblack, mew=(0 if fill_markers else .25),
+                x, yexp, yerr=yerrstat, fmt='o',
+                capsize=0, color=c,
+                mec=c, mfc=(c if fill_markers else '.9'),
+                mew=((.2 if fill_markers else .5) *
+                     plt.rcParams['lines.linewidth']),
                 zorder=1000
             )
 
@@ -589,13 +591,17 @@ def observables_map():
             size=plt.rcParams['axes.labelsize']
         )
 
-        ratio_ax.axhline(1, lw=.5, color='0.5', zorder=-100)
+        ratio_ax.axhline(
+            1,
+            linewidth=plt.rcParams['ytick.major.width'], color='0.5',
+            zorder=-100
+        )
         ratio_ax.axhspan(.9, 1.1, color='0.93', zorder=-200)
         ratio_ax.set_ylim(.85, 1.15)
         ratio_ax.set_ylabel('Ratio')
         ratio_ax.text(
             ratio_ax.get_xlim()[1], .9, '±10%',
-            color='.6', zorder=-50,
+            color='.5', zorder=-50,
             ha='right', va='bottom',
             size=plt.rcParams['xtick.labelsize']
         )
@@ -764,9 +770,9 @@ def format_ci(samples, ci=.9):
 
     # decide precision for formatting numbers
     # this is NOT general but it works for the present data
-    if abs(median) < .2 and ul < .02:
+    if abs(median) < .05 or (uh + ul) < abs(median) < .5:
         precision = 3
-    elif abs(median) < 1:
+    elif abs(median) < 5:
         precision = 2
     else:
         precision = 1
@@ -782,7 +788,7 @@ def format_ci(samples, ci=.9):
 
 def _posterior(
         params=None, ignore=None,
-        scale=1, padr=.99, padt=.98,
+        padr=1, padt=.98,
         cmap=None
 ):
     """
@@ -815,7 +821,6 @@ def _posterior(
     fig, axes = plt.subplots(
         nrows=ndim, ncols=ndim,
         sharex='col', sharey='row',
-        # figsize=2*(scale*fullheight,)
         figsize=figsize(.15*ndim, aspect=1)
     )
 
@@ -849,23 +854,23 @@ def _posterior(
         )
         axes[nx][ny].set_axis_off()
 
+    for ax in axes.flat:
+        ax.tick_params(length=2/3*plt.rcParams['xtick.major.size'])
+
     for key, label, axb, axl in zip(keys, labels, axes[-1], axes[:, 0]):
         for axis in [axb.xaxis, axl.yaxis]:
             axis.set_label_text(
                 label.replace(r'\ [', '$\n$['),
-                # fontsize=fontsize['tiny']
             )
-            axis.set_tick_params(labelsize=7/8*fontsize['tiny'])
+            axis.set_tick_params(labelsize=fontsize['tiny'])
             if key == 'dmin3':
                 ticks = [0., 1.2, 1.5, 1.7]
                 axis.set_ticklabels(list(map(str, ticks)))
                 axis.set_ticks([t**3 for t in ticks])
             else:
                 axis.set_major_locator(ticker.LinearLocator(3))
-                if (
-                        axis.axis_name == 'x'
-                        and scale / ndim < .13
-                        and any(len(str(x)) > 4 for x in axis.get_ticklocs())
+                if axis.axis_name == 'x' and any(
+                        len(str(round(x, 5))) > 4 for x in axis.get_ticklocs()
                 ):
                     for t in axis.get_ticklabels():
                         t.set_rotation(30)
@@ -875,12 +880,12 @@ def _posterior(
         axl.get_yticklabels()[0].set_verticalalignment('bottom')
         axl.get_yticklabels()[-1].set_verticalalignment('top')
 
-    set_tight(fig, pad=.05, h_pad=.1, w_pad=.1, rect=[0., 0., padr, padt])
+    set_tight(fig, pad=0, w_pad=-.1, h_pad=-.1, rect=[0, 0, padr, padt])
 
 
 @plot
 def posterior():
-    _posterior(ignore={'etas_hrg'}, scale=1.6, padr=1., padt=.99)
+    _posterior(ignore={'etas_hrg'}, padr=1., padt=.99)
 
 
 @plot
@@ -905,7 +910,7 @@ def posterior_p():
     Distribution of trento p parameter with annotations for other models.
 
     """
-    plt.figure(figsize=(.65*textwidth, .25*textwidth))
+    plt.figure(figsize=figsize(.8, .35))
     ax = plt.axes()
 
     data = mcmc.Chain().load('trento_p').ravel()
@@ -933,7 +938,7 @@ def posterior_p():
         ax.plot(*args, lw=4, ms=4, color=offblack, alpha=.58, clip_on=False)
 
         if label.startswith('EKRT'):
-            x -= .275
+            x -= .29
 
         ax.text(x, .05, label, va='bottom', ha='center')
 
@@ -941,15 +946,12 @@ def posterior_p():
     ax.set_xticks(np.arange(-10, 11, 5)/10)
     ax.set_xticks(np.arange(-75, 76, 50)/100, minor=True)
 
-    for t in ax.get_xticklabels():
-        t.set_y(-.03)
-
     xm = 1.2
     ax.set_xlim(-xm, xm)
     ax.add_artist(
         patches.FancyArrowPatch(
             (-xm, 0), (xm, 0),
-            linewidth=.6,
+            linewidth=plt.rcParams['axes.linewidth'],
             arrowstyle=patches.ArrowStyle.CurveFilledAB(
                 head_length=3, head_width=1.5
             ),
@@ -962,6 +964,71 @@ def posterior_p():
     ax.set_ylim(0, 1.01*y.max())
 
     set_tight(pad=0)
+
+
+@plot
+def region_shear_bulk(cmap=plt.cm.Blues):
+    """
+    Visual estimates (posterior median and credible region) of the
+    temperature-dependent shear and bulk viscosity.
+
+    """
+    fig, axes = plt.subplots(ncols=2, figsize=figsize(1, .4))
+
+    Tmin, Tmax = .150, .300
+    Tc = .154
+
+    chain = mcmc.Chain()
+
+    for (name,  var, keys, function, ymax), ax in zip([
+            ('shear', 'eta', ['min', 'slope', 'crv'],
+             lambda T, m, s, c: m + s*(T - Tc)*(T/Tc)**c,
+             .4),
+            ('bulk', 'zeta', ['max', 'width', 't0'],
+             lambda T, m, w, T0: m / (1 + ((T - T0)/w)**2),
+             .08)
+    ], axes):
+        samples = chain.load(*['{}s_{}'.format(var, k) for k in keys])
+
+        T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
+        ax.plot(
+            T, function(T, *np.median(samples, axis=0)),
+            color=cmap(.75), label='Posterior median'
+        )
+
+        Tsparse = np.linspace(T[0], T[-1], 25)
+        intervals = [
+            PchipInterpolator(Tsparse, y)(T)
+            for y in np.array([
+                mcmc.credible_interval(function(t, *samples.T))
+                for t in Tsparse
+            ]).T
+        ]
+        ax.fill_between(
+            T, *intervals,
+            color=cmap(.3), label='90% credible region'
+        )
+
+        ax.set_xlim(Tmin, Tmax)
+        ax.set_ylim(0, ymax)
+        auto_ticks(ax, nbins=5)
+        ax.xaxis.set_major_formatter(
+            ticker.FuncFormatter(lambda x, pos: int(1000*x))
+        )
+
+        ax.set_xlabel('Temperature [MeV]')
+        ax.set_ylabel(r'$\{}/s$'.format(var))
+        ax.set_title(name.capitalize() + ' viscosity')
+
+        if name == 'shear':
+            ax.axhline(
+                1/(4*np.pi),
+                color='.5', linewidth=plt.rcParams['ytick.major.width']
+            )
+            ax.text(Tmax, .07, r'$1/4\pi$', va='top', ha='right', color='.3')
+            ax.legend(loc='upper left')
+
+    set_tight(w_pad=.2)
 
 
 region_style = dict(color='.93', zorder=-100)
@@ -1145,13 +1212,12 @@ def flow_corr():
 
     """
     fig, axes = plt.subplots(
-        figsize=(textwidth, .75*textwidth),
-        nrows=2, ncols=2, gridspec_kw=dict(width_ratios=[2, 3])
+        figsize=figsize(1.05, .7),
+        nrows=2, ncols=2, gridspec_kw=dict(width_ratios=[.8, 1])
     )
 
     cmapx_normal = .7
     cmapx_pred = .5
-    dashes_pred = [3, 2]
 
     def label(*mn, normed=False):
         fmt = r'\mathrm{{SC}}({0}, {1})'
@@ -1179,7 +1245,7 @@ def flow_corr():
             kwargs = {}
 
             if pred:
-                kwargs.update(dashes=dashes_pred)
+                kwargs.update(linestyle='dashed')
 
             if ax.is_first_col() and ax.is_first_row():
                 fmt = '{:.2f} TeV'
@@ -1209,7 +1275,8 @@ def flow_corr():
 
             ax.errorbar(
                 x, y, yerr=yerr['stat'],
-                fmt='o', ms=2, capsize=0, color='.25', zorder=100
+                fmt='o', ms=.8*plt.rcParams['lines.markersize'],
+                capsize=0, color='.25', zorder=100
             )
 
             ax.fill_between(
@@ -1218,7 +1285,7 @@ def flow_corr():
             )
 
         ax.axhline(
-            0, color='.75', lw=plt.rcParams['xtick.major.width'],
+            0, color='.5', lw=plt.rcParams['xtick.major.width'],
             zorder=-100
         )
 
@@ -1226,14 +1293,15 @@ def flow_corr():
 
         auto_ticks(ax, nbins=6, minor=2)
 
-        ax.legend(loc='best')
+        if all(ax.get_legend_handles_labels()):
+            ax.legend(loc='best')
 
         if ax.is_first_col():
             ax.set_ylabel(label('m', 'n', normed='normed' in obs))
 
         if ax.is_first_row():
             ax.set_title(
-                'Most central collisions'
+                'Central'
                 if 'central' in obs else
                 'Minimum bias'
             )

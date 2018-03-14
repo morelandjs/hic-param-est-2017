@@ -165,8 +165,6 @@ class Design:
         [[
             'projectiles', '{projectiles}',
         ], [
-            'random-seed', '{random_seed}',
-        ], [
             'parton-width', '{parton_width}',
         ], [
             'trento-args',
@@ -229,7 +227,6 @@ class Design:
                 dmin=kwargs.pop('dmin3')**(1/3),
                 parton_number=parton_number,
                 parton_width=min(parton_width, nucleon_width),
-                random_seed=np.random.randint(1, 10**9)
             )
             filepath = outdir / point
             with filepath.open('w') as f:

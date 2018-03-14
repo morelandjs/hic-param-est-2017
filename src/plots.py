@@ -2153,50 +2153,60 @@ def proton_radius():
 
 
 @plot
-def grid_error():
+def grid_error(system='pPb5020'):
     """
     Scatter plot observables calculated on a grid with grid scale = 0.2 against
     observables calculated on a grid with grid scale = 0.1.
 
     """
     obs_list = [
-        (['dNch_deta'], r'$dN_\mathrm{ch}/d\eta$'),
-        (['mean_pT', 'pT'], r'mean $p_T$ [GeV]'),
-        (['flow', 'cms', 'Qn', 1], r'$|Q_2|$'),
-        (['flow', 'cms', 'Qn', 2], r'$|Q_3|$'),
+        ('dNch_deta', r'$dN_\mathrm{ch}/d\eta$'),
+        ('mean_pT', r'mean $p_T$ [GeV]'),
+        ('v2', r'$|Q_2|/M$'),
+        ('v3', r'$|Q_3|/M$'),
     ]
 
     fig, axes = plt.subplots(
         ncols=2, nrows=2, figsize=figsize(aspect=1, nrows=2, ncols=2)
     )
 
-    events_dir = Path("/var/phy/project/nukeserv/jsm55/hic-events/qm18-grid-size")
+    fine_design_points, coarse_design_points = (
+        [Path(
+            '/var/phy/project/nukeserv/jsm55',
+            'hic-events/qm18-grid-scale',
+            'grid-scale-{}'.format(gs),
+            'events/{}.dat'.format(p)
+        ) for p in Design(system).points if int(p) != 228]
+        for gs in (.1, .2)
+    )
 
-    fine_grid, coarse_grid = [
-        model.ModelData(
-            'pPb5020', *Path(events_dir / "grid-scale-{}".format(gs)).glob('*.dat')
-        ).events for gs in (0.1, 0.2)
+    fine_events, coarse_events = [
+        model.ModelData(system, *design_points).events
+        for design_points in (fine_design_points, coarse_design_points)
     ]
 
-    def read(events, obs):
-        obs = obs.copy()
-        if obs:
-            events = events[obs.pop(0)]
-            return read(events, obs)
-        return np.absolute(events) if any(np.iscomplex(events)) else events
+    def obs(event, name):
+        flow = event['flow']['cms']
+        TINY = 1e-12
+        return dict(
+            dNch_deta=event['dNch_deta'],
+            mean_pT=event['mean_pT']['pT'],
+            v2=np.absolute(flow['Qn'][1])/(flow['N'] + TINY),
+            v3=np.absolute(flow['Qn'][2])/(flow['N'] + TINY),
+        )[name]
 
-    for ax, (obs, label) in zip(axes.flat, obs_list):
-        x = read(fine_grid[0], obs)
-        y = read(coarse_grid[0], obs)
+    for ax, (name, label) in zip(axes.flat, obs_list):
+        x = [obs(ev, name) for ev in itertools.chain(*fine_events)]
+        y = [obs(ev, name) for ev in itertools.chain(*coarse_events)]
         ax.scatter(x, y)
 
-        xy_max = np.max(np.append(x, y))
+        xy_max = np.nanmax(np.append(x, y))
         ax.plot((0, xy_max), (0, xy_max), color=offblack)
 
         if ax.is_last_row():
-            ax.set_xlabel('grid scale 0.2')
+            ax.set_xlabel('grid scale 0.1')
         if ax.is_first_col():
-            ax.set_ylabel('grid scale 0.1')
+            ax.set_ylabel('grid scale 0.2')
 
         ax.set_title(label, y=.9)
 

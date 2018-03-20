@@ -788,7 +788,7 @@ def format_ci(samples, ci=.9):
 
 def _posterior(
         params=None, ignore=None,
-        padr=1, padt=.98,
+        scale=1, pad_subplots=-.1, rect_r=1, rect_t=.99,
         cmap=None
 ):
     """
@@ -821,7 +821,7 @@ def _posterior(
     fig, axes = plt.subplots(
         nrows=ndim, ncols=ndim,
         sharex='col', sharey='row',
-        figsize=figsize(.15*ndim, aspect=1)
+        figsize=figsize(.15*scale*ndim, aspect=1)
     )
 
     for samples, key, lim, ax in zip(data, keys, ranges, axes.diagonal()):
@@ -880,27 +880,30 @@ def _posterior(
         axl.get_yticklabels()[0].set_verticalalignment('bottom')
         axl.get_yticklabels()[-1].set_verticalalignment('top')
 
-    set_tight(fig, pad=0, w_pad=-.1, h_pad=-.1, rect=[0, 0, padr, padt])
+    set_tight(
+        fig, pad=0, w_pad=pad_subplots, h_pad=pad_subplots,
+        rect=(0, 0, rect_r, rect_t)
+    )
 
 
 @plot
 def posterior():
-    _posterior(ignore={'etas_hrg'}, padr=1., padt=.99)
+    _posterior(ignore={'etas_hrg'})
 
 
 @plot
 def posterior_shear():
     _posterior(
-        scale=.35, padt=.96, padr=1.,
-        params={'etas_min', 'etas_slope', 'etas_curv'}
+        scale=1.35, pad_subplots=.1, rect_t=.97,
+        params={'etas_min', 'etas_slope', 'etas_crv'}
     )
 
 
 @plot
 def posterior_bulk():
     _posterior(
-        scale=.3, padt=.96, padr=1.,
-        params={'zetas_max', 'zetas_width'}
+        scale=1.35, pad_subplots=.1, rect_t=.97,
+        params={'zetas_max', 'zetas_width', 'zetas_t0'}
     )
 
 
@@ -1868,7 +1871,7 @@ def validation_example(
     z = (y_ - y)/std_
 
     ax_hist.hist(
-        z, bins=30, range=zrange, normed=True, histtype='stepfilled',
+        z, bins=30, range=zrange, density=True, histtype='stepfilled',
         orientation='horizontal', color=color, alpha=alpha
     )
     x = np.linspace(-zmax, zmax, 1000)

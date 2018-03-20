@@ -110,7 +110,7 @@ class Design:
         self.type = 'validation' if validation else 'main'
 
         self.keys, labels, self.range = map(list, zip(*[
-            ('norm',          r'{Norm}',                      (   12,     28)),
+            ('norm',          r'{Norm}',                      (    9,     28)),
             ('trento_p',      r'p',                           ( -1.0,    1.0)),
             ('fluct_std',     r'\sigma {fluct}',              (  0.0,    2.0)),
             ('nucleon_width', r'w [{fm}]',                    (  0.4,    1.2)),

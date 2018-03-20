@@ -104,7 +104,7 @@ class Emulator:
                 self._slices[obs][subobs] = slice(nobs, nobs + n)
                 nobs += n
 
-        design = Design(system)
+        Y = np.concatenate(Y, axis=1)
 
         self.npc = npc
         self.nobs = nobs
@@ -117,7 +117,7 @@ class Emulator:
 
         # Define kernel (covariance function):
         # Gaussian correlation (RBF) plus a noise term.
-        #design = Design(system)
+        design = Design(system)
         ptp = design.max - design.min
         kernel = (
             1. * kernels.RBF(

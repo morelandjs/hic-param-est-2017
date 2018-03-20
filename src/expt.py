@@ -256,10 +256,10 @@ def pPb5020_mean_pT():
         for x in dset.x('MULT(P=3)')
     ]
 
-    x = [
+    x = np.array([
         round(0.5*(x['low'] + x['high'])/mean_nch, 3)
         for x in dset.x('MULT(P=3)')
-    ]
+    ])
 
     y, stat, sys = np.array([
         (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])

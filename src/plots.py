@@ -438,7 +438,7 @@ def _observables(posterior=False):
         ax.set_ylim(plot['ylim'])
 
         if ax.is_first_row():
-            ax.set_title(format_system(system))
+            ax.set_title(format_system(system), y=.9)
 
         if ax.is_first_col():
             ax.set_ylabel(plot['ylabel'])
@@ -2210,6 +2210,32 @@ def grid_error(system='pPb5020'):
 
         ax.set_title(label, y=.9)
 
+    set_tight()
+
+@plot
+def particles_per_event(system='pPb5020'):
+    # figure size
+    plt.figure(figsize=(textwidth, aspect*textwidth))
+
+    # import events
+    design_points = [
+        Path(workdir, 'model_output', 'main', system, '{}.dat'.format(p))
+        for p in Design(system, validation=False).points
+    ]
+    
+    npart = []
+    points = model.ModelData(system, *design_points).events
+    for events in points:
+        events = events[events['trigger'][:,1] != float('inf')]
+        ds_deta = events['init_entropy']
+        dnch_deta = events['dNch_deta']
+        mean_pT = events['mean_pT']['pT']
+        nsamples = events['nsamples']
+        npart = nsamples * dnch_deta
+
+        plt.scatter(ds_deta, npart, s=1, c=mean_pT, cmap=plt.cm.coolwarm)
+
+    plt.gca().set_ylim(bottom=0)
     set_tight()
 
 

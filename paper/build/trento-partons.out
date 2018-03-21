@@ -1,0 +1,16 @@
+\BOOKMARK [0][-]{section*.2}{ Estimating initial state and quark-gluon plasma medium properties using a hydrodynamic model with nucleon substructurecalibrated to p-Pb and Pb-Pb collisions at sNN=5.02 TeV }{}% 2
+\BOOKMARK [1][-]{section*.1}{Abstract}{section*.2}% 1
+\BOOKMARK [1][-]{section*.3}{Introduction}{section*.2}% 3
+\BOOKMARK [1][-]{section*.4}{Nuclear collision model}{section*.2}% 4
+\BOOKMARK [2][-]{section*.5}{Initial conditions}{section*.4}% 5
+\BOOKMARK [2][-]{section*.6}{Pre-equilibrium dynamics}{section*.4}% 6
+\BOOKMARK [2][-]{section*.7}{Hydrodynamics and Boltzmann transport}{section*.4}% 7
+\BOOKMARK [1][-]{section*.8}{Parameter estimation}{section*.2}% 8
+\BOOKMARK [2][-]{section*.9}{Computer experiment design}{section*.8}% 9
+\BOOKMARK [2][-]{section*.10}{Gaussian process emulators}{section*.8}% 10
+\BOOKMARK [2][-]{section*.11}{Bayesian calibration}{section*.8}% 11
+\BOOKMARK [1][-]{section*.12}{Results}{section*.2}% 12
+\BOOKMARK [2][-]{section*.13}{Initial condition properties}{section*.12}% 13
+\BOOKMARK [2][-]{section*.14}{QGP medium properties}{section*.12}% 14
+\BOOKMARK [1][-]{section*.15}{Summary and conclusions}{section*.2}% 15
+\BOOKMARK [1][-]{section*.16}{Acknowledgments}{section*.2}% 16

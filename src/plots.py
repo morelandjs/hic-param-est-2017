@@ -159,14 +159,14 @@ def plot(f):
     return wrapper
 
 
-def figsize(relwidth=1, aspect=.618, refwidth=6, nrows=1, ncols=1):
+def figsize(relwidth=1, aspect=.618, refwidth=6):
     """
     Return figure dimensions from a relative width (to a reference width) and
     aspect ratio (default: 1/golden ratio).
 
     """
     width = relwidth * refwidth
-    return width, width*aspect/ncols*nrows
+    return width, width*aspect
 
 
 def set_tight(fig=None, **kwargs):
@@ -360,7 +360,6 @@ def _observables(posterior=False):
 
     fig, axes = plt.subplots(
         nrows=len(plots), ncols=len(systems),
-        # figsize=(.8*fullwidth, fullwidth),
         figsize=figsize(1.1, aspect=1.25),
         gridspec_kw=dict(
             height_ratios=[p.get('height_ratio', 1) for p in plots]

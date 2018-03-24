@@ -20,6 +20,7 @@ decorator.
 from collections import OrderedDict
 import itertools
 import logging
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -32,12 +33,12 @@ import matplotlib.pyplot as plt
 from matplotlib import lines
 from matplotlib import patches
 from matplotlib import ticker
-from matplotlib import colors
 from matplotlib import cm
+from matplotlib.colors import ListedColormap
 
 from scipy import special
-from scipy.interpolate import PchipInterpolator
-from scipy.ndimage.measurements import center_of_mass
+from scipy.interpolate import interp1d, PchipInterpolator
+from scipy.optimize import brentq
 from sklearn.decomposition import PCA
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
@@ -47,16 +48,13 @@ from . import workdir, systems, parse_system, expt, model, mcmc
 from .design import Design
 from .emulator import emulators
 
+import freestream
 
-# fontsmall, fontnormal, fontlarge = 5, 6, 7
-# XXX deprecated variables
+
+# golden ratio
 aspect = 1/1.618
-resolution = 72.27
-textwidth = 307.28987/resolution
-textheight = 261.39864/resolution
-fullwidth = 350/resolution
-fullheight = 270/resolution
 
+# font sizes
 fontsize = dict(
     large=11,
     normal=10,
@@ -80,6 +78,7 @@ colors = OrderedDict([
 ])
 
 offblack = '.15'
+theme = '#b01419'
 
 plt.rcdefaults()
 plt.rcParams.update({
@@ -147,9 +146,6 @@ def plot(f):
 
         fig = plt.gcf()
 
-        if not fig.get_tight_layout():
-            set_tight(fig)
-
         plotfile = plotdir / '{}.pdf'.format(f.__name__)
         fig.savefig(str(plotfile))
         logging.info('wrote %s', plotfile)
@@ -158,6 +154,34 @@ def plot(f):
     plot_functions[f.__name__] = wrapper
 
     return wrapper
+
+
+def cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2):
+    """
+    Fade the bottom of a colormap to white.
+
+    Currently only works with ListedColormap objects, of which the new cmaps
+    (inferno, magma, plasma, viridis) are examples.
+
+    """
+    try:
+        colors = cmap.colors.copy()
+        n = int(fraction*len(colors))
+
+        for i, rgb in enumerate(colors[:n]):
+            colors[i] = rgb + [i/n]
+            
+        return type(cmap)(colors, cmap.name + '_mod')
+    except AttributeError:
+        cmin = 25 if cmap == plt.cm.Oranges_r else 0
+        colors = [list(cmap(n/256)) for n in range(cmin, 200)]
+        n = int(fraction*len(colors))
+
+        for i, rgb in enumerate(colors[:n]):
+            rgb[-1] = i/n
+            colors[i] = rgb
+
+        return ListedColormap(colors, cmap.name + '_mod')
 
 
 def figsize(relwidth=1, aspect=.618, refwidth=6):
@@ -312,16 +336,12 @@ def _observables_plots():
     return [
         dict(
             title='Yields',
-            ylabel=(
-                r'$dN_\mathrm{ch}/d\eta,\ dN/dy,\ dE_T/d\eta\ [\mathrm{GeV}]$'
-            ),
+            ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
             ylim=(2, 5e3),
             yscale='log',
             height_ratio=1,
             subplots=[
                 ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$', scale=1)),
-                #('dET_deta', None, dict(label=r'$E_T$', scale=.7)),
-                #*id_parts_plots('dN_dy')
             ]
         ),
         dict(
@@ -330,15 +350,8 @@ def _observables_plots():
             ylim=(0, 1.5),
             subplots=[
                 ('mean_pT', None, dict(label=r'$\mathrm{mean} p_T$', scale=1)),
-                #*id_parts_plots('mean_pT')
             ]
         ),
-        #dict(
-        #    title='Mean $p_T$ fluctuations',
-        #    ylabel=r'$\delta p_T/\langle p_T \rangle$',
-        #    ylim=(0, .04),
-        #    subplots=[('pT_fluct', None, dict())]
-        #),
         dict(
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
@@ -673,7 +686,7 @@ def find_map():
 
     fig, axes = plt.subplots(
         nrows=2*len(plots), ncols=len(systems),
-        figsize=(.8*fullwidth, 1.4*fullwidth),
+        figsize=figsize(1.1, 2),
         gridspec_kw=dict(
             height_ratios=list(itertools.chain.from_iterable(
                 (p.get('height_ratio', 1), .4) for p in plots
@@ -1052,176 +1065,6 @@ region_style = dict(color='.93', zorder=-100)
 Tc = .154
 
 
-def _region_shear(mode='full', scale=.6):
-    """
-    Estimate of the temperature dependence of shear viscosity eta/s.
-
-    """
-    plt.figure(figsize=(scale*textwidth, scale*aspect*textwidth))
-    ax = plt.axes()
-
-    def etas(T, m=0, s=0, c=0):
-        return m + s*(T - Tc)*(T/Tc)**c
-
-    chain = mcmc.Chain()
-
-    rangedict = dict(zip(chain.keys, chain.range))
-    ekeys = ['etas_' + k for k in ['min', 'slope', 'curv']]
-
-    T = np.linspace(Tc, .3, 100)
-
-    prior = ax.fill_between(
-        T, etas(T, *(rangedict[k][1] for k in ekeys)),
-        **region_style
-    )
-
-    ax.set_xlim(xmin=.15)
-    ax.set_ylim(0, .6)
-    ax.set_xticks(np.arange(150, 301, 50)/1000)
-    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    auto_ticks(ax, 'y', minor=2)
-
-    ax.set_xlabel('Temperature [GeV]')
-    ax.set_ylabel(r'$\eta/s$')
-
-    if mode == 'empty':
-        return
-
-    if mode == 'examples':
-        for args in [
-                (.05, 1.0, -1),
-                (.10, 1.7, 0),
-                (.15, 2.0, 1),
-        ]:
-            ax.plot(T, etas(T, *args), color=plt.cm.Blues(.7))
-        return
-
-    eparams = chain.load(*ekeys).T
-    intervals = np.array([
-        mcmc.credible_interval(etas(t, *eparams))
-        for t in T
-    ]).T
-
-    band = ax.fill_between(T, *intervals, color=plt.cm.Blues(.32))
-
-    ax.plot(T, np.full_like(T, 1/(4*np.pi)), color='.6')
-    ax.text(.299, .07, r'KSS bound $1/4\pi$', va='top', ha='right', color='.4')
-
-    median, = ax.plot(
-        T, etas(T, *map(np.median, eparams)),
-        color=plt.cm.Blues(.77)
-    )
-
-    ax.legend(*zip(*[
-        (prior, 'Prior range'),
-        (median, 'Posterior median'),
-        (band, '90% credible region'),
-    ]), loc='upper left', bbox_to_anchor=(0, 1.03))
-
-
-@plot
-def region_shear():
-    _region_shear()
-
-
-@plot
-def region_shear_empty():
-    _region_shear('empty')
-
-
-@plot
-def region_shear_examples():
-    _region_shear('examples', scale=.5)
-
-
-def _region_bulk(mode='full', scale=.6):
-    """
-    Estimate of the temperature dependence of bulk viscosity zeta/s.
-
-    """
-    plt.figure(figsize=(scale*textwidth, scale*aspect*textwidth))
-    ax = plt.axes()
-
-    def zetas(T, zetas_max=0, zetas_width=1):
-        return zetas_max / (1 + ((T - Tc)/zetas_width)**2)
-
-    chain = mcmc.Chain()
-
-    keys, ranges = map(list, zip(*(
-        i for i in zip(chain.keys, chain.range)
-        if i[0].startswith('zetas')
-    )))
-
-    T = Tc*np.linspace(.5, 1.5, 1000)
-
-    maxdict = {k: r[1] for k, r in zip(keys, ranges)}
-    ax.fill_between(
-        T, zetas(T, **maxdict),
-        label='Prior range',
-        **region_style
-    )
-
-    ax.set_xlim(T[0], T[-1])
-    ax.set_ylim(0, 1.05*maxdict['zetas_max'])
-    auto_ticks(ax, minor=2)
-
-    ax.set_xlabel('Temperature [GeV]')
-    ax.set_ylabel(r'$\zeta/s$')
-
-    if mode == 'empty':
-        return
-
-    if mode == 'examples':
-        for args in [
-                (.025, .01),
-                (.050, .03),
-                (.075, .05),
-        ]:
-            ax.plot(T, zetas(T, *args), color=plt.cm.Blues(.7))
-        return
-
-    # use a Gaussian mixture model to classify zeta/s parameters
-    samples = chain.load(*keys, thin=10)
-    gmm = GaussianMixture(n_components=3, covariance_type='full').fit(samples)
-    labels = gmm.predict(samples)
-
-    for n in range(gmm.n_components):
-        params = dict(zip(
-            keys,
-            (mcmc.credible_interval(s)[1] for s in samples[labels == n].T)
-        ))
-
-        if params['zetas_max'] > .05:
-            cmap = 'Blues'
-        elif params['zetas_width'] > .03:
-            cmap = 'Greens'
-        else:
-            cmap = 'Oranges'
-
-        curve = zetas(T, **params)
-        color = getattr(plt.cm, cmap)(.65)
-
-        ax.plot(T, curve, color=color, zorder=-10)
-        ax.fill_between(T, curve, color=color, alpha=.1, zorder=-20)
-
-    ax.legend(loc='upper left')
-
-
-@plot
-def region_bulk():
-    _region_bulk()
-
-
-@plot
-def region_bulk_empty():
-    _region_bulk('empty')
-
-
-@plot
-def region_bulk_examples():
-    _region_bulk('examples', scale=.5)
-
-
 @plot
 def flow_corr():
     """
@@ -1338,11 +1181,16 @@ def flow_extra():
     ])
 
     fig, axes = plt.subplots(
-        figsize=(textwidth, .42*textwidth),
+        figsize=figsize(1.2, aspect=.4),
         ncols=len(plots), gridspec_kw=dict(width_ratios=width_ratios)
     )
 
-    cmaps = {2: plt.cm.GnBu, 3: plt.cm.Purples}
+    cmaps = {
+        (2, 2): plt.cm.GnBu,
+        (3, 2): plt.cm.Purples,
+        (4, 2): plt.cm.RdPu,
+        (2, 4): plt.cm.OrRd,
+    }
 
     for (obs, title, ylabel), ax in zip(plots, axes):
         for sys, (cmapx, dashes, fmt) in zip(
@@ -1395,7 +1243,9 @@ def flow_extra():
         ax.set_ylabel(ylabel)
         ax.set_title(title)
 
-    ax.legend(loc='lower right')
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[-2:], labels[-1:], loc='upper left')
+    set_tight(fig, pad=.2)
 
 
 @plot
@@ -1404,7 +1254,7 @@ def design():
     Projection of a LH design into two dimensions.
 
     """
-    fig = plt.figure(figsize=(.5*textwidth, .5*textwidth))
+    fig = plt.figure(figsize=figsize(.5, 1))
     ratio = 5
     gs = plt.GridSpec(ratio + 1, ratio + 1)
 
@@ -1453,7 +1303,7 @@ def gp():
 
     """
     fig, axes = plt.subplots(
-        figsize=(.45*textwidth, .85*textheight),
+        figsize=figsize(.5, 2*aspect),
         nrows=2, sharex='col'
     )
 
@@ -1508,7 +1358,7 @@ def gp():
 
 @plot
 def pca():
-    fig = plt.figure(figsize=(.45*textwidth, .45*textwidth))
+    fig = plt.figure(figsize=figsize(.5, 1))
     ratio = 5
     gs = plt.GridSpec(ratio + 1, ratio + 1)
 
@@ -1670,40 +1520,6 @@ def pca_vectors_variance(system='PbPb2760'):
             s.set_visible(True)
 
     set_tight(w_pad=.5)
-
-
-@plot
-def trento_events():
-    """
-    Random trento events.
-
-    """
-    fig, axes = plt.subplots(
-        nrows=3, sharex='col',
-        figsize=(.28*textwidth, .85*textheight)
-    )
-
-    xymax = 8.
-    xyr = [-xymax, xymax]
-
-    with tempfile.NamedTemporaryFile(suffix='.hdf') as t:
-        subprocess.run((
-            'trento Pb Pb {} --quiet --b-max 12 '
-            '--grid-max {} --grid-step .1 '
-            '--random-seed 6347321 --output {}'
-        ).format(axes.size, xymax, t.name).split())
-
-        with h5py.File(t.name, 'r') as f:
-            for dset, ax in zip(f.values(), axes):
-                ax.pcolorfast(xyr, xyr, np.array(dset), cmap=plt.cm.Blues)
-                ax.set_aspect('equal')
-                for xy in ['x', 'y']:
-                    getattr(ax, 'set_{}ticks'.format(xy))([-5, 0, 5])
-
-    axes[-1].set_xlabel('$x$ [fm]')
-    axes[1].set_ylabel('$y$ [fm]')
-
-    set_tight(fig, h_pad=.5)
 
 
 def boxplot(
@@ -2187,7 +2003,7 @@ def proton_radius():
 
     """
     # figure size
-    plt.figure(figsize=(textwidth, aspect*textwidth))
+    plt.figure(figsize=figsize(.5))
 
     # proton dimensions
     sampling_radius = .88
@@ -2200,7 +2016,7 @@ def proton_radius():
             npartons=npartons,
             sampling_radius=sampling_radius,
             parton_width=parton_width,
-            size=10**6
+            size=10**4
         ) for npartons in nparton_values
     ]
 
@@ -2224,12 +2040,14 @@ def proton_radius():
 
 
 @plot
-def grid_error(system='pPb5020'):
+def grid_error():
     """
     Scatter plot observables calculated on a grid with grid scale = 0.2 against
     observables calculated on a grid with grid scale = 0.1.
 
     """
+    system = 'pPb5020'
+
     obs_list = [
         ('dNch_deta', r'$dN_\mathrm{ch}/d\eta$'),
         ('mean_pT', r'mean $p_T$ [GeV]'),
@@ -2237,9 +2055,7 @@ def grid_error(system='pPb5020'):
         ('v3', r'$|Q_3|/M$'),
     ]
 
-    fig, axes = plt.subplots(
-        ncols=2, nrows=2, figsize=figsize(aspect=1, nrows=2, ncols=2)
-    )
+    fig, axes = plt.subplots(ncols=4, nrows=1, figsize=figsize(1, aspect=.3))
 
     fine_design_points, coarse_design_points = (
         [Path(
@@ -2269,44 +2085,476 @@ def grid_error(system='pPb5020'):
     for ax, (name, label) in zip(axes.flat, obs_list):
         x = [obs(ev, name) for ev in itertools.chain(*fine_events)]
         y = [obs(ev, name) for ev in itertools.chain(*coarse_events)]
-        ax.scatter(x, y)
+        ax.scatter(x, y, s=15, edgecolors='white', linewidths=.2)
 
         xy_max = np.nanmax(np.append(x, y))
         ax.plot((0, xy_max), (0, xy_max), color=offblack)
 
         if ax.is_last_row():
-            ax.set_xlabel('grid scale 0.1')
+            ax.set_xlabel('grid scale 0.1', fontsize=fontsize['tiny'])
         if ax.is_first_col():
-            ax.set_ylabel('grid scale 0.2')
+            ax.set_ylabel('grid scale 0.2', fontsize=fontsize['tiny'])
 
-        ax.set_title(label, y=.9)
+        ax.set_title(label, y=.9, fontsize=fontsize['tiny'])
+        ax.set_aspect('equal')
+        auto_ticks(ax, 'x', nbins=3)
+        auto_ticks(ax, 'y', nbins=3)
 
     set_tight()
 
+
+def run_cmd(*args, stdout=subprocess.PIPE):
+    """
+    Run and log a subprocess.
+
+    """
+    cmd = ' '.join(args)
+    logging.info('running command: %s', cmd)
+
+    try:
+        proc = subprocess.run(
+            cmd.split(), check=True,
+            stdout=stdout, stderr=subprocess.STDOUT,
+            universal_newlines=True
+        )
+    except subprocess.CalledProcessError as e:
+        logging.error(
+            'command failed with status %d:\n%s',
+            e.returncode, e.output.strip('\n')
+        )
+        raise
+    else:
+        return proc
+
+
+def trento(system, grid_max, grid_step, parton_number=1, nucleon_width=.88,
+           parton_width=.88, filename='/xtmp/jsm55/event.hdf'):
+    """
+    Generates and returns a trento event with the specified arguments
+
+    """
+    try:
+        os.remove(filename)
+    except FileNotFoundError:
+        pass
+
+    run_cmd(
+        'trento {}'.format(system),
+        '--random-seed 492835',
+        '--number-events 1',
+        '--b-max 0',
+        '--reduced-thickness 1',
+        '--fluctuation 10000',
+        '--nucleon-width {}'.format(nucleon_width),
+        '--parton-width {}'.format(parton_width),
+        '--parton-number {}'.format(parton_number),
+        '--nucleon-min-dist .9',
+        '--cross-section 7',
+        '--grid-max {}'.format(grid_max),
+        '--grid-step {}'.format(grid_step),
+        '--output {}'.format(filename),
+        )
+
+    with h5py.File(filename, 'r') as f:
+        for ev in f.values():
+            return np.array(ev)
+
+
+def trento_imshow(system, grid_max, grid_step,
+                  nucleon_width=.88, parton_width=.88, parton_number=1):
+    """
+    Lead nuclear thickness function with nucleon d.o.f.
+
+    """
+    fig = plt.figure(figsize=figsize(.25, 1), frameon=False)
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    ev = trento(
+        system, grid_max, grid_step,
+        nucleon_width=nucleon_width,
+        parton_width=parton_width,
+        parton_number=parton_number,
+    )
+    cmap = cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2)
+    ax.imshow(ev, cmap=cmap, interpolation='none')
+
+
 @plot
-def particles_per_event(system='pPb5020'):
-    # figure size
-    plt.figure(figsize=(textwidth, aspect*textwidth))
+def lead():
+    """ Lead nucleus """
+    trento_imshow('Pb Pb', 11, .1, nucleon_width=1.1)
 
-    # import events
-    design_points = [
-        Path(workdir, 'model_output', 'main', system, '{}.dat'.format(p))
-        for p in Design(system, validation=False).points
-    ]
+
+@plot
+def lead_partons():
+    """ Lead nucleus with sub-structure """
+    trento_imshow('Pb Pb', 11, .1, parton_number=1, parton_width=.6)
+
+
+@plot
+def proton():
+    """ Gaussian proton """
+    trento_imshow('p p', 2.8, .05)
+
+
+@plot
+def proton_partons():
+    """ Proton with sub-structure """
+    trento_imshow('p p', 2.8, .05, nucleon_width=1.1, parton_number=3, parton_width=.6)
+
+
+def nucleus():
+    """
+    Nucleon coordinates and participant status
+
+    """
+    file_path = str(plotdir / '.nucleons.dat')
+    nucl_data = np.loadtxt(file_path)
+
+    return np.split(nucl_data, 2)
+
+
+@plot
+def entropy_deposition(aspect=.75):
+    """
+    Schematic drawing of how entropy deposition scales with target density
+
+    """
+    plt.figure(figsize=figsize(1/3))
+
+    x = np.linspace(1e-6, 5, 1000)
+    p = 1e-3
+
+    dsdy = (0.5*(1**p + x**p))**(1/(p + 1e-6))
+    plt.plot(x, dsdy, color=theme)
+
+    plt.xlabel(r'Local target thickness')
+    plt.ylabel(r'Entropy deposited')
+    plt.xticks([])
+    plt.yticks([])
+
+    set_tight()
+
+
+def plot_nucleons(ax, gray_spect=False):
+    """
+    Plot participant/spectator nucleons
+
+    """
+    colors = [plt.cm.Oranges, plt.cm.Blues]
+
+    for nucl, cmap in zip(nucleus(), colors):
+
+        # unpack coord
+        x, y, hit = nucl.T
+
+        # spectators
+        low, high = (.8, .9) if gray_spect else (.6, .8)
+        c = np.random.uniform(low=low, high=high, size=sum(hit == 0))
+        ax.scatter(x[hit == 0], y[hit == 0], c=c, s=300, lw=0.1, vmin=0, vmax=1,
+                edgecolor=offblack, cmap=plt.cm.gray if gray_spect else cmap)
+        
+        # participants
+        c = np.random.uniform(low=.6, high=.8, size=sum(hit == 1))
+        ax.scatter(x[hit == 1], y[hit == 1], c=c, s=300, lw=0.1, vmin=0, vmax=1,
+                cmap=cmap, edgecolors=offblack)
+
+
+def thickness_functions(xx, yy):
+    """
+    Nuclear thickness functions as scalar fields
+
+    """
+    parta, partb = [nucl[nucl[:, 2] == 1] for nucl in nucleus()]
+
+    def gaussian(x0, y0, w=.88):
+        """
+        Proton thickness function
+
+        """
+        x = xx - x0
+        y = yy - y0
+        return np.exp(-(x**2 + y**2)/(2*w**2))
+
+    def thickness(xvals, yvals):
+        """
+        participant thickness function 
+
+        """
+        return sum([gaussian(x, y) for (x, y) in zip(xvals, yvals)])
+
+    TA, TB = [thickness(x, y) for (x, y, _) in (parta.T, partb.T)]
+
+    return TA, TB
+
+
+@plot
+def trento_model_nuclei():
+    """
+    Example nucleon positions
+
+    """
+    fig = plt.figure(figsize=figsize(.5, .75))
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    plot_nucleons(ax, gray_spect=False)
+
+    ax.set_aspect('equal')
+    ax.set_xlim(-11.5, 11.5)
+    ax.set_ylim(-9, 9)
+
+
+@plot
+def trento_model_part():
+    """
+    Glauber participant nucleons
+
+    """
+    fig = plt.figure(figsize=figsize(.5, .75))
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    plot_nucleons(ax, gray_spect=True)
+
+    ax.set_aspect('equal')
+    ax.set_xlim(-11.5, 11.5)
+    ax.set_ylim(-9, 9)
+
+
+@plot
+def trento_model_thickness():
+    """
+    Participant thickness functions 
+
+    """
+    fig = plt.figure(figsize=figsize(.5, .75))
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    # nucleon coordinates
+    nucla, nuclb = nucleus()
+
+    for nucl, fill in [(nucla, True), (nuclb, True)]:
+
+        # unpack coord
+        x, y, hit = nucl.T
+
+        # spectators
+        c = np.random.uniform(low=.8, high=.9, size=sum(hit == 0))
+        ax.scatter(x[hit == 0], y[hit == 0], c=c if fill else 'none', s=300,
+                   lw=0.1, vmin=0, vmax=1, edgecolor=offblack, cmap=plt.cm.gray)
+
+
+    xmax, ymax, dxy = (11.5, 9, .05)
+    lx = np.arange(-xmax, xmax + dxy, dxy)
+    ly = np.arange(-ymax, ymax + dxy, dxy)
+    xx, yy = np.meshgrid(lx, ly)
+
+    TA, TB = thickness_functions(xx, yy)
+
+    for T, cmap in [(TA, plt.cm.Oranges_r), (TB, plt.cm.PuBu_r)]:
+        ax.imshow(T, cmap=cmap_to_alpha(cmap=cmap, fraction=.1),
+                  extent=(-xmax, xmax, -ymax, ymax), origin='lower', zorder=2)
+
+    ax.set_aspect('equal')
+    ax.set_xlim(-xmax, xmax)
+    ax.set_ylim(-ymax, ymax)
+
+
+@plot
+def trento_model_entropy():
+    """
+    Reduced thickness function for an example event
+
+    """
+    fig = plt.figure(figsize=figsize(.5, .75))
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    # scatter plot spectators
+    for nucl in nucleus():
+
+        # unpack coord
+        x, y, hit = nucl.T
+
+        # spectators
+        c = np.random.uniform(low=.8, high=.9, size=sum(hit == 0))
+        ax.scatter(x[hit == 0], y[hit == 0], c=c, s=300, lw=0.1, vmin=0, vmax=1,
+                edgecolor=offblack, cmap=plt.cm.gray)
+
+
     
-    npart = []
-    points = model.ModelData(system, *design_points).events
-    for events in points:
-        events = events[events['trigger'][:,1] != float('inf')]
-        ds_deta = events['init_entropy']
-        dnch_deta = events['dNch_deta']
-        mean_pT = events['mean_pT']['pT']
-        nsamples = events['nsamples']
-        npart = nsamples * dnch_deta
+    xmax, ymax, dxy = (11.5, 9, .05)
+    lx = np.arange(-xmax, xmax + dxy, dxy)
+    ly = np.arange(-ymax, ymax + dxy, dxy)
+    xx, yy = np.meshgrid(lx, ly)
 
-        plt.scatter(ds_deta, npart, s=1, c=mean_pT, cmap=plt.cm.coolwarm)
+    TA, TB = thickness_functions(xx, yy)
+    TR = np.sqrt(TA*TB)
 
-    plt.gca().set_ylim(bottom=0)
+    ax.imshow(TR, cmap=cmap_to_alpha(), extent=(-xmax, xmax, -ymax, ymax),
+              origin='lower', zorder=2)
+
+    ax.set_aspect('equal')
+    ax.set_xlim(-xmax, xmax)
+    ax.set_ylim(-ymax, ymax)
+
+
+@plot
+def trento_model_freestream():
+    """
+    Reduced thickness function for an example event
+
+    """
+    fig = plt.figure(figsize=figsize(.5, .75))
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    # scatter plot spectators
+    for nucl in nucleus():
+
+        # unpack coord
+        x, y, hit = nucl.T
+
+        # spectators
+        c = np.random.uniform(low=.8, high=.9, size=sum(hit == 0))
+        ax.scatter(x[hit == 0], y[hit == 0], c=c, s=300, lw=0.1, vmin=0, vmax=1,
+                edgecolor=offblack, cmap=plt.cm.gray)
+
+    xmax, ymax, dxy = (11.5, 9, .05)
+    lx = np.arange(-xmax, xmax + dxy, dxy)
+    ly = np.arange(-ymax, ymax + dxy, dxy)
+    xx, yy = np.meshgrid(lx, lx)
+
+    TA, TB = thickness_functions(xx, yy)
+    TR = np.sqrt(TA*TB)
+
+    fs = freestream.FreeStreamer(TR, xmax, 1) 
+    e = fs.energy_density()
+    u0, ux, uy = [fs.flow_velocity(i) for i in range(3)]
+    vx, vy = [u/u0 for u in (ux, uy)]
+
+    ax.imshow(e, cmap=cmap_to_alpha(), extent=(-xmax, xmax, -xmax, xmax),
+              origin='lower', zorder=2)
+
+    fx, fy = [np.ma.masked_where(e < .1, e*v) for v in (vx, vy)]
+    xx, yy, fx, fy = [d[::20, ::20] for d in (xx, yy, fx, fy)]
+    ax.quiver(xx, yy, fx, fy, zorder=3)
+
+    ax.set_aspect('equal')
+    ax.set_xlim(-xmax, xmax)
+    ax.set_ylim(-ymax, ymax)
+
+
+@plot
+def coupling():
+    """
+    Cartoon showing how free streaming approximated the time dependence of the
+    fluid coupling as a step function
+
+    """
+    plt.figure(figsize=figsize(.3))
+
+    x = np.linspace(0, 1, 10**3)
+    y = np.heaviside(x - .6, 1)
+    plt.plot(x, y, color=theme)
+
+    plt.annotate('free stream', xy=(.3, .1), xycoords='data', ha='center')
+    plt.annotate('hydro', xy=(.8, 1.1), xycoords='data', ha='center')
+    plt.annotate(r'$\tau_\mathrm{fs}$', xy=(.63, .5), xycoords='data',
+                 ha='left', va='center')
+
+    plt.xticks([])
+    plt.xlabel('Time')
+
+    plt.yticks([0, 1.4], ['0', 'inf'])
+    plt.ylim(-.1, 1.5)
+    plt.ylabel('Coupling')
+
+    set_tight()
+
+
+@plot
+def collision_profile():
+    """
+    The collision probability Pcoll(b) for p+p collisions
+
+    """
+    plt.figure(figsize=figsize(.5))
+
+    sigma_nn = 6.4
+    b = np.linspace(0, 5, 1000)
+
+    # black-disk proton
+    disk_radius = np.sqrt(sigma_nn/np.pi)
+    black_disk = np.heaviside(-(b - disk_radius), 1)
+    plt.plot(b, black_disk, color=offblack, label='black disk')
+
+    # Gaussian protons
+    for w in [.4, .7, .9]:
+        norm = 4*np.pi*w**2 
+
+        def fit_xsection(x, A=6):
+            c = A**2/4
+            rhs = sigma_nn/norm
+            return c - special.expi(-np.exp(x)) + special.expi(-np.exp(x-c)) - rhs
+
+        cross_sec_param = brentq(fit_xsection, -10, 20)
+        pcoll = 1 - np.exp(-np.exp(cross_sec_param - .25*b**2/w**2))
+        plt.plot(b, pcoll, label=r'$w={}$ [fm]'.format(w))
+
+    plt.xlim(0, 5)
+    plt.xlabel('$b$ [fm]')
+    plt.ylabel(r'$P_\mathrm{coll}(b)$')
+
+    plt.legend(
+        title=r'$\sigma_\mathrm{nn}^\mathrm{inel}=6.4$ fm$^2$',
+        bbox_to_anchor=(.5, .15)
+    )
+
+    set_tight() 
+
+
+@plot
+def proton_overlap():
+    """
+    The proton-proton overlap function Tpp
+
+    """
+    plt.figure(figsize=figsize(.5))
+
+    def gaussian(x, loc=0, std=1):
+        return np.exp(-(x - loc)**2/(2*std**2)) / np.sqrt(2*np.pi*std**2)
+
+    x = np.linspace(-2.7, 2.7, 1000)
+    Tp1, Tp2 = [gaussian(x, mu, .6) for mu in (-.6, .6)]
+    Tpp = Tp1*Tp2
+
+    plt.plot(x, 4*Tpp, color=theme, label=r'$4 \times T_{pp}$')
+    plt.plot(x, Tp1, color=offblack, dashes=(8, 4), label=r'$T_p$')
+    plt.plot(x, Tp2, color=offblack, dashes=(8, 4))
+
+    plt.annotate('b', xy=(0, .7), va='bottom', ha='center')
+    plt.annotate(
+        s='', xy=(-.6, .7), xytext=(.6, .7),
+        arrowprops=dict(arrowstyle='<->', shrinkA=0, shrinkB=0),
+        color=offblack
+    )
+
+    plt.xlabel('x [fm]')
+    plt.ylabel('Thickness [fm$^{-1}$]')
+    plt.ylim(0, .8)
+
+    plt.legend(handlelength=1.3, bbox_to_anchor=(.67, .67), markerfirst=False)
+
     set_tight()
 
 

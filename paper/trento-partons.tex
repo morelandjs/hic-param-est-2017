@@ -145,6 +145,37 @@ Sed ac ullamcorper ipsum. Sed quis eleifend mauris. Phasellus quis massa neque. 
 
 \subsection{Initial condition properties}
 
+\begin{figure}
+  \begin{tikzpicture}
+    \foreach \x in {0pt, 10pt, 20pt}{\draw (\x, 0) ellipse (5pt and 20pt);}
+    \foreach \x in {0pt, 10pt, 20pt, 30pt}{\draw (\x+100pt, 0) ellipse (5pt and 20pt);}
+  \end{tikzpicture}
+  \caption{\label{fig:collision} This is the figure caption}
+\end{figure}
+Consider a relativistic collision between a columnated stack of $n_1$ projectile nucleons and $n_2$ target nucleons as depicted in Fig.~\ref{fig:collision}.
+Moreover, assume that each nucleon has mass $m$ and moves with velocity $\pm u$ along the beam axis $\hat{z}$.
+The four-momentum of each colliding nucleon stack is given by
+\begin{align}
+  p_1 &= n_1 \gamma m\, (1, 0, 0, u),\\
+  p_2 &= n_2 \gamma m\, (1, 0, 0, -u),
+\end{align}
+where $\gamma = 1/\sqrt{1 - u^2}$ is the usual Lorentz factor.
+
+At relativistic energies $\gamma \gg 1$, each stack of nucleons is significantly Lorentz contracted in the lab frame and appears compressed along its direction of motion.
+The nucleons are thus observed to penetrate and pass through each other in the lab frame in time
+\begin{equation}
+  \Delta t = L / \sqrt{\gamma^2 - 1}, 
+\end{equation}
+where $L\sim1$--10~fm is the length of the columnated stack of nucleons in its local rest frame. 
+
+Collisions at top RHIC and LHC energies have interpenetration times \mbox{$\Delta t < .1$~fm/$c$} and hence transpire before meaningful dynamics develop in the transverse plane.
+For this reason, it is convenient to say that initial energy deposition occurs instantaneously at time $\Delta t = 0^+$, the moment the two nuclei collide.
+The initial energy (or entropy) deposited into the transverse plane is then modeled in terms of two beam-integrated nuclear thickness functions
+\begin{equation}
+  T_{A,B}(x, y) = \int dz \rho(x, y, z),
+\end{equation}
+where $\rho$ is the density profile of the nucleus in its local rest frame.
+
 \subsection{QGP medium properties}
 
 Aliquam porttitor massa risus, hendrerit dignissim purus placerat vel. Suspendisse dui ante, porttitor pretium lorem et, placerat posuere mi. Donec lacinia nisl leo, ac luctus libero tincidunt non. Donec pretium ultricies felis vitae tempus. Duis pulvinar nisi justo, sit amet finibus orci volutpat non. Proin fermentum a magna id rhoncus. Vestibulum posuere, ipsum vel dignissim laoreet, arcu nibh venenatis neque, et aliquet dui dui a ipsum. Praesent sagittis condimentum neque, sed aliquam odio volutpat nec. Aenean consequat ante eget mauris lacinia, sed ultrices est dapibus. Morbi fermentum malesuada turpis, ac placerat est bibendum tincidunt. Nullam leo ipsum, sodales sit amet viverra non, iaculis vel nisl. Vestibulum purus ipsum, egestas ut bibendum sed, congue quis purus. Curabitur iaculis tortor nisl, nec venenatis tortor placerat a. Fusce feugiat nisl vitae porta porta. Praesent non arcu leo. Sed gravida eget neque in auctor.

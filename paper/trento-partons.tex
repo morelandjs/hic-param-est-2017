@@ -8,7 +8,8 @@
 \usepackage{color}
 \definecolor{theblue}{RGB}{0,50,230}
 
-\usepackage{hyperref}
+\usepackage[pdfencoding=auto, psdextra]{hyperref}
+
 \hypersetup{
   colorlinks=true,
   linkcolor=theblue,
@@ -32,6 +33,12 @@
 \newcommand{\order}[1]{$\mathcal O(10^{#1})$}
 \newcommand{\note}{\textcolor{theblue}{[?]}}
 
+% hyperref throws warning when a line break is used in the title
+% this removes the warning by redefining the line break in a pdf string
+\pdfstringdefDisableCommands{%
+  \def\\#1{ #1}
+}
+
 % Convenient figure macro.  Usage:
 %
 %   \fig[placement specifier = t]{filename}{caption}
@@ -54,77 +61,104 @@
 
 \title{
   Estimating initial state and quark-gluon plasma medium properties\\
-  using a hydrodynamic model with nucleon substructure\\calibrated to p-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV
+  using a hydrodynamic model with nucleon substructure\\
+  calibrated to p-Pb and Pb-Pb collisions \texorpdfstring{$\mathbf{\sqrts=5.02}$}{}~TeV
 }
 
 \author{J.\ Scott Moreland}
 \author{Jonah E.\ Bernhard}
 \author{Steffen A.\ Bass}
+
 \affiliation{Department of Physics, Duke University, Durham, NC 27708-0305}
 
 \date{\today}
 
 \begin{abstract}
-  We posit a unified hydrodynamic description of ultrarelativistic $p$-Pb and Pb-Pb nuclear collisions at $\sqrts=5.02$~TeV and evaluate the likelihood of our assertion using Bayesian inference.
-  Specifically, we model the dynamics of both collision systems using QGP initial conditions with parametric nucleon substructure, a pre-equilibrium free-streaming stage, event-by-event viscous hydrodynamics, and a microscopic hadronic afterburner.
-  Free parameters of the model which describe the initial state and QGP medium are then simultaneously calibrated to fit charged particle yields, mean $p_T$ and flow cumulants of both systems.
-  We argue that the global agreement of the calibrated model with available experimental data strongly supports the existence of hydrodynamic flow in small collision systems at ultrarelativistic energies, and that this flow necessarily develops at length scales smaller than a proton.
-  Finally, we present posterior distributions on our model's initial state and QGP medium parameters, including new constraints on the shape and structure of the proton.
+  We posit a unified hydrodynamic description of ultrarelativistic p-Pb and Pb-Pb nuclear collisions at $\sqrts=5.02$~TeV and evaluate our assertion using Bayesian inference. Specifically, we model the dynamics of both collision systems using QGP initial conditions with parametric nucleon substructure, a pre-equilibrium free-streaming stage, event-by-event viscous hydrodynamics, and a microscopic hadronic afterburner.
+Free parameters of the model which describe the initial state and QGP medium are then simultaneously calibrated to fit charged particle yields, mean $p_T$ and flow cumulants of both systems.
+We argue that the global agreement of the calibrated model with the experimental data strongly supports the existence of hydrodynamic flow in small collision systems at ultrarelativistic energies, and that this flow necessarily develops at length scales smaller than a proton.
+Finally, we present posterior distributions on our model's initial state and QGP medium parameters, including new constraints on the shape and structure of the proton.
 \end{abstract}
 
 \maketitle
 
-
 \section{Introduction}
-  Ultrarelativistic collisions of light and light-heavy \mbox{(e.g.\ $p$-$p$ and $p$-Pb)} ion pairs produce long-range multiparticle correlations which are striking similar to those observed in heavy-ion collisions \note, where the observed collectivity is commonly attributed to hydrodynamic flow \note.
-  This observation suggests that hydrodynamic behavior could be manifest in small droplets of quark-gluon-plasma (QGP), and that flow might develop at length scales smaller than a proton.
 
- Lorem ipsum dolor sit amet, consectetur adipiscing elit. In tincidunt elit a libero luctus, ut pharetra sem accumsan. Nullam eros dui, egestas ut arcu et, commodo suscipit purus. Quisque dapibus tincidunt nulla at vehicula. Nulla ut libero sapien. Suspendisse ac consectetur metus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nunc facilisis volutpat suscipit. Pellentesque nec est orci. Donec id pharetra enim.
+  Ultrarelativistic nuclear collisions between one light-ion \mbox{(e.g.\ p, d, or ${}^3$He)} and one heavy-ion \mbox{(e.g.\ Au or Pb)} generate dense, compact sources of nuclear matter which produce long-range multiparticle correlations that are strikingly similar to the correlations observed in heavy-ion collisions, signals which are most commonly cited as evidence for hydrodynamic flow \note.
+This observation suggests that hydrodynamic behavior could be manifest in small droplets of quark-gluon-plasma (QGP), and that flow might develop at length scales smaller than a single proton \note.
 
-Aliquam porttitor massa risus, hendrerit dignissim purus placerat vel. Suspendisse dui ante, porttitor pretium lorem et, placerat posuere mi. Donec lacinia nisl leo, ac luctus libero tincidunt non. Donec pretium ultricies felis vitae tempus. Duis pulvinar nisi justo, sit amet finibus orci volutpat non. Proin fermentum a magna id rhoncus. Vestibulum posuere, ipsum vel dignissim laoreet, arcu nibh venenatis neque, et aliquet dui dui a ipsum. Praesent sagittis condimentum neque, sed aliquam odio volutpat nec. Aenean consequat ante eget mauris lacinia, sed ultrices est dapibus. Morbi fermentum malesuada turpis, ac placerat est bibendum tincidunt. Nullam leo ipsum, sodales sit amet viverra non, iaculis vel nisl. Vestibulum purus ipsum, egestas ut bibendum sed, congue quis purus. Curabitur iaculis tortor nisl, nec venenatis tortor placerat a. Fusce feugiat nisl vitae porta porta. Praesent non arcu leo. Sed gravida eget neque in auctor.
+  Hydrodynamic models of ultrarelativistic nuclear collisions are complicated by a number of theoretical unknowns, including the detailed geometry of the QGP initial conditions, the strength and duration of pre-equilibrium dynamics, the temperature dependence of QGP transport coefficients, and the boundaries of hydrodynamic applicability \note.
+In general, these theoretical uncertainties tend to grow with decreasing system size, where emergent physics at partonic length scales becomes important to describing bulk properties of the produced system.
 
-Sed ac ullamcorper ipsum. Sed quis eleifend mauris. Phasellus quis massa neque. Proin nec lectus quis ante aliquam tincidunt ut sit amet eros. Nullam et odio eu elit aliquam molestie quis ut arcu. Aliquam gravida enim non tortor bibendum, at semper tellus egestas. In libero lectus, convallis in suscipit nec, bibendum eu felis. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus quis lectus neque. Sed ac placerat justo. Nullam ultricies vulputate ligula, vel porta mauris scelerisque et. Sed hendrerit blandit semper. Sed vel bibendum elit, eu posuere elit. Phasellus nunc massa, tincidunt ac tempus quis, blandit quis erat. 
+  One method for reducing theoretical uncertainties is to test model calculations by varying the species of colliding nuclei at a single beam energy \note.
+Since initial condition and hydrodynamic models generally factorize the structure of the colliding nuclei from the subsequent time dynamics of the collision, a single theory framework can be simultaneously tested and compared to measurements from multiple collision systems using a self consistent set of model parameters where only the nuclear structure in the model is permitted to vary.
+
+  Typically, heavy-ion nuclear structure, characterized e.g.\ by an atomic mass and set of Woods-Saxon parameters, is regarded as a known input to hydrodynamic models which contributes negligible uncertainty to overall model predictions.
+Collisions involving protons and light-ions, meanwhile, are sensitive to detailed geometric properties of the proton \note, such as spatial inhomogeneities inside the proton which are not well constrained by nuclear structure measurements.
+
+One approach to investigate the effect of nucleon substructure on hydrodynamic models is to fix or hand tune initial condition and QGP medium parameters, while varying the shape and size of hot spots inside the proton to measure the effect on bulk observables.
+
+These uncertainties systematically bias the predictions of hydrodynamic models which assert a single theoretical model 
 
 \section{Nuclear collision model}
 
- Lorem ipsum dolor sit amet, consectetur adipiscing elit. In tincidunt elit a libero luctus, ut pharetra sem accumsan. Nullam eros dui, egestas ut arcu et, commodo suscipit purus. Quisque dapibus tincidunt nulla at vehicula. Nulla ut libero sapien. Suspendisse ac consectetur metus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nunc facilisis volutpat suscipit. Pellentesque nec est orci. Donec id pharetra enim.
 
 \subsection{Initial conditions}
 
-Aliquam porttitor massa risus, hendrerit dignissim purus placerat vel. Suspendisse dui ante, porttitor pretium lorem et, placerat posuere mi. Donec lacinia nisl leo, ac luctus libero tincidunt non. Donec pretium ultricies felis vitae tempus. Duis pulvinar nisi justo, sit amet finibus orci volutpat non. Proin fermentum a magna id rhoncus. Vestibulum posuere, ipsum vel dignissim laoreet, arcu nibh venenatis neque, et aliquet dui dui a ipsum. Praesent sagittis condimentum neque, sed aliquam odio volutpat nec. Aenean consequat ante eget mauris lacinia, sed ultrices est dapibus. Morbi fermentum malesuada turpis, ac placerat est bibendum tincidunt. Nullam leo ipsum, sodales sit amet viverra non, iaculis vel nisl. Vestibulum purus ipsum, egestas ut bibendum sed, congue quis purus. Curabitur iaculis tortor nisl, nec venenatis tortor placerat a. Fusce feugiat nisl vitae porta porta. Praesent non arcu leo. Sed gravida eget neque in auctor.
+  We model the QGP initial conditions in this work using a simple parametric form for initial entropy deposition employed by the \trento\ model \note.
+The model operates in the ultrarelativistic limit with a Lorentz factor $\gamma \gg 1$ such that each nucleus appears as a thin sheet of nuclear density in the laboratory frame.
+The colliding nuclei are then described by their nuclear thickness functions
+\begin{equation}
+  T_{A,B}(\mathbf{x}) = \int dz\, \rho_{A,B}(\mathbf{x}, z),
+\end{equation}
+where $\mathbf{x}$ is a vector in the transverse plane, $z$ lies along the beam axis, and $\rho$ is the density of each nucleus in its local rest frame.
+Individual collisions between the nuclei occur at a random impact parameter offset $b$, and carve out a subset of participant matter $\rho_{A,B}^\text{part}$ which contributes to inelastic processes in the collision.
+The resulting \emph{participant} thickness functions are defined as
+\begin{equation}
+  \T_{A,B}(\mathbf{x}) = \int dz\, \rho^\text{part}_{A,B}(\mathbf{x} \pm \mathbf{b}/2, z).
+\end{equation}
+where $\rho^\text{part}_{A,B}$ is determined using a Monte Carlo Glauber model described later in this section.
+
+The sheets of colliding nuclear density penetrate and pass through each other in time $\Delta t = D_\text{nucl} / \sqrt{\gamma^2 - 1}$ in the laboratory frame, where $D_\text{nucl}$ is the diameter of the nucleus in its rest frame and $\gamma$ is the usual Lorentz factor of the accelerated ions.
+The resulting nuclear overlap time $\Delta t =$ \order{10}~fm/$c$ at top RHIC and LHC energies and hence is sufficiently short to treat all interactions local in the transverse plane.
+
+
+$t\ll 1$~fm/$c$ in the laboratory frame, and leave little time for spatially separated matter
+The collision deposits entropy at midrapidity, 
+\begin{equation}
+  dS/d\eta \propto f(\T_A, \T_B)
+\end{equation}
 
 \subsection{Pre-equilibrium dynamics}
 
-Sed ac ullamcorper ipsum. Sed quis eleifend mauris. Phasellus quis massa neque. Proin nec lectus quis ante aliquam tincidunt ut sit amet eros. Nullam et odio eu elit aliquam molestie quis ut arcu. Aliquam gravida enim non tortor bibendum, at semper tellus egestas. In libero lectus, convallis in suscipit nec, bibendum eu felis. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus quis lectus neque. Sed ac placerat justo. Nullam ultricies vulputate ligula, vel porta mauris scelerisque et. Sed hendrerit blandit semper. Sed vel bibendum elit, eu posuere elit. Phasellus nunc massa, tincidunt ac tempus quis, blandit quis erat. 
 
 \subsection{Hydrodynamics and Boltzmann transport}
 
- Lorem ipsum dolor sit amet, consectetur adipiscing elit. In tincidunt elit a libero luctus, ut pharetra sem accumsan. Nullam eros dui, egestas ut arcu et, commodo suscipit purus. Quisque dapibus tincidunt nulla at vehicula. Nulla ut libero sapien. Suspendisse ac consectetur metus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nunc facilisis volutpat suscipit. Pellentesque nec est orci. Donec id pharetra enim.
 
-To first approximation---as with nearly every object in physics---it is convenient to approximate the nucleons in heavy-ion initial condition models as a spherically symmetric particles of finite spatial extent. 
-Commonly, a Gaussian is used 
-\begin{figure}
-  \begin{tikzpicture}
-    % spherical proton
-    \draw[dashed, xshift=-2cm] (0,0) circle (.8cm);
-    % three partons
-    \draw[dashed] (0,0) circle (.8cm);
-    \foreach \theta in {0, 120, 240}{
-      \draw ({\theta}:.39) circle (.4cm);
-    }
-    % ten partons
-    \draw[dashed, xshift=2cm] (0,0) circle (.8cm);
-    \foreach \theta/\radius in {
-      36/0.4, 72/0.5, 108/0.5, 140/0.3, 172/0.1,
-      190/0.5, 240/0.3, 272/0.5, 308/0.4, 360/0.5
-    }{
-      \draw[xshift=2cm] ({\theta}:\radius) circle (.2cm);
-    }
-  \end{tikzpicture}
-  \caption{\label{proton_shapes} Schematic of plausible proton shapes.
-  The sketch on the left shows a spherically symmetric proton (dashed line), while the middle and right illustrations depict a fluctuating proton with three and ten partons respectively (solid lines).
-  }
-\end{figure}
+%To first approximation---as with nearly every object in physics---it is convenient to approximate the nucleons in heavy-ion initial condition models as a spherically symmetric particles of finite spatial extent.
+%Commonly, a Gaussian is used
+%\begin{figure}
+%  \begin{tikzpicture}
+%    % spherical proton
+%    \draw[dashed, xshift=-2cm] (0,0) circle (.8cm);
+%    % three partons
+%    \draw[dashed] (0,0) circle (.8cm);
+%    \foreach \theta in {0, 120, 240}{
+%      \draw ({\theta}:.39) circle (.4cm);
+%    }
+%    % ten partons
+%    \draw[dashed, xshift=2cm] (0,0) circle (.8cm);
+%    \foreach \theta/\radius in {
+%      36/0.4, 72/0.5, 108/0.5, 140/0.3, 172/0.1,
+%      190/0.5, 240/0.3, 272/0.5, 308/0.4, 360/0.5
+%    }{
+%      \draw[xshift=2cm] ({\theta}:\radius) circle (.2cm);
+%    }
+%  \end{tikzpicture}
+%  \caption{\label{proton_shapes} Schematic of plausible proton shapes.
+%  The sketch on the left shows a spherically symmetric proton (dashed line), while the middle and right illustrations depict a fluctuating proton with three and ten partons respectively (solid lines).
+%  }
+%\end{figure}
 
 \section{Parameter estimation}
 
@@ -133,65 +167,55 @@ Commonly, a Gaussian is used
 \subsection{Gaussian process emulators}
 
 \subsection{Bayesian calibration}
-\fig{observables_design}{Caption}
 
-Aliquam porttitor massa risus, hendrerit dignissim purus placerat vel. Suspendisse dui ante, porttitor pretium lorem et, placerat posuere mi. Donec lacinia nisl leo, ac luctus libero tincidunt non. Donec pretium ultricies felis vitae tempus. Duis pulvinar nisi justo, sit amet finibus orci volutpat non. Proin fermentum a magna id rhoncus. Vestibulum posuere, ipsum vel dignissim laoreet, arcu nibh venenatis neque, et aliquet dui dui a ipsum. Praesent sagittis condimentum neque, sed aliquam odio volutpat nec. Aenean consequat ante eget mauris lacinia, sed ultrices est dapibus. Morbi fermentum malesuada turpis, ac placerat est bibendum tincidunt. Nullam leo ipsum, sodales sit amet viverra non, iaculis vel nisl. Vestibulum purus ipsum, egestas ut bibendum sed, congue quis purus. Curabitur iaculis tortor nisl, nec venenatis tortor placerat a. Fusce feugiat nisl vitae porta porta. Praesent non arcu leo. Sed gravida eget neque in auctor.
-
-
-Sed ac ullamcorper ipsum. Sed quis eleifend mauris. Phasellus quis massa neque. Proin nec lectus quis ante aliquam tincidunt ut sit amet eros. Nullam et odio eu elit aliquam molestie quis ut arcu. Aliquam gravida enim non tortor bibendum, at semper tellus egestas. In libero lectus, convallis in suscipit nec, bibendum eu felis. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus quis lectus neque. Sed ac placerat justo. Nullam ultricies vulputate ligula, vel porta mauris scelerisque et. Sed hendrerit blandit semper. Sed vel bibendum elit, eu posuere elit. Phasellus nunc massa, tincidunt ac tempus quis, blandit quis erat. 
-
+%\fig{observables_design}{Caption}
 
 \section{Results}
 
 \subsection{Initial condition properties}
 
-\begin{figure}
-  \begin{tikzpicture}
-    \foreach \x in {0pt, 10pt, 20pt}{\draw (\x, 0) ellipse (5pt and 20pt);}
-    \foreach \x in {0pt, 10pt, 20pt, 30pt}{\draw (\x+100pt, 0) ellipse (5pt and 20pt);}
-  \end{tikzpicture}
-  \caption{\label{fig:collision} This is the figure caption}
-\end{figure}
-Consider a relativistic collision between a columnated stack of $n_1$ projectile nucleons and $n_2$ target nucleons as depicted in Fig.~\ref{fig:collision}.
-Moreover, assume that each nucleon has mass $m$ and moves with velocity $\pm u$ along the beam axis $\hat{z}$.
-The four-momentum of each colliding nucleon stack is given by
-\begin{align}
-  p_1 &= n_1 \gamma m\, (1, 0, 0, u),\\
-  p_2 &= n_2 \gamma m\, (1, 0, 0, -u),
-\end{align}
-where $\gamma = 1/\sqrt{1 - u^2}$ is the usual Lorentz factor.
-
-At relativistic energies $\gamma \gg 1$, each stack of nucleons is significantly Lorentz contracted in the lab frame and appears compressed along its direction of motion.
-The nucleons are thus observed to penetrate and pass through each other in the lab frame in time
-\begin{equation}
-  \Delta t = L / \sqrt{\gamma^2 - 1}, 
-\end{equation}
-where $L\sim1$--10~fm is the length of the columnated stack of nucleons in its local rest frame. 
-
-Collisions at top RHIC and LHC energies have interpenetration times \mbox{$\Delta t < .1$~fm/$c$} and hence transpire before meaningful dynamics develop in the transverse plane.
-For this reason, it is convenient to say that initial energy deposition occurs instantaneously at time $\Delta t = 0^+$, the moment the two nuclei collide.
-The initial energy (or entropy) deposited into the transverse plane is then modeled in terms of two beam-integrated nuclear thickness functions
-\begin{equation}
-  T_{A,B}(x, y) = \int dz \rho(x, y, z),
-\end{equation}
-where $\rho$ is the density profile of the nucleus in its local rest frame.
+%\begin{figure}
+%  \begin{tikzpicture}
+%    \foreach \x in {0pt, 10pt, 20pt}{\draw (\x, 0) ellipse (5pt and 20pt);}
+%    \foreach \x in {0pt, 10pt, 20pt, 30pt}{\draw (\x+100pt, 0) ellipse (5pt and 20pt);}
+%  \end{tikzpicture}
+%  \caption{\label{fig:collision} This is the figure caption}
+%\end{figure}
+%Consider a relativistic collision between a columnated stack of $n_1$ projectile nucleons and $n_2$ target nucleons as depicted in Fig.~\ref{fig:collision}.
+%Moreover, assume that each nucleon has mass $m$ and moves with velocity $\pm u$ along the beam axis $\hat{z}$.
+%The four-momentum of each colliding nucleon stack is given by
+%\begin{align}
+%  p_1 &= n_1 \gamma m\, (1, 0, 0, u),\\
+%  p_2 &= n_2 \gamma m\, (1, 0, 0, -u),
+%\end{align}
+%where $\gamma = 1/\sqrt{1 - u^2}$ is the usual Lorentz factor.
+%
+%At relativistic energies $\gamma \gg 1$, each stack of nucleons is significantly Lorentz contracted in the lab frame and appears compressed along its direction of motion.
+%The nucleons are thus observed to penetrate and pass through each other in the lab frame in time
+%\begin{equation}
+%  \Delta t = L / \sqrt{\gamma^2 - 1},
+%\end{equation}
+%where $L\sim1$--10~fm is the length of the columnated stack of nucleons in its local rest frame.
+%
+%Collisions at top RHIC and LHC energies have interpenetration times \mbox{$\Delta t < .1$~fm/$c$} and hence transpire before meaningful dynamics develop in the transverse plane.
+%For this reason, it is convenient to say that initial energy deposition occurs instantaneously at time $\Delta t = 0^+$, the moment the two nuclei collide.
+%The initial energy (or entropy) deposited into the transverse plane is then modeled in terms of two beam-integrated nuclear thickness functions
+%\begin{equation}
+%  T_{A,B}(x, y) = \int dz \rho(x, y, z),
+%\end{equation}
+%where $\rho$ is the density profile of the nucleus in its local rest frame.
 
 \subsection{QGP medium properties}
 
-Aliquam porttitor massa risus, hendrerit dignissim purus placerat vel. Suspendisse dui ante, porttitor pretium lorem et, placerat posuere mi. Donec lacinia nisl leo, ac luctus libero tincidunt non. Donec pretium ultricies felis vitae tempus. Duis pulvinar nisi justo, sit amet finibus orci volutpat non. Proin fermentum a magna id rhoncus. Vestibulum posuere, ipsum vel dignissim laoreet, arcu nibh venenatis neque, et aliquet dui dui a ipsum. Praesent sagittis condimentum neque, sed aliquam odio volutpat nec. Aenean consequat ante eget mauris lacinia, sed ultrices est dapibus. Morbi fermentum malesuada turpis, ac placerat est bibendum tincidunt. Nullam leo ipsum, sodales sit amet viverra non, iaculis vel nisl. Vestibulum purus ipsum, egestas ut bibendum sed, congue quis purus. Curabitur iaculis tortor nisl, nec venenatis tortor placerat a. Fusce feugiat nisl vitae porta porta. Praesent non arcu leo. Sed gravida eget neque in auctor.
-
-Sed ac ullamcorper ipsum. Sed quis eleifend mauris. Phasellus quis massa neque. Proin nec lectus quis ante aliquam tincidunt ut sit amet eros. Nullam et odio eu elit aliquam molestie quis ut arcu. Aliquam gravida enim non tortor bibendum, at semper tellus egestas. In libero lectus, convallis in suscipit nec, bibendum eu felis. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus quis lectus neque. Sed ac placerat justo. Nullam ultricies vulputate ligula, vel porta mauris scelerisque et. Sed hendrerit blandit semper. Sed vel bibendum elit, eu posuere elit. Phasellus nunc massa, tincidunt ac tempus quis, blandit quis erat. 
 
 \section{Summary and conclusions}
 
-Aliquam porttitor massa risus, hendrerit dignissim purus placerat vel. Suspendisse dui ante, porttitor pretium lorem et, placerat posuere mi. Donec lacinia nisl leo, ac luctus libero tincidunt non. Donec pretium ultricies felis vitae tempus. Duis pulvinar nisi justo, sit amet finibus orci volutpat non. Proin fermentum a magna id rhoncus. Vestibulum posuere, ipsum vel dignissim laoreet, arcu nibh venenatis neque, et aliquet dui dui a ipsum. Praesent sagittis condimentum neque, sed aliquam odio volutpat nec. Aenean consequat ante eget mauris lacinia, sed ultrices est dapibus. Morbi fermentum malesuada turpis, ac placerat est bibendum tincidunt. Nullam leo ipsum, sodales sit amet viverra non, iaculis vel nisl. Vestibulum purus ipsum, egestas ut bibendum sed, congue quis purus. Curabitur iaculis tortor nisl, nec venenatis tortor placerat a. Fusce feugiat nisl vitae porta porta. Praesent non arcu leo. Sed gravida eget neque in auctor.
-
-Sed ac ullamcorper ipsum. Sed quis eleifend mauris. Phasellus quis massa neque. Proin nec lectus quis ante aliquam tincidunt ut sit amet eros. Nullam et odio eu elit aliquam molestie quis ut arcu. Aliquam gravida enim non tortor bibendum, at semper tellus egestas. In libero lectus, convallis in suscipit nec, bibendum eu felis. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus quis lectus neque. Sed ac placerat justo. Nullam ultricies vulputate ligula, vel porta mauris scelerisque et. Sed hendrerit blandit semper. Sed vel bibendum elit, eu posuere elit. Phasellus nunc massa, tincidunt ac tempus quis, blandit quis erat. 
 
 \begin{acknowledgments}
   The authors thank ...
 \end{acknowledgments}
 
+Citations I don't want to forget \cite{Shen:2016mmv}
 \bibliography{trento-partons}
 
 \end{document}

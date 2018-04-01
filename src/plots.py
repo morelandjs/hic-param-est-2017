@@ -309,7 +309,7 @@ def obs_label(obs, subobs, differentials=False, full_cumulants=False):
     }
     if obs in id_parts_labels:
         return id_parts_labels[obs].format(
-            {'pion': '\pi', 'kaon': 'K', 'proton': 'p'}[subobs]
+                {'pion': '\pi', 'kaon': 'K', 'proton': 'p', None: '{}'}[subobs]
         )
 
     if obs == 'pT_fluct':
@@ -337,7 +337,7 @@ def _observables_plots():
         dict(
             title='Yields',
             ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
-            ylim=(2, 5e3),
+            ylim=(1e-5, 5e3),
             yscale='log',
             height_ratio=1,
             subplots=[
@@ -358,7 +358,7 @@ def _observables_plots():
             ylim=(0, .15),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
-                for n in [2, 3, 4]
+                for n in [2, 3]
             ]
         )
     ]
@@ -383,9 +383,7 @@ def _observables(posterior=False):
     if posterior:
         samples = mcmc.Chain().samples(100)
 
-    for (plot, system), ax in zip(
-            itertools.product(plots, systems), axes.flat
-    ):
+    for (plot, system), ax in zip(itertools.product(plots, systems), axes.flat):
         for obs, subobs, opts in plot['subplots']:
             color = obs_color(obs, subobs)
             scale = opts.get('scale')
@@ -477,7 +475,7 @@ def observables_posterior():
     _observables(posterior=True)
 
 
-@plot
+#@plot
 def observables_map():
     """
     Model observables and ratio to experiment at the maximum a posteriori
@@ -751,10 +749,6 @@ def find_map():
             ax.minorticks_off()
         else:
             auto_ticks(ax, 'y', nbins=4, minor=2)
-
-        for a in [ax, ratio_ax]:
-            a.set_xlim(0, 80)
-            auto_ticks(a, 'x', nbins=5, minor=2)
 
         ax.set_xticklabels([])
 
@@ -1065,7 +1059,7 @@ region_style = dict(color='.93', zorder=-100)
 Tc = .154
 
 
-@plot
+#@plot
 def flow_corr():
     """
     Symmetric cumulants SC(m, n) at the MAP point compared to experiment.
@@ -1169,7 +1163,7 @@ def flow_corr():
             ax.set_xlabel('Centrality %')
 
 
-@plot
+#@plot
 def flow_extra():
     """
     vn{2} in central bins and v2{4}.
@@ -1367,13 +1361,15 @@ def pca():
     ax_y = fig.add_subplot(gs[1:, -1], sharey=ax_j)
 
     x, y = (
-        model.data['PbPb2760'][obs][subobs]['Y'][:, 3]
-        for obs, subobs in [('dN_dy', 'pion'), ('vnk', (2, 2))]
+        model.data['pPb5020'][obs][subobs]['Y'][:, 0]
+        for obs, subobs in [('dNch_deta', None), ('vnk', (2, 2))]
     )
+    x = np.log(x + 1e-1*np.random.uniform(1e-2, 1e-1, len(x)))
+    y = np.log(y)
     xlabel = r'$dN_{\pi^\pm}/dy$'
     ylabel = r'$v_2\{2\}$'
-    xlim = 0, 1500
-    ylim = 0, 0.15
+    #xlim = 0.001, 100
+    #ylim = 0.001, 0.3
 
     cmap = plt.cm.Blues
 
@@ -1430,17 +1426,17 @@ def pca():
 
     auto_ticks(ax_j)
 
-    ax_j.set_xlim(xlim)
-    ax_j.set_ylim(ylim)
+    #ax_j.set_xlim(-5, 5)
+    #ax_j.set_ylim(ylim)
 
-    ax_j.set_xlabel(xlabel)
-    ax_j.set_ylabel(ylabel)
+    #ax_j.set_xlabel(xlabel)
+    #ax_j.set_ylabel(ylabel)
 
     set_tight(pad=.1, h_pad=.3, w_pad=.3)
 
 
 @plot
-def pca_vectors_variance(system='PbPb2760'):
+def pca_vectors_variance(system='pPb5020'):
     """
     PCA vectors and explained variance.
 
@@ -1470,7 +1466,7 @@ def pca_vectors_variance(system='PbPb2760'):
     ticks = []
     ticklabels = []
 
-    for obs, subobslist in emu.observables:
+    for obs, subobslist in emu.pPb5020:
         for subobs in subobslist:
             i = model.data[system][obs][subobs]['Y'].shape[1]
             ticks.append(x + .5*i)
@@ -1487,10 +1483,10 @@ def pca_vectors_variance(system='PbPb2760'):
     for t in ax.get_xticklabels():
         t.set_verticalalignment('baseline')
 
-    ax.set_ylim(-.1, .3)
+    ax.set_ylim(-.2, .35)
     ax.set_ylabel('PCA coefficient', labelpad=1)
     auto_ticks(ax, 'y', nbins=4, minor=2)
-    ax.legend(loc='upper left', handletextpad=0)
+    ax.legend(loc='center left', handletextpad=0)
 
     ax = axes[1]
 
@@ -1559,7 +1555,7 @@ def boxplot(
         )
 
 
-@plot
+#@plot
 def validation_all(system='PbPb5020'):
     """
     Emulator validation: normalized residuals and RMS error for each
@@ -1644,7 +1640,7 @@ def validation_all(system='PbPb5020'):
         ax.spines['bottom'].set_visible(False)
 
 
-@plot
+#@plot
 def validation_example(
         system='PbPb2760',
         obs='dNch_deta', subobs=None,
@@ -1750,7 +1746,7 @@ def validation_example(
 
 
 @plot
-def correlation_matrices(system='PbPb2760'):
+def correlation_matrices(system='pPb5020'):
     """
     Correlation (normalized covariance) matrices for model and experiment.
 
@@ -1819,7 +1815,7 @@ def correlation_matrices(system='PbPb2760'):
     set_tight(fig, rect=(0, 0, 1, .96))
 
 
-default_system = 'PbPb5020'
+default_system = 'pPb5020'
 
 
 @plot
@@ -2039,7 +2035,7 @@ def proton_radius():
     set_tight()
 
 
-@plot
+#@plot
 def grid_error():
     """
     Scatter plot observables calculated on a grid with grid scale = 0.2 against
@@ -2128,7 +2124,7 @@ def run_cmd(*args, stdout=subprocess.PIPE):
 
 
 def trento(system, grid_max, grid_step, parton_number=1, nucleon_width=.88,
-           parton_width=.88, filename='/xtmp/jsm55/event.hdf'):
+           parton_width=.88, filename='event.hdf'):
     """
     Generates and returns a trento event with the specified arguments
 
@@ -2157,6 +2153,7 @@ def trento(system, grid_max, grid_step, parton_number=1, nucleon_width=.88,
 
     with h5py.File(filename, 'r') as f:
         for ev in f.values():
+            os.remove(filename)
             return np.array(ev)
 
 
@@ -2556,6 +2553,22 @@ def proton_overlap():
     plt.legend(handlelength=1.3, bbox_to_anchor=(.67, .67), markerfirst=False)
 
     set_tight()
+
+@plot
+def check_stats():
+    plt.figure(figsize=figsize())
+
+    system = 'pPb5020'
+    obs = 'vnk'
+    subobs = (3, 2)
+
+    x = model.data[system][obs][subobs]['x']
+    Y = model.data[system][obs][subobs]['Y']
+
+    for y in Y:
+        plt.plot(x, y, color=offblack)
+        plt.ylim(0, .5)
+        plt.show()
 
 
 if __name__ == '__main__':

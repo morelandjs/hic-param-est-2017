@@ -38,7 +38,7 @@ from matplotlib.colors import ListedColormap
 
 from scipy import special
 from scipy.interpolate import interp1d, PchipInterpolator
-from scipy.optimize import brentq
+from scipy.optimize import brentq, curve_fit
 from sklearn.decomposition import PCA
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
@@ -337,7 +337,7 @@ def _observables_plots():
         dict(
             title='Yields',
             ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
-            ylim=(1e-5, 5e3),
+            ylim=(1, 1e2),
             yscale='log',
             height_ratio=1,
             subplots=[
@@ -1483,7 +1483,7 @@ def pca_vectors_variance(system='pPb5020'):
     for t in ax.get_xticklabels():
         t.set_verticalalignment('baseline')
 
-    ax.set_ylim(-.2, .35)
+    #ax.set_ylim(-.2, .35)
     ax.set_ylabel('PCA coefficient', labelpad=1)
     auto_ticks(ax, 'y', nbins=4, minor=2)
     ax.legend(loc='center left', handletextpad=0)
@@ -2252,7 +2252,7 @@ def plot_nucleons(ax, gray_spect=False):
         c = np.random.uniform(low=low, high=high, size=sum(hit == 0))
         ax.scatter(x[hit == 0], y[hit == 0], c=c, s=300, lw=0.1, vmin=0, vmax=1,
                 edgecolor=offblack, cmap=plt.cm.gray if gray_spect else cmap)
-        
+
         # participants
         c = np.random.uniform(low=.6, high=.8, size=sum(hit == 1))
         ax.scatter(x[hit == 1], y[hit == 1], c=c, s=300, lw=0.1, vmin=0, vmax=1,
@@ -2277,7 +2277,7 @@ def thickness_functions(xx, yy):
 
     def thickness(xvals, yvals):
         """
-        participant thickness function 
+        participant thickness function
 
         """
         return sum([gaussian(x, y) for (x, y) in zip(xvals, yvals)])
@@ -2386,8 +2386,6 @@ def trento_model_entropy():
         ax.scatter(x[hit == 0], y[hit == 0], c=c, s=300, lw=0.1, vmin=0, vmax=1,
                 edgecolor=offblack, cmap=plt.cm.gray)
 
-
-    
     xmax, ymax, dxy = (11.5, 9, .05)
     lx = np.arange(-xmax, xmax + dxy, dxy)
     ly = np.arange(-ymax, ymax + dxy, dxy)
@@ -2554,21 +2552,48 @@ def proton_overlap():
 
     set_tight()
 
+
 @plot
-def check_stats():
-    plt.figure(figsize=figsize())
+def entropy_scaling(system='pPb5020'):
+    """
+    Plot initial entropy vs final dNch/deta
 
-    system = 'pPb5020'
-    obs = 'vnk'
-    subobs = (3, 2)
+    """
+    ncols= 10
+    nrows = 5
+    fig, axes = plt.subplots(
+        nrows=nrows, ncols=ncols,
+        figsize=figsize(relwidth=3, aspect=nrows/ncols)
+    )
 
-    x = model.data[system][obs][subobs]['x']
-    Y = model.data[system][obs][subobs]['Y']
+    data = Path(workdir, 'model_output', 'main', system)
 
-    for y in Y:
-        plt.plot(x, y, color=offblack)
-        plt.ylim(0, .5)
-        plt.show()
+    design = Design(system, validation=False)
+    files = [data / '{}.dat'.format(p) for p in design.points]
+    model_data = model.ModelData(system, *files)
+
+    def powerlaw(x, a, b, c):
+        return a*x**b + c
+
+    for ax, pt, ev, in zip(axes.flat, design.points, model_data.events):
+        x, y = [ev[k] for k in ('init_entropy', 'dNch_deta')]
+
+        y = y[x.argsort()]
+        x = np.sort(x)
+
+        try:
+            nonzero = (y > 0)
+            popt, pcov = curve_fit(powerlaw, x[nonzero], y[nonzero])
+
+            xval = np.linspace(0, max(x[nonzero]), 100)
+            ax.plot(xval, powerlaw(xval, *popt), color=offblack, zorder=1)
+        except RuntimeError:
+            pass
+
+        ax.plot(x, y, 'o', zorder=0)
+        ax.set_title(str(pt))
+
+    set_tight()
 
 
 if __name__ == '__main__':

@@ -150,7 +150,7 @@ class Chain:
         self.keys = d.keys
         self.labels = d.labels
         self.range = d.range
-        
+
         self.ndim = len(self.range)
         self.min, self.max = map(np.array, zip(*self.range))
 
@@ -165,7 +165,7 @@ class Chain:
             observables = {
                 'pPb5020': self.pPb5020,
                 'PbPb5020': self.PbPb5020,
-            }[sys] 
+            }[sys]
 
             nobs = 0
 

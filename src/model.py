@@ -46,8 +46,8 @@ from sklearn.externals import joblib
 
 from . import workdir, cachedir, systems, lazydict, expt
 from .design import Design
+from .correct import correct_yield, correct_centrality
 
-import matplotlib.pyplot as plt
 
 def pT_fluct(events):
     """
@@ -150,7 +150,7 @@ class ModelData:
         ('iden_dN_dy', [(s, float_t) for s in species]),
         ('iden_mean_pT', [(s, [('N', float_t), ('pT', float_t)]) for s in species]),
         ('pT_fluct', [('N', int_t), ('sum_pT', float_t), ('sum_pTsq', float_t)]),
-        ('flow', [(expt, [('N', int_t), ('Qn', complex_t, 8)]) for expt in ('alice', 'cms')]),
+        ('flow', [(d, [('N', int_t), ('Qn', complex_t, 8)]) for d in ('alice', 'cms')]),
     ])
 
     def __init__(self, system, *files):
@@ -159,9 +159,12 @@ class ModelData:
             logging.debug('loading %s', f)
             d = np.fromfile(str(f), dtype=self.dtype)
             d.sort(order='dNch_deta')
-            return d
+            return (f.stem, d)
 
-        self.events = [load_events(f) for f in files]
+        self.design_events = [load_events(f) for f in files]
+        self.system = system
+
+        # special boolean flag for p-Pb collisions
         self.pPb_event = (system == 'pPb5020')
 
     def observables_like(self, data, *keys):
@@ -215,11 +218,11 @@ class ModelData:
                 return pT_fluct
 
             if obs.startswith('vnk'):
-                expt = ('cms' if self.pPb_event else 'alice')
                 nk = obs_stack.pop()
+                detector = ('cms' if self.pPb_event else 'alice')
                 return lambda events: flow.Cumulant(
-                    events['flow'][expt]['N'],
-                    *events['flow'][expt]['Qn'].T[1:]
+                    events['flow'][detector]['N'],
+                    *events['flow'][detector]['Qn'].T[1:]
                 ).flow(*nk, imaginary='zero')
 
             if obs.startswith('sc'):
@@ -230,21 +233,44 @@ class ModelData:
 
         compute_bin = _compute_bin()
 
-        def compute_all_bins(events):
-
+        def compute_all_bins(events, design_point):
             trigger = events['trigger']
             minbias = (0, float('inf'))
 
+            if self.pPb_event:
+                """
+                Cooper-Frye sampling neglects all energy in the collision which
+                starts below the particlization temperature Tsw. This function
+                corrects dNch/deta for missing particles below Tsw, assuming
+                that particle production follows a simple power law.
+
+                """
+                events = correct_yield(events)
+
             if bin_type == 'cent':
-                minbias_events = events[[all(b) for b in (trigger == minbias)]]
-                n = minbias_events.size
-                binned_events = [
-                    minbias_events[int((1 - b/100)*n):int((1 - a/100)*n)]
-                    for a, b in bins
-                ]
+                """
+                Sorting events into centrality bins is inaccurate for small minimum
+                bias event samples. We correct this bias by using initial entropy
+                (from a far greater number of events) to define centrality classes.
+
+                The `correct_centrality` function runs initial condition events
+                with parameters selected from each design point and uses them
+                to partition the provided minimum bias sample into centrality bins.
+
+                """
+                minbias_events = events[(trigger == minbias).all(axis=1)]
+                binned_events = correct_centrality(
+                    self.system, design_point, minbias_events, bins
+                )
             elif bin_type == 'mult':
+                """
+                Many p-Pb observables are plotted as a function of <Nch>. These
+                events have been run with a special multiplicity trigger to
+                mimic the event selection peformed by experiment.
+
+                """
                 binned_events = [
-                    events[(abs(events['trigger'] - mbin) < 1e-3).all(axis=1)]
+                    events[(events['trigger'] == mbin).all(axis=1)]
                     for mbin in bins
                 ]
             else:
@@ -252,7 +278,10 @@ class ModelData:
 
             return list(map(compute_bin, binned_events))
 
-        Y = np.array(list(map(compute_all_bins, self.events))).squeeze()
+        Y = np.array([
+            compute_all_bins(events, design_point)
+            for design_point, events in self.design_events
+        ]).squeeze()
 
         return {'x': x, bin_type: bins, 'Y': Y}
 

@@ -58,7 +58,7 @@ class HEPData:
             for v in self._data.values():
                 for d in v:
                     d['values'].reverse()
-    
+
     @property
     def names(self):
         """
@@ -217,7 +217,7 @@ def pPb5020_yield():
 
     # use the V0M centrality estimator
     dset = HEPData(1335350, 2)
-    
+
     cent = [tuple(map(float, re.findall(r'\d+', name)))
             for name in dset.names]
 
@@ -287,7 +287,7 @@ def pPb5020_flows(mode):
     The CMS p+Pb flows are not posted on HEP data so the data files are included
     in the git repo parent directory under expt.
 
-    reference: https://inspirehep.net/record/1231945 
+    reference: https://inspirehep.net/record/1231945
 
     """
     # Mean Ntrk offline 0-100% centrality
@@ -339,7 +339,7 @@ def _data():
         # pPb5020 flows
         data['pPb5020']['vnk'] = {}
         for mode in 2, 3:
-            data['pPb5020']['vnk'][mode, 2] = pPb5020_flows(mode) 
+            data['pPb5020']['vnk'][mode, 2] = pPb5020_flows(mode)
 
     if 'PbPb5020' in systems:
 

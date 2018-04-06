@@ -156,6 +156,16 @@ class Design:
             npoints=npoints, ndim=self.ndim, seed=seed
         )
 
+        # Remove two outlier design points. These points are near the
+        # edge of the design and produce far too few particles.
+        blacklist = [466, 492]
+        keep = [n not in blacklist for n in range(npoints)]
+        self.array = self.array[keep]
+        self.points = list(itertools.compress(self.points, keep))
+        logging.debug(
+            'removed two outlier design points: {}'.format(blacklist)
+        )
+
 
     def __array__(self):
         return self.array

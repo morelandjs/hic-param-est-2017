@@ -1,6 +1,8 @@
 """
-Corrects the charged particle yields in minimum-bias p-Pb collisions to
-account for missing particles below the Cooper-Frye freeze-out temperature.
+Module which includes functions to correct specific problems that arise
+in a combined analysis of p-Pb and Pb-Pb collisions at 5.02 TeV.
+
+This code does not readily generalize to other projects.
 
 """
 from functools import partial
@@ -147,7 +149,7 @@ def powerlaw(x, a, b, c):
     empirically follows a power law relation.
 
     The constant c accounts for missing entropy below the UrQMD switching
-    temperature.
+    temperature. This is commonly referred to as the "corona".
 
     """
     return a*x**b + c

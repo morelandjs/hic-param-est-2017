@@ -337,7 +337,7 @@ def _observables_plots():
         dict(
             title='Yields',
             ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
-            ylim=(1, 1e2),
+            ylim=(1e-3, 1e2),
             yscale='log',
             height_ratio=1,
             subplots=[
@@ -347,7 +347,7 @@ def _observables_plots():
         dict(
             title='Mean $p_T$',
             ylabel=r'$\langle p_T \rangle$ [GeV]',
-            ylim=(0, 1.5),
+            ylim=(0, 2),
             subplots=[
                 ('mean_pT', None, dict(label=r'$\mathrm{mean} p_T$', scale=1)),
             ]
@@ -355,7 +355,8 @@ def _observables_plots():
         dict(
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
-            ylim=(0, .15),
+            ylim=(1e-3, 1),
+            yscale='log',
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
                 for n in [2, 3]

@@ -170,7 +170,7 @@ def cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2):
 
         for i, rgb in enumerate(colors[:n]):
             colors[i] = rgb + [i/n]
-            
+
         return type(cmap)(colors, cmap.name + '_mod')
     except AttributeError:
         cmin = 25 if cmap == plt.cm.Oranges_r else 0
@@ -337,7 +337,7 @@ def _observables_plots():
         dict(
             title='Yields',
             ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
-            ylim=(1e-3, 1e2),
+            ylim=(10**0, 10**3),
             yscale='log',
             height_ratio=1,
             subplots=[
@@ -355,8 +355,7 @@ def _observables_plots():
         dict(
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
-            ylim=(1e-3, 1),
-            yscale='log',
+            ylim=(0, .2),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
                 for n in [2, 3]
@@ -436,7 +435,7 @@ def _observables(posterior=False):
                     r'$\langle N^\mathrm{offline}_\mathrm{trk} \rangle$',
                 ]))
             else:
-                ax.set_xlim(0, 80)
+                ax.set_xlim(0, 55)
                 ax.set_xlabel('Centrality %')
 
         if plot.get('yscale') == 'log':
@@ -455,13 +454,13 @@ def _observables(posterior=False):
         if ax.is_first_col():
             ax.set_ylabel(plot['ylabel'])
 
-        if ax.is_last_col():
-            ax.text(
-                1.02, .5, plot['title'],
-                transform=ax.transAxes, ha='left', va='center',
-                size=plt.rcParams['axes.labelsize'], rotation=-90
-            )
-            ax.set_yticklabels([])
+        #if ax.is_last_col():
+        #    ax.text(
+        #        1.02, .5, plot['title'],
+        #        transform=ax.transAxes, ha='left', va='center',
+        #        size=plt.rcParams['axes.labelsize'], rotation=-90
+        #    )
+        #    ax.set_yticklabels([])
 
     set_tight(fig, rect=[0, 0, .97, 1])
 
@@ -2555,6 +2554,41 @@ def proton_overlap():
 
 
 @plot
+def observable_normality(system='pPb5020'):
+    model_data = model._data(system)
+    emu = emulators[system]
+
+    observables = [
+        (obs, subobs, y)
+        for (obs, subobslist) in emu.pPb5020
+        for subobs in subobslist
+        for y in model_data[obs][subobs]['Y'].T
+    ]
+
+    nobs = len(observables)
+
+    fig, axes = plt.subplots(
+        nrows=nobs, ncols=nobs,
+        figsize=figsize(relwidth=10, aspect=1)
+    )
+
+    for (obs, subobs, y), ax in zip(observables, axes.diagonal()):
+        ax.hist(y, bins=30)
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.set_title('{} {}'.format(obs, subobs if subobs else ''))
+
+    for ny, nx in zip(*np.tril_indices_from(axes, k=-1)):
+        obs, subobs, Y = zip(*observables)
+        ax = axes[ny][nx]
+        ax.scatter(Y[nx], Y[ny])
+        axes[nx][ny].set_axis_off()
+
+    set_tight(fig)
+
+
+
+@plot
 def entropy_scaling(system='pPb5020'):
     """
     Plot initial entropy vs final dNch/deta
@@ -2576,7 +2610,7 @@ def entropy_scaling(system='pPb5020'):
     def powerlaw(x, a, b, c):
         return a*x**b + c
 
-    for ax, pt, ev, in zip(axes.flat, design.points, model_data.events):
+    for ax, (pt, ev), in zip(axes.flat, model_data.design_events):
         x, y = [ev[k] for k in ('init_entropy', 'dNch_deta')]
 
         y = y[x.argsort()]

@@ -21,7 +21,7 @@ from sklearn.decomposition import PCA
 from sklearn.externals import joblib
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
-from sklearn.preprocessing import QuantileTransformer
+from sklearn.preprocessing import StandardScaler
 
 from . import cachedir, lazydict, model
 from .design import Design
@@ -93,6 +93,8 @@ class Emulator:
             'PbPb5020': self.PbPb5020,
         }[system]
 
+        self.system = system
+
         # Build an array of all observables to emulate.
         nobs = 0
         for obs, subobslist in observables:
@@ -105,20 +107,18 @@ class Emulator:
 
         Y = np.concatenate(Y, axis=1)
 
+        # log transform p-Pb system
+        if system == 'pPb5020':
+            Y = np.log(Y)
+
         self.npc = npc
         self.nobs = nobs
-
-        # Quantile transform observables to unit normal distribution
-        self.pt = QuantileTransformer(
-            copy=False, n_quantiles=500, output_distribution='normal'
-        )
-
-        # Principal-component transformation
+        self.scaler = StandardScaler(copy=False)
         self.pca = PCA(copy=False, whiten=True, svd_solver='full')
 
-        # Transform observables through PCA.  Use the first `npc`
-        # components but save the full PC transformation for later.
-        Z = self.pca.fit_transform(self.pt.fit_transform(Y))[:, :npc]
+        # Standardize observables and transform through PCA.  Use the first
+        # `npc` components but save the full PC transformation for later.
+        Z = self.pca.fit_transform(self.scaler.fit_transform(Y))[:, :npc]
 
         # Define kernel (covariance function):
         # Gaussian correlation (RBF) plus a noise term.
@@ -152,7 +152,32 @@ class Emulator:
         self._trans_matrix = (
             self.pca.components_
             * np.sqrt(self.pca.explained_variance_[:, np.newaxis])
+            * self.scaler.scale_
         )
+
+        # Pre-calculate some arrays for inverse transforming the predictive
+        # variance (from PC space to physical space).
+
+        # Assuming the PCs are uncorrelated, the transformation is
+        #
+        #   cov_ij = sum_k A_ki var_k A_kj
+        #
+        # where A is the trans matrix and var_k is the variance of the kth PC.
+        # https://en.wikipedia.org/wiki/Propagation_of_uncertainty
+
+        # Compute the partial transformation for the first `npc` components
+        # that are actually emulated.
+        A = self._trans_matrix[:npc]
+        self._var_trans = np.einsum(
+            'ki,kj->kij', A, A, optimize=False).reshape(npc, nobs**2)
+
+        # Compute the covariance matrix for the remaining neglected PCs
+        # (truncation error).  These components always have variance == 1.
+        B = self._trans_matrix[npc:]
+        self._cov_trunc = np.dot(B.T, B)
+
+        # Add small term to diagonal for numerical stability.
+        self._cov_trunc.flat[::nobs + 1] += 1e-4 * self.scaler.var_
 
     @classmethod
     def from_cache(cls, system, retrain=False, **kwargs):
@@ -183,16 +208,16 @@ class Emulator:
     def _inverse_transform(self, Z, array=False):
         """
         Inverse transform principal components to observables.
-
         Returns a nested dict of arrays.
-
         """
         # Z shape (..., npc)
         # Y shape (..., nobs)
         Y = np.dot(Z, self._trans_matrix[:Z.shape[-1]])
+        Y += self.scaler.mean_
 
-        shape = Y.shape
-        Y = self.pt.inverse_transform(Y.reshape(-1, self.nobs)).reshape(shape)
+        # revert log transformation
+        if self.system == 'pPb5020':
+            Y = np.exp(Y)
 
         if array:
             return Y
@@ -206,29 +231,74 @@ class Emulator:
 
     def predict(self, X, return_cov=False, extra_std=0):
         """
-        Predict y at location x using the emulator
-
+        Predict model output at `X`.
+        X must be a 2D array-like with shape ``(nsamples, ndim)``.  It is passed
+        directly to sklearn :meth:`GaussianProcessRegressor.predict`.
+        If `return_cov` is true, return a tuple ``(mean, cov)``, otherwise only
+        return the mean.
+        The mean is returned as a nested dict of observable arrays, each with
+        shape ``(nsamples, n_cent_bins)``.
+        The covariance is returned as a proxy object which extracts observable
+        sub-blocks using a dict-like interface:
+        >>> mean, cov = emulator.predict(X, return_cov=True)
+        >>> mean['dN_dy']['pion']
+        <mean prediction of pion dN/dy>
+        >>> cov[('dN_dy', 'pion'), ('dN_dy', 'pion')]
+        <covariance matrix of pion dN/dy>
+        >>> cov[('dN_dy', 'pion'), ('mean_pT', 'kaon')]
+        <covariance matrix between pion dN/dy and kaon mean pT>
+        The shape of the extracted covariance blocks are
+        ``(nsamples, n_cent_bins_1, n_cent_bins_2)``.
+        NB: the covariance is only computed between observables and centrality
+        bins, not between sample points.
+        `extra_std` is additional uncertainty which is added to each GP's
+        predictive uncertainty, e.g. to account for model systematic error.  It
+        may either be a scalar or an array-like of length nsamples.
         """
-        gp_mean = [gp.predict(X, return_cov=False) for gp in self.gps]
+        gp_mean = [gp.predict(X, return_cov=return_cov) for gp in self.gps]
+
+        if return_cov:
+            gp_mean, gp_cov = zip(*gp_mean)
 
         mean = self._inverse_transform(
             np.concatenate([m[:, np.newaxis] for m in gp_mean], axis=1)
         )
 
         if return_cov:
-            Y = self.sample_y(X, n_samples=10**3, array=True)
-            cov = np.array([np.cov(y, rowvar=False) for y in Y])
+            # Build array of the GP predictive variances at each sample point.
+            # shape: (nsamples, npc)
+            gp_var = np.concatenate([
+                c.diagonal()[:, np.newaxis] for c in gp_cov
+            ], axis=1)
+
+            # Add extra uncertainty to predictive variance.
+            #extra_std = np.array(extra_std, copy=False).reshape(-1, 1)
+            #gp_var += extra_std**2
+
+            # Compute the covariance at each sample point using the
+            # pre-calculated arrays (see constructor).
+            cov = np.dot(gp_var, self._var_trans).reshape(
+                X.shape[0], self.nobs, self.nobs
+            )
+            cov += self._cov_trunc
+
+            # apply inverse log transform
+            if self.system == 'pPb5020':
+                Y = self._inverse_transform(
+                    np.concatenate([m[:, np.newaxis] for m in gp_mean], axis=1),
+                    array=True
+                )
+                cov = np.array([np.outer(y, y)*C for (y, C) in zip(Y, cov)])
+
             return mean, _Covariance(cov, self._slices)
         else:
             return mean
 
-    def sample_y(self, X, n_samples=1, random_state=None, array=False):
+    def sample_y(self, X, n_samples=1, random_state=None):
         """
         Sample model output at `X`.
-
         Returns a nested dict of observable arrays, each with shape
         ``(n_samples_X, n_samples, n_cent_bins)``.
-
         """
         # Sample the GP for each emulated PC.  The remaining components are
         # assumed to have a standard normal distribution.
@@ -242,8 +312,7 @@ class Emulator:
                 np.random.standard_normal(
                     (X.shape[0], n_samples, self.pca.n_components_ - self.npc)
                 )
-            ], axis=2),
-            array=array
+            ], axis=2)
         )
 
 

@@ -218,8 +218,11 @@ def pPb5020_yield():
     # use the V0M centrality estimator
     dset = HEPData(1335350, 2)
 
+    # drop the last two centrality bins
+    drop_bins = 2
+
     cent = [tuple(map(float, re.findall(r'\d+', name)))
-            for name in dset.names]
+            for name in dset.names][:-drop_bins]
 
     eta_lab_min, eta_lab_max = [eta + eta_beam for eta in (-eta_cut, eta_cut)]
 
@@ -227,7 +230,7 @@ def pPb5020_yield():
         (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])
         for (x, y) in zip(dset.x('$\eta_{lab}$'), dset.y(name))
         if eta_lab_min < x['low'] and x['high'] < eta_lab_max
-    ] for name in dset.names]).T
+    ] for name in dset.names[:-drop_bins]]).T
 
     return dict(
         cent=cent,
@@ -235,8 +238,8 @@ def pPb5020_yield():
         y=y.mean(axis=0),
         yerr=dict(
             stat=np.sqrt(np.square(stat).sum(axis=0))/len(stat),
-            sys=sys.mean(axis=0)
-        ),
+            sys=sys.mean(axis=0),
+        )
     )
 
 

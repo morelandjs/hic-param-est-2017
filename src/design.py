@@ -158,7 +158,10 @@ class Design:
 
         # Remove two outlier design points. These points are near the
         # edge of the design and produce far too few particles.
-        blacklist = [466, 492]
+        blacklist = [83, 156, 211, 242, 276, 326, 334, 338, 378, 429, 459, 471,
+                     34, 129, 162, 172, 176, 183, 196, 199, 200, 240, 247, 273,
+                     310, 314, 319, 321, 335, 345, 346, 356, 363, 365, 418, 422,
+                     445, 451, 456, 460, 462, 466, 476, 492, 498]
         keep = [n not in blacklist for n in range(npoints)]
         self.array = self.array[keep]
         self.points = list(itertools.compress(self.points, keep))

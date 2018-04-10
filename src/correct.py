@@ -115,6 +115,8 @@ def trento_entropy(system, design_point):
     # load trento entropy data from cache
     if all(f.exists() for f in cachefiles):
         return np.load(cachefile)
+    else:
+        cachefiles = [f for f in cachefiles if not f.exists()]
 
     # generate the trento attribute data for all design points
     ncpu = multiprocessing.cpu_count()

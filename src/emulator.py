@@ -107,10 +107,6 @@ class Emulator:
 
         Y = np.concatenate(Y, axis=1)
 
-        # log transform p-Pb system
-        if system == 'pPb5020':
-            Y = np.log(Y)
-
         self.npc = npc
         self.nobs = nobs
         self.scaler = StandardScaler(copy=False)
@@ -205,7 +201,7 @@ class Emulator:
 
         return emu
 
-    def _inverse_transform(self, Z, array=False):
+    def _inverse_transform(self, Z):
         """
         Inverse transform principal components to observables.
         Returns a nested dict of arrays.
@@ -214,13 +210,6 @@ class Emulator:
         # Y shape (..., nobs)
         Y = np.dot(Z, self._trans_matrix[:Z.shape[-1]])
         Y += self.scaler.mean_
-
-        # revert log transformation
-        if self.system == 'pPb5020':
-            Y = np.exp(Y)
-
-        if array:
-            return Y
 
         return {
             obs: {
@@ -272,8 +261,8 @@ class Emulator:
             ], axis=1)
 
             # Add extra uncertainty to predictive variance.
-            #extra_std = np.array(extra_std, copy=False).reshape(-1, 1)
-            #gp_var += extra_std**2
+            extra_std = np.array(extra_std, copy=False).reshape(-1, 1)
+            gp_var += extra_std**2
 
             # Compute the covariance at each sample point using the
             # pre-calculated arrays (see constructor).
@@ -281,14 +270,6 @@ class Emulator:
                 X.shape[0], self.nobs, self.nobs
             )
             cov += self._cov_trunc
-
-            # apply inverse log transform
-            if self.system == 'pPb5020':
-                Y = self._inverse_transform(
-                    np.concatenate([m[:, np.newaxis] for m in gp_mean], axis=1),
-                    array=True
-                )
-                cov = np.array([np.outer(y, y)*C for (y, C) in zip(Y, cov)])
 
             return mean, _Covariance(cov, self._slices)
         else:

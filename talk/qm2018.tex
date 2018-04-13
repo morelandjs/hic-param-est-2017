@@ -75,7 +75,7 @@
 \usetikzlibrary{overlay-beamer-styles}
 
 \usepackage[absolute]{textpos}
-  
+
 \usepackage{fontawesome}
 \usepackage{ulem}
 \newcommand{\soutthick}[1]{%
@@ -112,7 +112,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \insertauthor \\
   \insertinstitute \\[2ex]
   \conference \\
-  \insertdate \\[6ex] 
+  \insertdate \\[6ex]
   \includegraphics[height=1.2cm]{qcdlogo}\quad
   \includegraphics[height=1.2cm]{nersclogo}\\[3ex]
   \footnotetext[1]{\scriptsize This research used resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S.\ Department of Energy under Contract No. DE-AC02-05CH11231.}
@@ -166,7 +166,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \centering
   \medskip
   \begin{tikzpicture}
-    \node (a) {\includegraphics{hannah_collision}};
+    \node (a) {\includegraphics[width=.95\textwidth]{hannah_collision}};
     \node[align=left, anchor=north west] at (a.north west) {%
       \scriptsize Figure: H. Petersen, MADAI
       };
@@ -268,31 +268,21 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
 
 \begin{frame}[b, plain]{\scshape Parameter estimates from lead-lead collisions}
   \begin{columns}[b]
-    \begin{column}{.4\textwidth}
-      \begin{tikzpicture}
-        \node (A) {\includegraphics<1>[height=.82\textheight]{observables_design}};
-        \node (B) {\includegraphics<2>[height=.82\textheight]{observables_posterior}};
-        \node [xshift=2.8cm, yshift=3.2cm, rotate=-45] {%
-          \textcolor{theme}{\scshape New!}%
-          };
-      \end{tikzpicture}
+    \begin{column}{.43\textwidth}
+      \includegraphics<1>[width=\textwidth]{lead_observables_design}
+      \includegraphics<2>[width=\textwidth]{lead_observables_posterior}
     \end{column}
-    \begin{column}{.02\textwidth}
-    \end{column}
-    \begin{column}{.55\textwidth}
+    \begin{column}{.57\textwidth}
       \begin{itemize}
-        \item Combined analysis of 2.76 and 5.02 TeV beam energies
-        \item Parametric initial conditions and medium parameters
+        \item Combined analysis of 2.76 and 5.02
+          TeV beam energies \textcolor{theme}{\scshape (New!)} 
+        \item Parametric initial conditions and medium parameters\
+        \item Quantitative estimates on $\eta/s$ and $\zeta/s$ with meaningful uncertainties
         \item See thesis by Jonah Bernhard {\small [\url{99999}]}
       \end{itemize}
-      \begin{tikzpicture}
-        \node (0, 0) {\includegraphics<1>{region_shear_blank}};
-        \node (0, 0) {\includegraphics<2>{region_shear}};
-        \node [xshift=.3cm, yshift=.6cm] {\only<1>{\fontsize{80}{0}\selectfont \color{theme!30} ?}};
-        \node [xshift=3cm, yshift=1.8cm, rotate=-45] {%
-          \textcolor{theme}{\scshape New!}%
-          };
-      \end{tikzpicture}
+      \bigskip
+      \includegraphics<1>[width=\textwidth]{region_shear_bulk}
+      \includegraphics<2>[width=\textwidth]{region_shear_bulk}
     \end{column}
   \end{columns}
   \medskip
@@ -308,8 +298,8 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.4\textwidth}
       \begin{figure}
-        \includegraphics[width=.9\columnwidth]{pb208}
-        \caption{Pb$^{208}$ nucleus}
+        \includegraphics[width=.9\columnwidth]{pb208}\\
+        Pb$^{208}$ nucleus
       \end{figure}
     \end{column}
     \begin{column}{.6\textwidth}
@@ -415,7 +405,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \begin{figure}
-        \includegraphics{trento_model_part}\\
+        \includegraphics[width=\textwidth]{trento_model_part}\\
         \small MC-Glauber cross sections\\
         (proton d.o.f. shown)
       \end{figure}
@@ -444,7 +434,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \begin{figure}
-        \includegraphics{trento_model_thickness}
+        \includegraphics[width=\textwidth]{trento_model_thickness}
       \end{figure}
     \end{column}
     \begin{column}{.5\textwidth}
@@ -469,7 +459,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \begin{figure}
-        \includegraphics{trento_model_entropy}
+        \includegraphics[width=\textwidth]{trento_model_entropy}
       \end{figure}
     \end{column}
     \begin{column}{.5\textwidth}
@@ -480,7 +470,6 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
         \left(\frac{T_A^p + T_B^p}{2}\right)^{1/p}
       \end{equation*}
       \begin{equation*}
-        \small
         T_R =
         \begin{cases}
           \max(T_A, T_B) & p \rightarrow +\infty, \\[.5ex]
@@ -502,7 +491,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \begin{figure}
-        \includegraphics{trento_model_freestream}\\
+        \includegraphics[width=\textwidth]{trento_model_freestream}\\
         \small arrows: fluid velocity\\weighted by energy density
       \end{figure}
     \end{column}
@@ -533,7 +522,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
 \begin{frame}[t]{\scshape Computer experiment design}
   \bigskip
   \begin{columns}[T]
-    \begin{column}{.55\textwidth}
+    \begin{column}{.6\textwidth}
       \scriptsize
       \begin{tabular}{lll}
         Parameter         & Description                        & Range           \\
@@ -555,18 +544,18 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
         $T_\text{switch}$ & Particlization temperature         & 135--165 MeV    \\
       \end{tabular}
     \end{column}
-    \begin{column}{.45\textwidth}
+    \begin{column}{.4\textwidth}
       \textcolor{theme}{\scshape Important details:}
       \smallskip
       \begin{itemize}
         \small
-        \item Parton width is reparametrized:\\[1ex]
+        \item Parton width reparametrized:\\[1ex]
           $v = v_\text{min} + \X(v_\text{max} - v_\text{min})$\\[1ex]
           $v_\text{min} = 0.2$~fm,~ $v_\text{max} = w$\\[1ex]
         \item Parton sampling radius is \emph{not} equivalent to the proton radius
-          in the proton c.o.m.\ frame, e.g.\ see\\
+          in the proton c.o.m.\ frame, see\\
           \textcolor{theme}{\scriptsize PRC.94.024919}\\[1ex]
-        \item Other parameters same as Pb+Pb analysis at 2.76 and 5.02 TeV
+        \item Other parameters same as combined Pb+Pb analysis at 2.76 and 5.02 TeV
       \end{itemize}
     \end{column}
   \end{columns}
@@ -582,7 +571,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
       \includegraphics[height=.95\paperheight]{observables_design}
       };
     \node[anchor=east] at (current page.east) {
-      \includegraphics[height=.95\paperheight]{observables_design}
+      \includegraphics[height=.95\paperheight]{observables_posterior}
       };
     \draw[<-] (current page.center) ++(-.75, 1.7) --
       node[above] {\footnotesize Prior}
@@ -598,29 +587,30 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
 
 \begin{frame}[plain]
   \begin{tikzpicture}
-    \node {\includegraphics[height=\textheight]{posterior}};
-    \node (title) at (6.5, 3.5) {\color{theme}{\scshape \Large Bayesian posterior}};
-    \node<1-2>[draw=none, text width=7cm, align=left, below=.2cm of title] (b1) {%
-      One row (column) for each parameter
+    \node {\includegraphics[height=.98\paperheight]{posterior}};
+    \node (title) at (6.0, 3.5) {\color{theme}{\scshape \Large Bayesian posterior}};
+    \node<1-2>[draw=none, text width=6.5cm, align=left, below=.2cm of title] (b1) {%
+      \small One row (column) for each parameter
       };
-    \node<1-2>[draw=none, text width=7cm, align=left, below=.2cm of b1] (b2) {%
-      Diagonal panels: marginal distribution of a single model parameter
+    \node<1-2>[draw=none, text width=6.5cm, align=left, below=.1cm of b1] (b2) {%
+      \small Diagonal panels: marginal distribution of a single model parameter
       };
-    \node<1-2>[draw=none, text width=7cm, align=left, below=.2cm of b2] (b3) {%
-      Off-diagonal panels: joint distribution between a pair of model parameters
+    \node<1-2>[draw=none, text width=6.5cm, align=left, below=.1cm of b2] (b3) {%
+      \small Off-diagonal panels: joint distribution between a pair of model parameters
       };
-    \node<2>[draw=none, text width=7cm, align=left, below=.4cm of b3] (b4) {%
-      Let's zoom in on some specific regions...
+    \node<2>[draw=none, text width=6.5cm, align=left, below=.2cm of b3] (b4) {%
+      \textcolor{theme}{Let's look at some specific regions...}
       };
-    \draw<1-2>[->, thick, theme] (b2.west) to [out=180, in=90] (-.3, 1.2);
-    \draw<1-2>[->, thick, theme] (b3.west) to [out=180, in=90] (.2, -.5);
-    \node<3>[xshift=.5cm, yshift=-.5cm, scale=.3] {\includegraphics{magnifying-glass}};
-    \node<4>[xshift=-.5cm, yshift=-1cm, scale=.3] {\includegraphics{magnifying-glass}};
+    \draw<1-2>[->, thick, theme] (b2.west) to [out=180, in=90] (-.58, 1.3);
+    \draw<1-2>[->, thick, theme] (b3.west) to [out=180, in=90] (-.05, 0);
+    \node<3>[xshift=-2.8cm, yshift=3.2cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
+    \node<4>[xshift=-1.2cm, yshift=1.6cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
+    \node<5>[xshift=-.7cm, yshift=1.1cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
   \end{tikzpicture}
 \end{frame}
 
 \begin{frame}{\scshape Maximum a posteriori parameters}
-
+  \includegraphics[height=.8\textheight]{find_map}
 \end{frame}
 
 \begin{frame}{\scshape Numerical grid error}

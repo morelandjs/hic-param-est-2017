@@ -350,7 +350,7 @@ def _observables_plots():
             ylabel=r'$\langle p_T \rangle$ [GeV]',
             ylim=(0, 2),
             subplots=[
-                ('mean_pT', None, dict(label=r'$\mathrm{mean} p_T$', scale=1)),
+                ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$', scale=1)),
             ]
         ),
         dict(
@@ -2688,11 +2688,11 @@ def cross_validation():
     plots = _observables_plots()
 
     fig, axes = plt.subplots(
-        nrows=len(systems), ncols=len(plots), sharex=True,
+        nrows=len(systems), ncols=len(plots), sharey=True,
         figsize=figsize(relwidth=1, aspect=aspect*len(systems)/len(plots))
     )
 
-    kf = KFold(n_splits=20, shuffle=False)
+    kf = KFold(n_splits=2, shuffle=False)
     quantiles = {}
 
     # adds items to a nested dictionary
@@ -2744,12 +2744,21 @@ def cross_validation():
                 # standard normal distribution
                 std = np.linspace(-4, 4, 10**3)
                 norm_dist = (1/np.sqrt(2*np.pi))*np.exp(-std**2/2)
-                ax.plot(std, norm_dist)
+                ax.plot(std, norm_dist, color=offblack)
 
                 # emulator quantiles
                 Q = quantiles[system][obs][subobs]
-                ax.hist(Q, bins=40, histtype='step', color=offblack, density=True)
+                ax.hist(Q, bins=40, histtype='step', density=True,
+                        label=label['label'])
+
                 ax.set_xlim(-5, 5)
+                ax.set_ylim(0, .6)
+                ax.set_xticks([-4, -2, 0, 2, 4])
+                xlabel = r'$(y_\mathrm{pred} - y_\mathrm{obs})/\sigma_\mathrm{pred}$'
+                ax.set_xlabel(r'{}'.format(xlabel))
+
+                ax.axes.get_yaxis().set_visible(False)
+                ax.legend(loc=1, bbox_to_anchor=(1.02, 1.1))
 
     set_tight(fig)
 

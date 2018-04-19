@@ -78,7 +78,7 @@ class Emulator:
         ('vnk', [(2, 2), (3, 2)]),
     ]
 
-    def __init__(self, system, npc=10, nrestarts=0):
+    def __init__(self, system, npc=10, nrestarts=0, exclude_points=[]):
         logging.info(
             'training emulator for system %s (%d PC, %d restarts)',
             system, npc, nrestarts
@@ -87,13 +87,17 @@ class Emulator:
         Y = []
         self._slices = {}
 
-        # system specific observables
+        # System specific observables
         observables = {
             'pPb5020': self.pPb5020,
             'PbPb5020': self.PbPb5020,
         }[system]
 
         self.system = system
+
+        # Model design array
+        design = Design(system)
+        X = design.array
 
         # Build an array of all observables to emulate.
         nobs = 0
@@ -107,6 +111,14 @@ class Emulator:
 
         Y = np.concatenate(Y, axis=1)
 
+        # Remove specific design points for validation
+        X, Y = [
+            np.array([
+                row for point, row in zip(design.points, matrix)
+                if point not in exclude_points
+            ]) for matrix in (X, Y)
+        ]
+
         self.npc = npc
         self.nobs = nobs
         self.scaler = StandardScaler(copy=False)
@@ -118,7 +130,6 @@ class Emulator:
 
         # Define kernel (covariance function):
         # Gaussian correlation (RBF) plus a noise term.
-        design = Design(system)
         ptp = design.max - design.min
         kernel = (
             1. * kernels.RBF(
@@ -137,7 +148,7 @@ class Emulator:
                 kernel=kernel, alpha=0,
                 n_restarts_optimizer=nrestarts,
                 copy_X_train=False
-            ).fit(design, z)
+            ).fit(X, z)
             for z in Z.T
         ]
 

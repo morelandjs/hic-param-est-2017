@@ -338,8 +338,7 @@ def _observables_plots():
         dict(
             title='Yields',
             ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
-            ylim=(10**0, 10**3),
-            yscale='log',
+            ylim=(-1, 6),
             height_ratio=1,
             subplots=[
                 ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$', scale=1)),
@@ -348,7 +347,7 @@ def _observables_plots():
         dict(
             title='Mean $p_T$',
             ylabel=r'$\langle p_T \rangle$ [GeV]',
-            ylim=(0, 2),
+            ylim=(-1, 1),
             subplots=[
                 ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$', scale=1)),
             ]
@@ -356,7 +355,7 @@ def _observables_plots():
         dict(
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
-            ylim=(0, .2),
+            ylim=(-7, 0),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
                 for n in [2, 3]
@@ -1493,7 +1492,7 @@ def pca_vectors_variance(system='pPb5020'):
     #ax.set_ylim(-.2, .35)
     ax.set_ylabel('PCA coefficient', labelpad=1)
     auto_ticks(ax, 'y', nbins=4, minor=2)
-    ax.legend(loc='center left', handletextpad=0)
+    ax.legend(loc='best', handletextpad=0)
 
     ax = axes[1]
 
@@ -1561,9 +1560,52 @@ def boxplot(
             color=color, alpha=alpha, zorder=zorder
         )
 
+@plot
+def validation_data(system='pPb5020'):
+    """
+    Partition the design into training and test data using K-fold
+    cross validation. Train the emulator on each fold (subset of the design)
+    and concatenate the predictions into an single object with the same shape
+    as the model data.
 
-#@plot
-def validation_all(system='PbPb5020'):
+    """
+    kf = KFold(n_splits=2)
+    design = Design(system)
+
+    mean = {}
+    cov = {}
+
+    def concat_dict(dicta, dictb):
+        try:
+            for obs, obs_data in dicta.items():
+                for subobs, value in obs_data.items():
+                    dicta[obs][subobs] = np.concatenate(
+                        (dicta[obs][subobs], dictb[obs][subobs])
+                    )
+        except KeyError:
+            dicta = dictb
+
+        return dicta
+
+    for train_index, test_index in kf.split(design.array):
+        test_points, train_points = [
+            [design.points[index] for index in indices]
+            for indices in (test_index, train_index)
+        ]
+
+        emu = Emulator(system, exclude_points=test_points, npc=8)
+        test_mean, test_cov = emu.predict(
+            design.array[test_index], return_cov=True
+        )
+
+        mean = concat_dict(mean, test_mean)
+
+    print(mean['dNch_deta'][None])
+    quit()
+
+
+@plot
+def validation_all(system='pPb5020'):
     """
     Emulator validation: normalized residuals and RMS error for each
     observable.
@@ -2519,7 +2561,7 @@ def collision_profile():
 
     plt.legend(
         title=r'$\sigma_\mathrm{nn}^\mathrm{inel}=6.4$ fm$^2$',
-        bbox_to_anchor=(.5, .15)
+        loc='best'
     )
 
     set_tight()
@@ -2642,6 +2684,7 @@ def entropy_scaling(system='pPb5020'):
     """
     ncols= 10
     nrows = 5
+
     fig, axes = plt.subplots(
         nrows=nrows, ncols=ncols,
         figsize=figsize(relwidth=3, aspect=nrows/ncols)
@@ -2692,7 +2735,7 @@ def cross_validation():
         figsize=figsize(relwidth=1, aspect=aspect*len(systems)/len(plots))
     )
 
-    kf = KFold(n_splits=2, shuffle=False)
+    kf = KFold(n_splits=20, shuffle=True)
     quantiles = {}
 
     # adds items to a nested dictionary
@@ -2716,7 +2759,7 @@ def cross_validation():
             ]
 
             # train emulator on training points, test on testing points
-            emu = Emulator(system, exclude_points=test_points)
+            emu = Emulator(system, exclude_points=test_points, npc=8)
             mean, cov = emu.predict(design.array[test_index], return_cov=True)
 
             # calculate and record emulator quantiles for each observable
@@ -2751,7 +2794,7 @@ def cross_validation():
                 ax.hist(Q, bins=40, histtype='step', density=True,
                         label=label['label'])
 
-                ax.set_xlim(-5, 5)
+                ax.set_xlim(-8, 8)
                 ax.set_ylim(0, .6)
                 ax.set_xticks([-4, -2, 0, 2, 4])
                 xlabel = r'$(y_\mathrm{pred} - y_\mathrm{obs})/\sigma_\mathrm{pred}$'

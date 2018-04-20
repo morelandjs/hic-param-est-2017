@@ -70,7 +70,7 @@ def trento(args, nevents=10**5):
     np.save(cachefile, [float(l.split()[3]) for l in proc.stdout.splitlines()])
 
 
-def trento_args(system):
+def trento_args(system, design_points):
     """
     Generator which yields trento arguments at each design point.
 
@@ -78,7 +78,7 @@ def trento_args(system):
     design = Design(system)
     param = dict(zip(design.points, design.array))
 
-    for design_point in design.points:
+    for design_point in design_points:
         args = dict(zip(design.keys, param[design_point]))
 
         parton_number = args['parton_number'].astype(int)
@@ -105,22 +105,30 @@ def trento_entropy(system, design_point):
     Return the entropy of each trento event in a large minimum bias sample.
 
     """
+    design = Design(system)
+
     cachefiles = [
         Path(cachedir, 'trento', system, '{}.npy'.format(p))
-        for p in Design(system).points
+        for p in design.points
     ]
 
     cachefile = Path(cachedir, 'trento', system, '{}.npy'.format(design_point))
 
-    # load trento entropy data from cache
+    # if all cache files exist, load trento entropy from cache
     if all(f.exists() for f in cachefiles):
         return np.load(cachefile)
-    else:
-        cachefiles = [f for f in cachefiles if not f.exists()]
 
-    # generate the trento attribute data for all design points
+    # otherwise generate missing cache files
+    missing_design_points = [
+        p for (f, p) in zip(cachefiles, design.points) if not f.exists()
+    ]
+
+    # run trento events
     ncpu = multiprocessing.cpu_count()
-    multiprocessing.Pool(ncpu).map(trento, trento_args(system))
+    multiprocessing.Pool(ncpu).map(
+        trento, trento_args(system, missing_design_points)
+    )
+
     return np.load(cachefile)
 
 

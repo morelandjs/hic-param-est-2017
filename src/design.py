@@ -29,16 +29,18 @@ import numpy as np
 
 from . import cachedir, parse_system
 
+
 """
 Remove outlier design points. These points are near the edge of the
-design and produce far too few particles.
+design and produce far too few particles to be physically reasonable.
 
 """
 bad_points = [
-    83, 156, 211, 242, 276, 326, 334, 338, 378, 429, 459, 471,
-    34, 129, 162, 172, 176, 183, 196, 199, 200, 240, 247, 273,
-    310, 314, 319, 321, 335, 345, 346, 356, 363, 365, 418, 422,
-    445, 451, 456, 460, 462, 466, 476, 492, 498
+    83, 104, 107, 115, 129, 156, 159, 162, 165, 178, 183, 184, 185, 193, 199,
+    211, 219, 223, 225, 234, 236, 239, 242, 248, 273, 276, 285, 296, 298, 312,
+    317, 319, 326, 330, 334, 338, 341, 346, 355, 358, 360, 363, 365, 367, 374,
+    378, 392, 418, 421, 422, 428, 429, 446, 451, 459, 460, 461, 464, 466, 471,
+    472, 483, 492, 498
 ]
 
 
@@ -172,7 +174,7 @@ class Design:
         self.array = self.array[keep]
         self.points = list(itertools.compress(self.points, keep))
         logging.debug(
-            'removed two outlier design points: {}'.format(bad_points)
+            'removed outlier design points: {}'.format(bad_points)
         )
 
 

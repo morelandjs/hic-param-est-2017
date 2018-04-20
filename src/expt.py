@@ -69,7 +69,6 @@ class HEPData:
 
         return [d['header']['name'] for d in data]
 
-
     def x(self, name, case=True):
         """
         Get an independent variable ("x" data) with the given name.
@@ -309,6 +308,29 @@ def pPb5020_flows(mode):
     )
 
 
+def log_transform(data):
+    """
+    Transform experimental data and errors to log space,
+
+    y = log y,
+    d(log y) = dy/y.
+
+    This transformation, which is also performed on the model observables,
+    improves PCA decomposition and emulator performance.
+
+    """
+    for sys, sys_data in data.items():
+        for obs, obs_data in sys_data.items():
+            for subobs, subobs_data in obs_data.items():
+
+                y, yerr = [subobs_data[k] for k in ('y', 'yerr')]
+                ystat, ysys = [yerr[k] for k in ('stat', 'sys')]
+
+                np.divide(ystat, y, out=ystat)
+                np.divide(ysys, y, out=ysys)
+                np.log(y, out=y)
+
+
 def _data():
     """
     Curate the experimental data using the `HEPData` class and return a nested
@@ -363,6 +385,9 @@ def _data():
                     ),
                     maxcent=100
                 )
+
+    """Log transform experimental data and errors"""
+    log_transform(data)
 
     return data
 

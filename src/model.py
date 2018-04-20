@@ -133,7 +133,7 @@ complex_t = '<c16'
 
 class ModelData:
     """
-    Helper class for event-by-event model data.  Reads binary data files and
+    Helper class for event-by-event model data. Reads binary data files and
     computes centrality-binned observables.
 
     """
@@ -164,7 +164,7 @@ class ModelData:
         self.design_events = [load_events(f) for f in files]
         self.system = system
 
-        # special boolean flag for p-Pb collisions
+        # special flag for p-Pb collisions
         self.pPb_event = (system == 'pPb5020')
 
     def observables_like(self, data, *keys):
@@ -276,7 +276,20 @@ class ModelData:
             else:
                 raise ValueError("no such bin type")
 
-            return list(map(compute_bin, binned_events))
+            """
+            The p-Pb collision observables at 5.02 TeV are best emulated in log
+            space. This provides several advantages:
+
+            1. it suppresses large outliers in the design
+            2. it makes the observables more normally distributed across the
+            design space which greatly improves PCA decomposition.
+
+            Note: in order for this to work, the corresponding experimental
+            data must also be transformed into log space.
+
+            """
+            obs = map(compute_bin, binned_events)
+            return list(map(np.log, obs))
 
         Y = np.array([
             compute_all_bins(events, design_point)

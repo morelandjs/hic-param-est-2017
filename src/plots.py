@@ -22,6 +22,7 @@ import itertools
 import logging
 import os
 from pathlib import Path
+import pickle
 import subprocess
 import tempfile
 import warnings
@@ -45,7 +46,7 @@ from sklearn.gaussian_process import kernels
 from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import KFold
 
-from . import workdir, systems, parse_system, expt, model, mcmc
+from . import cachedir, workdir, systems, parse_system, expt, model, mcmc
 from .design import Design
 from .emulator import Emulator, emulators
 
@@ -1065,189 +1066,6 @@ region_style = dict(color='.93', zorder=-100)
 Tc = .154
 
 
-#@plot
-def flow_corr():
-    """
-    Symmetric cumulants SC(m, n) at the MAP point compared to experiment.
-
-    """
-    fig, axes = plt.subplots(
-        figsize=figsize(1.05, .7),
-        nrows=2, ncols=2, gridspec_kw=dict(width_ratios=[.8, 1])
-    )
-
-    cmapx_normal = .7
-    cmapx_pred = .5
-
-    def label(*mn, normed=False):
-        fmt = r'\mathrm{{SC}}({0}, {1})'
-        if normed:
-            fmt += r'/\langle v_{0}^2 \rangle\langle v_{1}^2 \rangle'
-        return fmt.format(*mn).join('$$')
-
-    for obs, ax in zip(
-            ['sc_central', 'sc', 'sc_normed_central', 'sc_normed'],
-            axes.flat
-    ):
-        for (mn, cmap), sys in itertools.product(
-                [
-                    ((4, 2), 'Blues'),
-                    ((3, 2), 'Oranges'),
-                ],
-                systems
-        ):
-            x = model.map_data[sys][obs][mn]['x']
-            y = model.map_data[sys][obs][mn]['Y']
-
-            pred = obs not in expt.data[sys]
-            cmapx = cmapx_pred if pred else cmapx_normal
-
-            kwargs = {}
-
-            if pred:
-                kwargs.update(linestyle='dashed')
-
-            if ax.is_first_col() and ax.is_first_row():
-                fmt = '{:.2f} TeV'
-                if pred:
-                    fmt += ' (prediction)'
-                lbl = fmt.format(parse_system(sys)[1]/1000)
-                if not any(l.get_label() == lbl for l in ax.get_lines()):
-                    ax.add_line(lines.Line2D(
-                        [], [], color=plt.cm.Greys(cmapx),
-                        label=lbl, **kwargs
-                    ))
-            elif ax.is_last_col() and not pred:
-                kwargs.update(label=label(*mn, normed='normed' in obs))
-
-            ax.plot(
-                x, y, lw=.75,
-                color=getattr(plt.cm, cmap)(cmapx),
-                **kwargs
-            )
-
-            if pred:
-                continue
-
-            x = expt.data[sys][obs][mn]['x']
-            y = expt.data[sys][obs][mn]['y']
-            yerr = expt.data[sys][obs][mn]['yerr']
-
-            ax.errorbar(
-                x, y, yerr=yerr['stat'],
-                fmt='o', ms=.8*plt.rcParams['lines.markersize'],
-                capsize=0, color='.25', zorder=100
-            )
-
-            ax.fill_between(
-                x, y - yerr['sys'], y + yerr['sys'],
-                color='.9', zorder=-10
-            )
-
-        ax.axhline(
-            0, color='.5', lw=plt.rcParams['xtick.major.width'],
-            zorder=-100
-        )
-
-        ax.set_xlim(0, 10 if 'central' in obs else 70)
-
-        auto_ticks(ax, nbins=6, minor=2)
-
-        if all(ax.get_legend_handles_labels()):
-            ax.legend(loc='best')
-
-        if ax.is_first_col():
-            ax.set_ylabel(label('m', 'n', normed='normed' in obs))
-
-        if ax.is_first_row():
-            ax.set_title(
-                'Central'
-                if 'central' in obs else
-                'Minimum bias'
-            )
-        else:
-            ax.set_xlabel('Centrality %')
-
-
-#@plot
-def flow_extra():
-    """
-    vn{2} in central bins and v2{4}.
-
-    """
-    plots, width_ratios = zip(*[
-        (('vnk_central', 'Central two-particle cumulants', r'$v_n\{2\}$'), 2),
-        (('vnk', 'Four-particle cumulants', r'$v_2\{4\}$'), 3),
-    ])
-
-    fig, axes = plt.subplots(
-        figsize=figsize(1.2, aspect=.4),
-        ncols=len(plots), gridspec_kw=dict(width_ratios=width_ratios)
-    )
-
-    cmaps = {
-        (2, 2): plt.cm.GnBu,
-        (3, 2): plt.cm.Purples,
-        (4, 2): plt.cm.RdPu,
-        (2, 4): plt.cm.OrRd,
-    }
-
-    for (obs, title, ylabel), ax in zip(plots, axes):
-        for sys, (cmapx, dashes, fmt) in zip(
-                systems, [
-                    (.7, (None, None), 'o'),
-                    (.6, (3, 2), 's'),
-                ]
-        ):
-            syslabel = '{:.2f} TeV'.format(parse_system(sys)[1]/1000)
-            for subobs, dset in model.map_data[sys][obs].items():
-                x = dset['x']
-                y = dset['Y']
-
-                ax.plot(
-                    x, y,
-                    color=cmaps[subobs](cmapx), dashes=dashes,
-                    label='Model ' + syslabel
-                )
-
-                try:
-                    dset = expt.data[sys][obs][subobs]
-                except KeyError:
-                    continue
-
-                x = dset['x']
-                y = dset['y']
-                yerr = dset['yerr']
-
-                ax.errorbar(
-                    x, y, yerr=yerr['stat'],
-                    fmt=fmt, ms=2.2, capsize=0, color='.25', zorder=100,
-                    label='ALICE ' + syslabel
-                )
-
-                ax.fill_between(
-                    x, y - yerr['sys'], y + yerr['sys'],
-                    color='.9', zorder=-10
-                )
-
-                if obs == 'vnk_central':
-                    ax.text(
-                        x[-1] + .15, y[-1], '$v_{}$'.format(subobs),
-                        color=cmaps[subobs](.99), ha='left', va='center'
-                    )
-
-        auto_ticks(ax, 'y', minor=2)
-        ax.set_xlim(0, dset['cent'][-1][1])
-
-        ax.set_xlabel('Centrality %')
-        ax.set_ylabel(ylabel)
-        ax.set_title(title)
-
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[-2:], labels[-1:], loc='upper left')
-    set_tight(fig, pad=.2)
-
-
 @plot
 def design():
     """
@@ -1294,6 +1112,8 @@ def design():
     for i, xy in zip(indices, 'xy'):
         for f, l in [('lim', d.range), ('label', d.labels)]:
             getattr(ax_j, 'set_{}{}'.format(xy, f))(l[i])
+
+    set_tight(fig)
 
 
 @plot
@@ -1358,7 +1178,7 @@ def gp():
 
 @plot
 def pca():
-    fig = plt.figure(figsize=figsize(.5, 1))
+    fig = plt.figure(figsize=figsize(.6, aspect=1))
     ratio = 5
     gs = plt.GridSpec(ratio + 1, ratio + 1)
 
@@ -1367,15 +1187,13 @@ def pca():
     ax_y = fig.add_subplot(gs[1:, -1], sharey=ax_j)
 
     x, y = (
-        model.data['pPb5020'][obs][subobs]['Y'][:, 0]
+        model.data['pPb5020'][obs][subobs]['Y'][:, 3]
         for obs, subobs in [('dNch_deta', None), ('vnk', (2, 2))]
     )
-    x = np.log(x + 1e-1*np.random.uniform(1e-2, 1e-1, len(x)))
-    y = np.log(y)
-    xlabel = r'$dN_{\pi^\pm}/dy$'
+    xlabel = r'$dN_\mathrm{ch}/d\eta$'
     ylabel = r'$v_2\{2\}$'
-    #xlim = 0.001, 100
-    #ylim = 0.001, 0.3
+    xlim = .5, 6
+    ylim = -6.5, 0
 
     cmap = plt.cm.Blues
 
@@ -1394,7 +1212,7 @@ def pca():
     xy /= xystd
     pca = PCA().fit(xy)
     pc = (
-        7 * xystd *
+        6 * xystd *
         pca.explained_variance_ratio_[:, np.newaxis] *
         pca.components_
     )
@@ -1430,13 +1248,13 @@ def pca():
     for ax in ax_x, ax_y:
         ax.tick_params(labelbottom='off', labelleft='off')
 
-    auto_ticks(ax_j)
+    auto_ticks(ax_j, nbins=5, prune='upper')
 
-    #ax_j.set_xlim(-5, 5)
-    #ax_j.set_ylim(ylim)
+    ax_j.set_xlim(xlim)
+    ax_j.set_ylim(ylim)
 
-    #ax_j.set_xlabel(xlabel)
-    #ax_j.set_ylabel(ylabel)
+    ax_j.set_xlabel(xlabel)
+    ax_j.set_ylabel(ylabel)
 
     set_tight(pad=.1, h_pad=.3, w_pad=.3)
 
@@ -1560,32 +1378,25 @@ def boxplot(
             color=color, alpha=alpha, zorder=zorder
         )
 
-@plot
-def validation_data(system='pPb5020'):
+
+def validation_data(system, n_splits=20, npc=8):
     """
     Partition the design into training and test data using K-fold
     cross validation. Train the emulator on each fold (subset of the design)
-    and concatenate the predictions into an single object with the same shape
-    as the model data.
+    and return the emulator prediction (mean and cov) for each fold as a list.
 
     """
-    kf = KFold(n_splits=2)
     design = Design(system)
+    kf = KFold(n_splits=n_splits)
 
-    mean = {}
-    cov = {}
+    mean_folds = []
+    cov_folds = []
 
-    def concat_dict(dicta, dictb):
-        try:
-            for obs, obs_data in dicta.items():
-                for subobs, value in obs_data.items():
-                    dicta[obs][subobs] = np.concatenate(
-                        (dicta[obs][subobs], dictb[obs][subobs])
-                    )
-        except KeyError:
-            dicta = dictb
+    cachefile = Path(cachedir, 'validation', '{}.pkl'.format(system))
+    cachefile.parent.mkdir(parents=True, exist_ok=True)
 
-        return dicta
+    if cachefile.exists():
+        return pickle.load(cachefile.open(mode='rb'))
 
     for train_index, test_index in kf.split(design.array):
         test_points, train_points = [
@@ -1593,15 +1404,16 @@ def validation_data(system='pPb5020'):
             for indices in (test_index, train_index)
         ]
 
-        emu = Emulator(system, exclude_points=test_points, npc=8)
+        emu = Emulator(system, exclude_points=test_points, npc=npc)
         test_mean, test_cov = emu.predict(
             design.array[test_index], return_cov=True
         )
 
-        mean = concat_dict(mean, test_mean)
+        mean_folds.append(test_mean)
+        cov_folds.append(test_cov)
 
-    print(mean['dNch_deta'][None])
-    quit()
+    pickle.dump((mean_folds, cov_folds), cachefile.open(mode='wb'))
+    return mean_folds, cov_folds
 
 
 @plot
@@ -1620,20 +1432,25 @@ def validation_all(system='pPb5020'):
     ticks = []
     ticklabels = []
 
-    vdata = model.validation_data[system]
-    emu = emulators[system]
-    mean, cov = emu.predict(
-        Design(system, validation=True).array,
-        return_cov=True
-    )
+    plots = _observables_plots()
+    model_data  = model.data[system]
+    mean_folds, cov_folds = validation_data(system)
 
-    for obs, subobslist in emu.observables:
-        for subobs in subobslist:
+    for plot in plots:
+        for (obs, subobs, opts) in plot['subplots']:
             color = obs_color(obs, subobs)
 
-            Y = vdata[obs][subobs]['Y']
-            Y_ = mean[obs][subobs]
-            S_ = np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal())
+            # model data
+            Y = model_data[obs][subobs]['Y']
+
+            # emulator predictions
+            Y_ = np.concatenate(
+                [mean[obs][subobs] for mean in mean_folds], axis=0
+            )
+            S_ = np.concatenate(
+                [np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal())
+                 for cov in cov_folds], axis=0
+            )
 
             Z = (Y_ - Y)/S_
 
@@ -1677,8 +1494,8 @@ def validation_all(system='pPb5020'):
     )
 
     ax_rms.set_xticks([])
-    ax_rms.set_yticks(np.arange(0, 16, 5))
-    ax_rms.set_ylim(0, 15)
+    ax_rms.set_yticks(np.arange(0, 26, 5))
+    ax_rms.set_ylim(0, 25)
     ax_rms.set_ylabel('RMS % error')
 
     for y in ax_rms.get_yticks():
@@ -1689,12 +1506,12 @@ def validation_all(system='pPb5020'):
         ax.spines['bottom'].set_visible(False)
 
 
-#@plot
+@plot
 def validation_example(
-        system='PbPb2760',
-        obs='dNch_deta', subobs=None,
-        label=r'$dN_\mathrm{ch}/d\eta$',
-        cent=(20, 30)
+        system='pPb5020',
+        obs='mean_pT', subobs=None,
+        label=r'mean $p_T$',
+        mult=(2.395, 2.479)
 ):
     """
     Example of emulator validation for a single observable.  Scatterplot of
@@ -1709,16 +1526,21 @@ def validation_example(
 
     ax_scatter, ax_hist = axes
 
-    vdata = model.validation_data[system][obs][subobs]
-    cent_slc = (slice(None), vdata['cent'].index(cent))
-    y = vdata['Y'][cent_slc]
+    # model data
+    model_data  = model.data[system]
+    vdata = model_data[obs][subobs]
+    mult_slc = (slice(None), vdata['mult'].index(mult))
+    y = vdata['Y'][mult_slc]
 
-    mean, cov = emulators[system].predict(
-        Design(system, validation=True).array,
-        return_cov=True
+    # emulator predictions
+    mean_folds, cov_folds = validation_data(system)
+    y_ = np.concatenate(
+        [mean[obs][subobs][mult_slc] for mean in mean_folds], axis=0
     )
-    y_ = mean[obs][subobs][cent_slc]
-    std_ = np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal()[cent_slc])
+    std_ = np.concatenate(
+        [np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal()[mult_slc])
+            for cov in cov_folds], axis=0
+    )
 
     color = obs_color(obs, subobs)
     alpha = .6
@@ -1735,7 +1557,7 @@ def validation_example(
     ax_scatter.set_xlabel('Emulator prediction')
     ax_scatter.set_ylabel('Model calculation')
     ax_scatter.text(
-        .04, .96, '{} {}–{}%'.format(label, *cent),
+        .04, .96, '{} {}–{}'.format(label, *mult),
         horizontalalignment='left', verticalalignment='top',
         transform=ax_scatter.transAxes
     )
@@ -1794,8 +1616,11 @@ def validation_example(
     )
 
 
+default_system = 'pPb5020'
+
+
 @plot
-def correlation_matrices(system='pPb5020'):
+def correlation_matrices(system=default_system):
     """
     Correlation (normalized covariance) matrices for model and experiment.
 
@@ -1864,16 +1689,13 @@ def correlation_matrices(system='pPb5020'):
     set_tight(fig, rect=(0, 0, 1, .96))
 
 
-default_system = 'pPb5020'
-
-
 @plot
 def diag_pca(system=default_system):
     """
     Diagnostic: histograms of principal components and scatterplots of pairs.
 
     """
-    Y = [g.y_train_ for g in emulators[system].gps]
+    Y = [g.y_train_ for g in emulators[default_system].gps]
     n = len(Y)
     ymax = np.ceil(max(np.fabs(y).max() for y in Y))
     lim = (-ymax, ymax)
@@ -2091,8 +1913,6 @@ def grid_error():
     observables calculated on a grid with grid scale = 0.1.
 
     """
-    system = 'pPb5020'
-
     obs_list = [
         ('dNch_deta', r'$dN_\mathrm{ch}/d\eta$'),
         ('mean_pT', r'mean $p_T$ [GeV]'),
@@ -2108,12 +1928,12 @@ def grid_error():
             'hic-events/qm18-grid-scale',
             'grid-scale-{}'.format(gs),
             'events/{}.dat'.format(p)
-        ) for p in Design(system).points if int(p) != 228]
+        ) for p in Design(default_system).points if int(p) != 228]
         for gs in (.1, .2)
     )
 
     fine_events, coarse_events = [
-        [ev for p, ev in model.ModelData(system, *design_points).design_events]
+        [ev for p, ev in model.ModelData(default_system, *design_points).design_events]
         for design_points in (fine_design_points, coarse_design_points)
     ]
 
@@ -2145,7 +1965,7 @@ def grid_error():
         auto_ticks(ax, 'x', nbins=3)
         auto_ticks(ax, 'y', nbins=3)
 
-    set_tight()
+    set_tight(fig)
 
 
 def run_cmd(*args, stdout=subprocess.PIPE):
@@ -2228,18 +2048,6 @@ def trento_imshow(system, grid_max, grid_step,
 
 
 @plot
-def lead():
-    """ Lead nucleus """
-    trento_imshow('Pb Pb', 11, .1, nucleon_width=1.1)
-
-
-@plot
-def lead_partons():
-    """ Lead nucleus with sub-structure """
-    trento_imshow('Pb Pb', 11, .1, parton_number=1, parton_width=.6)
-
-
-@plot
 def proton():
     """ Gaussian proton """
     trento_imshow('p p', 2.8, .05)
@@ -2260,28 +2068,6 @@ def nucleus():
     nucl_data = np.loadtxt(file_path)
 
     return np.split(nucl_data, 2)
-
-
-@plot
-def entropy_deposition(aspect=.75):
-    """
-    Schematic drawing of how entropy deposition scales with target density
-
-    """
-    plt.figure(figsize=figsize(1/3))
-
-    x = np.linspace(1e-6, 5, 1000)
-    p = 1e-3
-
-    dsdy = (0.5*(1**p + x**p))**(1/(p + 1e-6))
-    plt.plot(x, dsdy, color=theme)
-
-    plt.xlabel(r'Local target thickness')
-    plt.ylabel(r'Entropy deposited')
-    plt.xticks([])
-    plt.yticks([])
-
-    set_tight()
 
 
 def plot_nucleons(ax, gray_spect=False):
@@ -2505,7 +2291,7 @@ def coupling():
     fluid coupling as a step function
 
     """
-    plt.figure(figsize=figsize(.3))
+    plt.figure(figsize=figsize(.4))
 
     x = np.linspace(0, 1, 10**3)
     y = np.heaviside(x - .6, 1)
@@ -2603,14 +2389,18 @@ def proton_overlap():
 
 
 @plot
-def observable_normality(system='pPb5020'):
-    model_data = model._data(system)
-    emu = emulators[system]
+def observable_normality():
+    """
+    Scatter plot every observable bin against every other observable bin
+    to assess normality.
+
+    """
+    plots = _observables_plots()
+    model_data = model._data(default_system)
 
     observables = [
-        (obs, subobs, y)
-        for (obs, subobslist) in emu.pPb5020
-        for subobs in subobslist
+        (obs, subobs, y) for plot in plots
+        for (obs, subobs, opts) in plot['subplots']
         for y in model_data[obs][subobs]['Y'].T
     ]
 
@@ -2645,16 +2435,14 @@ def statistics():
     plt.figure(figsize=figsize())
     ax = plt.gca()
 
-    system = 'pPb5020'
-
     files = [
-        Path(workdir, 'model_output', 'main', system, '{}.dat'.format(p))
-        for p in Design(system, validation=False).points
+        Path(workdir, 'model_output', 'main', default_system, '{}.dat'.format(p))
+        for p in Design(default_system, validation=False).points
     ]
 
     events = [
         tuple(event)
-        for point, events in model.ModelData(system, *files).design_events
+        for point, events in model.ModelData(default_system, *files).design_events
         for event in events['trigger']
     ]
 
@@ -2677,7 +2465,7 @@ def statistics():
 
 
 @plot
-def entropy_scaling(system='pPb5020'):
+def entropy_scaling():
     """
     Plot initial entropy vs final dNch/deta
 
@@ -2690,11 +2478,11 @@ def entropy_scaling(system='pPb5020'):
         figsize=figsize(relwidth=3, aspect=nrows/ncols)
     )
 
-    data = Path(workdir, 'model_output', 'main', system)
+    data = Path(workdir, 'model_output', 'main', default_system)
 
-    design = Design(system, validation=False)
+    design = Design(default_system, validation=False)
     files = [data / '{}.dat'.format(p) for p in design.points]
-    model_data = model.ModelData(system, *files)
+    model_data = model.ModelData(default_system, *files)
 
     def powerlaw(x, a, b, c):
         return a*x**b + c
@@ -2716,92 +2504,6 @@ def entropy_scaling(system='pPb5020'):
 
         ax.plot(x, y, 'o', zorder=0)
         ax.set_title(str(pt))
-
-    set_tight()
-
-
-@plot
-def cross_validation():
-    """
-    Plot the distribution of emulator quantiles for each observable.
-    If the emulator is working, the distribution of residuals should
-    be that of a standard normal distribution.
-
-    """
-    plots = _observables_plots()
-
-    fig, axes = plt.subplots(
-        nrows=len(systems), ncols=len(plots), sharey=True,
-        figsize=figsize(relwidth=1, aspect=aspect*len(systems)/len(plots))
-    )
-
-    kf = KFold(n_splits=20, shuffle=True)
-    quantiles = {}
-
-    # adds items to a nested dictionary
-    def update(d, u):
-        for k, v in u.items():
-            if isinstance(v, Mapping):
-                d[k] = update(d.get(k, {}), v)
-            else:
-                d[k] = v
-        return d
-
-    # loop over collision systems
-    for row, system in enumerate(systems):
-        design = Design(system)
-
-        # loop over k-fold training and test points
-        for train_index, test_index in kf.split(design.array):
-            test_points, train_points = [
-                [design.points[index] for index in indices]
-                for indices in (test_index, train_index)
-            ]
-
-            # train emulator on training points, test on testing points
-            emu = Emulator(system, exclude_points=test_points, npc=8)
-            mean, cov = emu.predict(design.array[test_index], return_cov=True)
-
-            # calculate and record emulator quantiles for each observable
-            for col, plot in enumerate(plots):
-                for (obs, subobs, label) in plot['subplots']:
-                    # actual model values
-                    Y = model.data[system][obs][subobs]['Y'][test_index]
-                    # emulator predictions
-                    Y_ = mean[obs][subobs]
-                    S_ = np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal())
-                    # quantiles
-                    Q = (Y_ - Y)/S_
-
-                    try:
-                        Q_ = quantiles[system][obs][subobs]
-                        quantiles[system][obs][subobs] = np.append(Q_, Q.ravel())
-                    except KeyError:
-                        update(quantiles, {system: {obs: {subobs: Q.ravel()}}})
-
-        # plot quantiles
-        for col, plot in enumerate(plots):
-            for (obs, subobs, label) in plot['subplots']:
-                ax = axes[row][col] if len(systems) > 1 else axes[col]
-
-                # standard normal distribution
-                std = np.linspace(-4, 4, 10**3)
-                norm_dist = (1/np.sqrt(2*np.pi))*np.exp(-std**2/2)
-                ax.plot(std, norm_dist, color=offblack)
-
-                # emulator quantiles
-                Q = quantiles[system][obs][subobs]
-                ax.hist(Q, bins=40, histtype='step', density=True,
-                        label=label['label'])
-
-                ax.set_xlim(-8, 8)
-                ax.set_ylim(0, .6)
-                ax.set_xticks([-4, -2, 0, 2, 4])
-                xlabel = r'$(y_\mathrm{pred} - y_\mathrm{obs})/\sigma_\mathrm{pred}$'
-                ax.set_xlabel(r'{}'.format(xlabel))
-
-                ax.axes.get_yaxis().set_visible(False)
-                ax.legend(loc=1, bbox_to_anchor=(1.02, 1.1))
 
     set_tight(fig)
 

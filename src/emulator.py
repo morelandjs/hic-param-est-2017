@@ -114,7 +114,7 @@ class Emulator:
         # Remove specific design points for validation
         X, Y = [
             np.array([
-                row for point, row in zip(design.points, matrix)
+                row for (point, row) in zip(design.points, matrix)
                 if point not in exclude_points
             ]) for matrix in (X, Y)
         ]

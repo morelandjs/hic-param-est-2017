@@ -348,7 +348,7 @@ def _observables_plots():
         dict(
             title='Mean $p_T$',
             ylabel=r'$\langle p_T \rangle$ [GeV]',
-            ylim=(-1, 1),
+            ylim=(-2, 1),
             subplots=[
                 ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$', scale=1)),
             ]
@@ -1379,7 +1379,7 @@ def boxplot(
         )
 
 
-def validation_data(system, n_splits=20, npc=8):
+def validation_data(system, n_splits=20, npc=6):
     """
     Partition the design into training and test data using K-fold
     cross validation. Train the emulator on each fold (subset of the design)
@@ -1460,7 +1460,10 @@ def validation_all(system='pPb5020'):
             ):
                 boxplot(ax_box, percentiles, x=i, box_width=.8, color=color)
 
-            rms = 100*np.sqrt(np.square(Y_/Y - 1).mean(axis=0))
+            Ymin, Ymax = np.percentile(Y, (1, 99))
+            perc_error = (Y_ - Y) / (Ymax - Ymin) 
+            rms = 100*np.sqrt(np.square(perc_error).mean(axis=0))
+
             ax_rms.plot(
                 np.arange(index, index + rms.size), rms, 'o', color=color
             )
@@ -1494,8 +1497,8 @@ def validation_all(system='pPb5020'):
     )
 
     ax_rms.set_xticks([])
-    ax_rms.set_yticks(np.arange(0, 26, 5))
-    ax_rms.set_ylim(0, 25)
+    ax_rms.set_yticks(np.arange(0, 16, 5))
+    ax_rms.set_ylim(0, 15)
     ax_rms.set_ylabel('RMS % error')
 
     for y in ax_rms.get_yticks():

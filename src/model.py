@@ -164,7 +164,6 @@ class ModelData:
         self.design_events = [load_events(f) for f in files]
         self.system = system
 
-        # special flag for p-Pb collisions
         self.pPb_event = (system == 'pPb5020')
 
     def observables_like(self, data, *keys):
@@ -358,6 +357,26 @@ def _data(system, dataset='main'):
         data = dict(mean_pT=dict(charged=mean_pT), **data)
 
     data = ModelData(system, *files).observables_like(data)
+
+    #bad_points = set()
+    #for n, y in enumerate(data['dNch_deta'][None]['Y']):
+    #    if np.min(y) < 1:
+    #        bad_points.add(n)
+
+    #for n, y in enumerate(data['mean_pT'][None]['Y']):
+    #    if np.max(y) > 1.5:
+    #        bad_points.add(n)
+
+    #for n, y in enumerate(data['vnk'][(2, 2)]['Y']):
+    #    if np.min(y) < 0.0024787:
+    #        bad_points.add(n)
+
+    #for n, y in enumerate(data['vnk'][(3, 2)]['Y']):
+    #    if np.min(y) < 0.0024787:
+    #        bad_points.add(n)
+
+    #print(list(bad_points))
+    #quit()
 
     logging.info('writing cache file %s', cachefile)
     cachefile.parent.mkdir(parents=True, exist_ok=True)

@@ -308,7 +308,7 @@ def pPb5020_flows(mode):
     )
 
 
-def log_transform(data):
+def log_transform(data, system, obs, subobs):
     """
     Transform experimental data and errors to log space,
 
@@ -319,16 +319,12 @@ def log_transform(data):
     improves PCA decomposition and emulator performance.
 
     """
-    for sys, sys_data in data.items():
-        for obs, obs_data in sys_data.items():
-            for subobs, subobs_data in obs_data.items():
+    y, yerr = [data[system][obs][subobs][k] for k in ('y', 'yerr')]
+    ystat, ysys = [yerr[k] for k in ('stat', 'sys')]
 
-                y, yerr = [subobs_data[k] for k in ('y', 'yerr')]
-                ystat, ysys = [yerr[k] for k in ('stat', 'sys')]
-
-                np.divide(ystat, y, out=ystat)
-                np.divide(ysys, y, out=ysys)
-                np.log(y, out=y)
+    np.divide(ystat, y, out=ystat)
+    np.divide(ysys, y, out=ysys)
+    np.log(y, out=y)
 
 
 def _data():
@@ -386,8 +382,11 @@ def _data():
                     maxcent=100
                 )
 
-    """Log transform experimental data and errors"""
-    log_transform(data)
+    """Log transform specific observables"""
+    log_transform(data, 'pPb5020', 'dNch_deta', None)
+    log_transform(data, 'pPb5020', 'mean_pT', None)
+    log_transform(data, 'pPb5020', 'vnk', (2, 2))
+    log_transform(data, 'pPb5020', 'vnk', (3, 2))
 
     return data
 

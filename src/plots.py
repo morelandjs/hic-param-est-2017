@@ -1379,7 +1379,7 @@ def boxplot(
         )
 
 
-def validation_data(system, n_splits=20, npc=6):
+def validation_data(system, n_splits=20, npc=7):
     """
     Partition the design into training and test data using K-fold
     cross validation. Train the emulator on each fold (subset of the design)
@@ -1460,8 +1460,8 @@ def validation_all(system='pPb5020'):
             ):
                 boxplot(ax_box, percentiles, x=i, box_width=.8, color=color)
 
-            Ymin, Ymax = np.percentile(Y, (1, 99))
-            perc_error = (Y_ - Y) / (Ymax - Ymin) 
+            Ymin, Ymax = np.percentile(Y, (.5, 99.5))
+            perc_error = (Y_ - Y) / (Ymax - Ymin)
             rms = 100*np.sqrt(np.square(perc_error).mean(axis=0))
 
             ax_rms.plot(
@@ -1512,9 +1512,9 @@ def validation_all(system='pPb5020'):
 @plot
 def validation_example(
         system='pPb5020',
-        obs='mean_pT', subobs=None,
-        label=r'mean $p_T$',
-        mult=(2.395, 2.479)
+        obs='vnk', subobs=(2, 2),
+        label=r'$v_2\{2\}$',
+        mult=(2.5, 3.0)
 ):
     """
     Example of emulator validation for a single observable.  Scatterplot of

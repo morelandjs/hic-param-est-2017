@@ -275,27 +275,15 @@ class ModelData:
             else:
                 raise ValueError("no such bin type")
 
-            """
-            The p-Pb collision observables at 5.02 TeV are best emulated in log
-            space. This provides several advantages:
-
-            1. it suppresses large outliers in the design
-            2. it makes the observables more normally distributed across the
-            design space which greatly improves PCA decomposition.
-
-            Note: in order for this to work, the corresponding experimental
-            data must also be transformed into log space.
-
-            """
-            obs = map(compute_bin, binned_events)
-            return list(map(np.log, obs))
+            return list(map(compute_bin, binned_events))
 
         Y = np.array([
             compute_all_bins(events, design_point)
             for design_point, events in self.design_events
         ]).squeeze()
 
-        return {'x': x, bin_type: bins, 'Y': Y}
+        """Log-transform p-Pb events"""
+        return {'x': x, bin_type: bins, 'Y': np.log(Y) if self.pPb_event else Y}
 
 
 def _data(system, dataset='main'):

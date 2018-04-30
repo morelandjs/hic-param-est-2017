@@ -1,0 +1,838 @@
+#!/usr/bin/env python3
+
+from collections import OrderedDict
+import logging
+import os
+from pathlib import Path
+import subprocess
+import warnings
+
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import lines
+from matplotlib import patches
+from matplotlib import ticker
+from matplotlib import cm
+from matplotlib.colors import ListedColormap
+
+from scipy import special
+from scipy.optimize import brentq
+
+import freestream
+
+
+# golden ratio
+aspect = 1/1.618
+
+# font sizes
+fontsize = dict(
+    large=11,
+    normal=10,
+    small=9,
+    tiny=8,
+)
+
+# new tableau colors
+# https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
+colors = OrderedDict([
+    ('blue', '#4e79a7'),
+    ('orange', '#f28e2b'),
+    ('green', '#59a14f'),
+    ('red', '#e15759'),
+    ('cyan', '#76b7b2'),
+    ('purple', '#b07aa1'),
+    ('brown', '#9c755f'),
+    ('yellow', '#edc948'),
+    ('pink', '#ff9da7'),
+    ('gray', '#bab0ac')
+])
+
+offblack = '.15'
+theme = '#b01419'
+
+plt.rcdefaults()
+plt.rcParams.update({
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['Lato'],
+    'mathtext.fontset': 'custom',
+    'mathtext.default': 'it',
+    'mathtext.rm': 'sans',
+    'mathtext.cal': 'sans',
+    'font.size': fontsize['normal'],
+    'legend.fontsize': fontsize['normal'],
+    'axes.labelsize': fontsize['normal'],
+    'axes.titlesize': fontsize['large'],
+    'xtick.labelsize': fontsize['small'],
+    'ytick.labelsize': fontsize['small'],
+    'font.weight': 400,
+    'axes.labelweight': 400,
+    'axes.titleweight': 400,
+    'axes.prop_cycle': plt.cycler('color', list(colors.values())),
+    'lines.linewidth': .8,
+    'lines.markersize': 3,
+    'lines.markeredgewidth': 0,
+    'patch.linewidth': .8,
+    'axes.linewidth': .6,
+    'xtick.major.width': .6,
+    'ytick.major.width': .6,
+    'xtick.minor.width': .4,
+    'ytick.minor.width': .4,
+    'xtick.major.size': 3.,
+    'ytick.major.size': 3.,
+    'xtick.minor.size': 2.,
+    'ytick.minor.size': 2.,
+    'xtick.major.pad': 3.5,
+    'ytick.major.pad': 3.5,
+    'axes.labelpad': 4.,
+    'axes.formatter.limits': (-5, 5),
+    'axes.spines.top': False,
+    'axes.spines.right': False,
+    'text.color': offblack,
+    'axes.edgecolor': offblack,
+    'axes.labelcolor': offblack,
+    'xtick.color': offblack,
+    'ytick.color': offblack,
+    'legend.frameon': False,
+    'image.cmap': 'Blues',
+    'image.interpolation': 'none',
+})
+
+
+plotdir = Path('fig_tmp')
+plotdir.mkdir(exist_ok=True)
+
+plot_functions = {}
+
+
+def plot(f):
+    """
+    Plot function decorator.  Calls the function, does several generic tasks,
+    and saves the figure as the function name.
+
+    """
+    def wrapper(*args, **kwargs):
+        logging.info('generating plot: %s', f.__name__)
+        f(*args, **kwargs)
+
+        fig = plt.gcf()
+
+        plotfile = plotdir / '{}.pdf'.format(f.__name__)
+        fig.savefig(str(plotfile))
+        logging.info('wrote %s', plotfile)
+        plt.close(fig)
+
+    plot_functions[f.__name__] = wrapper
+
+    return wrapper
+
+
+def figsize(relwidth=1, aspect=.618, refwidth=6):
+    """
+    Return figure dimensions from a relative width (to a reference width) and
+    aspect ratio (default: 1/golden ratio).
+
+    """
+    width = relwidth * refwidth
+    return width, width*aspect
+
+
+def set_tight(fig=None, **kwargs):
+    """
+    Set tight_layout with a better default pad.
+
+    """
+    if fig is None:
+        fig = plt.gcf()
+
+    kwargs.setdefault('pad', .1)
+    fig.set_tight_layout(kwargs)
+
+
+def cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2):
+    """
+    Fade the bottom of a colormap to white.
+
+    Currently only works with ListedColormap objects, of which the new cmaps
+    (inferno, magma, plasma, viridis) are examples.
+
+    """
+    try:
+        colors = cmap.colors.copy()
+        n = int(fraction*len(colors))
+
+        for i, rgb in enumerate(colors[:n]):
+            colors[i] = rgb + [i/n]
+
+        return type(cmap)(colors, cmap.name + '_mod')
+    except AttributeError:
+        cmin = 25 if cmap == plt.cm.Oranges_r else 0
+        colors = [list(cmap(n/256)) for n in range(cmin, 200)]
+        n = int(fraction*len(colors))
+
+        for i, rgb in enumerate(colors[:n]):
+            rgb[-1] = i/n
+            colors[i] = rgb
+
+        return ListedColormap(colors, cmap.name + '_mod')
+
+
+def trento(system, grid_max=10, grid_step=0.1, parton_number=1, nucleon_width=.88,
+           parton_width=.88, filename='event.hdf'):
+    """
+    Generates and returns a trento event with the specified arguments
+
+    """
+    try:
+        os.remove(filename)
+    except FileNotFoundError:
+        pass
+
+    trento_command = ' '.join([
+        'trento {}'.format(system),
+        '--random-seed 492835',
+        '--number-events 1',
+        '--b-max 0',
+        '--reduced-thickness 1',
+        '--fluctuation 10000',
+        '--nucleon-width {}'.format(nucleon_width),
+        '--parton-width {}'.format(parton_width),
+        '--parton-number {}'.format(parton_number),
+        '--nucleon-min-dist .9',
+        '--cross-section 7',
+        '--grid-max {}'.format(grid_max),
+        '--grid-step {}'.format(grid_step),
+        '--output {}'.format(filename)
+    ])
+
+    subprocess.run(trento_command.split())
+
+    with h5py.File(filename, 'r') as f:
+        for ev in f.values():
+            os.remove(filename)
+            return np.array(ev)
+
+
+def woods_saxon_nucleus(atomic_mass=208, radius=6.62, diffuseness=0.546,
+                        dmin=1.5, shift=0):
+    """
+    Sample a spherically symmetric Woods-Saxon nucleus with a minimum
+    nucleon-nucleon distance criteria.
+
+    """
+    rmax = radius + 5*diffuseness
+    rvec = np.linspace(0, rmax, 10**4)
+
+    def envelope(r):
+        return r**2 / (1 + np.exp((r - radius)/diffuseness))
+
+    nucleons = []
+
+    # loop over nucleons in the nucleus
+    for nucleon in range(atomic_mass):
+
+        # sample the radius
+        while True:
+            rand_r, rand_p = np.random.rand(2)
+            r = rand_r*rmax
+            p = rand_p*max(envelope(rvec))
+            if p < envelope(r):
+                break
+
+        # sample the angles according to dmin
+        for ntry in range(10**3):
+            rand_theta, rand_phi = np.random.rand(2)
+            theta = rand_theta * np.pi
+            phi = rand_phi * 2*np.pi
+            x = r*np.cos(phi)*np.sin(theta)
+            y = r*np.sin(phi)*np.sin(theta)
+            z = r*np.cos(theta)
+
+            pairwise_dists = [
+                (x - x_)**2 + (y - y_)**2 + (z - z_)**2
+                for (x_, y_, z_) in nucleons
+            ]
+
+            if len(pairwise_dists) < 1 or min(pairwise_dists) > dmin:
+                break
+
+        nucleons.append([x, y, z])
+
+    return [[x + shift, y, z] for x, y, z in nucleons]
+
+
+def fit_cross_sec_param(nucleon_width, sigma_nn):
+    """
+    Fit the cross section nuissance parameter given the nucleon width
+    and desired nucleon-nucleon inelastic cross section.
+
+    """
+    def fit_xsection(x, trunc=6):
+        c = trunc**2/4
+        rhs = sigma_nn / (4*np.pi*nucleon_width**2)
+        return c - special.expi(-np.exp(x)) + special.expi(-np.exp(x-c)) - rhs
+
+    return brentq(fit_xsection, -10, 20)
+
+
+def participate(nucla, nuclb, nucleon_width=0.88, sigma_nn=6.4):
+    """
+    Sample participants for a collision between nucleus A and nucleus B.
+
+    """
+    hita = set()
+    hitb = set()
+
+    cross_sec_param = fit_cross_sec_param(nucleon_width, sigma_nn)
+
+    for ia, (xa, ya, za) in enumerate(nucla):
+        for ib, (xb, yb, zb) in enumerate(nuclb):
+
+            wsq = nucleon_width**2
+            bsq = (xa - xb)**2 + (ya - yb)**2
+            Pcoll = 1 - np.exp(-np.exp(cross_sec_param - .25*bsq/wsq))
+
+            if np.random.rand() < Pcoll:
+                hita.add(ia)
+                hitb.add(ib)
+
+    parta, partb = [
+        [nucl[i] for i in hit]
+        for (nucl, hit) in [(nucla, hita), (nuclb, hitb)]
+    ]
+
+    return parta, partb
+
+
+def thickness_functions(nucla, nuclb, grid, nucleon_width=.88):
+    """
+    Participant nuclear thickness functions
+
+    """
+    parta, partb = participate(nucla, nuclb, nucleon_width)
+    xx, yy = grid
+
+    # proton thickness function
+    def gaussian(x, y):
+        return np.exp(-((xx - x)**2 + (yy - y)**2)/(2*nucleon_width**2))
+
+    # participant thickness function
+    def thickness(xvals, yvals):
+        return sum([gaussian(x, y) for (x, y) in zip(xvals, yvals)])
+
+    return [thickness(x, y) for (x, y, z) in (zip(*parta), zip(*partb))]
+
+
+def cms_radius(npartons=1, sampling_radius=.88, parton_width=.88, size=10**4):
+    """
+    Find center-of-mass RMS radius for an ensemble of sampled protons
+    with partonic substructure
+
+    """
+    # parton sampling radius
+    size = 2*npartons*int(size / (2*npartons))
+    parton_radius = np.sqrt(sampling_radius**2 - parton_width**2)
+
+    # sample protons
+    protons = np.random.normal(
+        scale=parton_radius, size=size
+    ).reshape(npartons, 2, -1)
+
+    # recenter
+    centers = protons.mean(axis=0)
+    protons -= centers
+
+    # mesh grid
+    l = np.linspace(-4*sampling_radius, 4*sampling_radius, 10**2)
+    xx, yy = np.meshgrid(l, l)
+
+    # mesh grid radii
+    rr_sq = xx**2 + yy**2
+    rr = np.sqrt(rr_sq)
+
+    # place a quark
+    def quark(xx, yy):
+        norm = 1/(2*np.pi*parton_width**2*npartons)
+        return norm * np.exp(-(xx**2 + yy**2)/(2*parton_width**2))
+
+    # place a proton
+    def proton(quarks):
+        return np.sum([quark(xx-xi, yy-yi) for (xi, yi) in quarks.T], axis=0)
+
+    # proton rms radius in cms frame
+    def rms_radius(rho):
+        return np.sqrt(np.average(rr_sq, weights=rho/rr))
+
+    # ensemble averaged rms radius
+    logging.info(
+        "calculating rms proton radius, npartons = {}".format(npartons)
+    )
+    return np.mean([rms_radius(proton(quarks)) for quarks in protons.T], axis=0)
+
+
+@plot
+def proton_radius():
+    """
+    Protons rms radius in the center of mass frame, as a function of parton
+    number
+
+    """
+    plt.figure(figsize=figsize(.6))
+
+    sampling_radius = .88
+    parton_width = .2
+    nparton_values = list(range(1, 11))
+
+    radii = [
+        cms_radius(
+            npartons=npartons,
+            sampling_radius=sampling_radius,
+            parton_width=parton_width,
+            size=10**4
+        ) for npartons in nparton_values
+    ]
+
+    plt.plot(nparton_values, radii, 'o', label='parton number')
+    plt.axhline(sampling_radius, color=offblack, label='sampling radius')
+
+    plt.annotate(
+        '\n'.join([
+            r'proton sampling radius${} = .88$ fm',
+            r'parton width${} = .2$ fm'
+        ]), xy=(.95, .05), xycoords='axes fraction', ha='right'
+    )
+
+    plt.xlabel('parton number')
+    plt.ylabel('proton rms radius [fm]')
+    plt.ylim(0, 1)
+
+    set_tight()
+
+
+@plot
+def gaussian_proton():
+    """
+    Plot a simple azimuthally symmetric Gaussian proton
+
+    """
+    fig = plt.figure(figsize=figsize(.25, 1), frameon=False)
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    l = np.linspace(-2, 2, 400)
+    xx, yy = np.meshgrid(l, l)
+
+    w = .88
+    rho = np.exp(-(xx**2 + yy**2)/(2*w*w**2))
+
+    cmap = cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2)
+    ax.imshow(rho, cmap=cmap, interpolation='none', extent=(-2, 2, -2, 2))
+
+    plt.xlim(-2, 2)
+    plt.ylim(-2, 2)
+    set_tight(fig)
+
+
+@plot
+def deformed_proton():
+    """
+    Plot a deformed (lumpy) proton with partonic substructure
+
+    """
+    fig = plt.figure(figsize=figsize(.25, 1), frameon=False)
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    l = np.linspace(-2, 2, 400)
+    xx, yy = np.meshgrid(l, l)
+
+    w = .6
+    rho1, rho2, rho3 = [
+        np.exp(-((xx + dx)**2 + (yy + dy)**2)/(2*w*w**2))
+        for (dx, dy) in [(.6, 0), (-.3, .52), (-.3, -.52)]
+    ]
+
+    cmap = cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2)
+
+    rho = rho1 + rho2 + rho3
+    ax.imshow(rho, cmap=cmap, interpolation='none', extent=(-2, 2, -2, 2))
+
+    plt.xlim(-2, 2)
+    plt.ylim(-2, 2)
+    set_tight(fig)
+
+
+"""
+Reproduce a Pb-Pb trento event
+
+"""
+lx = np.arange(-12, 12, 0.05)
+ly = np.arange(-8, 8, 0.05)
+grid = np.meshgrid(lx, ly, indexing='xy')
+
+nucla, nuclb = [woods_saxon_nucleus(shift=shift) for shift in (-2, 2)]
+parta, partb = participate(nucla, nuclb)
+thicka, thickb = thickness_functions(nucla, nuclb, grid)
+
+
+@plot
+def trento_nucleons():
+    """
+    Plot trento sampled nucleon positions
+
+    """
+    fig = plt.figure(figsize=figsize(.5, .75))
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    for nucl, cmap in [(nucla, plt.cm.Oranges), (nuclb, plt.cm.Blues)]:
+        x, y, z = zip(*nucl)
+        c = np.random.uniform(low=.6, high=.8, size=len(nucl))
+        ax.scatter(
+            x, y, c=c, s=300, lw=0.1, vmin=0, vmax=1,
+            edgecolor=offblack, cmap=cmap
+        )
+
+
+@plot
+def trento_participants():
+    """
+    Plot trento participant nucleons
+
+    """
+    fig = plt.figure(figsize=figsize(.5, .75))
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    for nucl, cmap in [(nucla, plt.cm.Oranges), (nuclb, plt.cm.Blues)]:
+        x, y, z = zip(*nucl)
+        c = np.random.uniform(low=.6, high=.8, size=len(nucl))
+        ax.scatter(
+            x, y, c=c, s=300, lw=0.1, vmin=0, vmax=1,
+            edgecolor=offblack, cmap=cmap
+        )
+
+
+#@plot
+#def trento_model_nuclei():
+#    """
+#    Example nucleon positions
+#
+#    """
+#    fig = plt.figure(figsize=figsize(.5, .75))
+#    ax = plt.Axes(fig, [0., 0., 1., 1.])
+#    ax.set_axis_off()
+#    fig.add_axes(ax)
+#
+#    nucla, nuclb = [woods_saxon_nucleus(shift=shift) for shift in (-2, 2)]
+#    plot_nucleons(ax, gray_spect=False)
+#
+#    ax.set_aspect('equal')
+#    ax.set_xlim(-11.5, 11.5)
+#    ax.set_ylim(-9, 9)
+#
+#
+##@plot
+#def trento_model_part():
+#    """
+#    Glauber participant nucleons
+#
+#    """
+#    fig = plt.figure(figsize=figsize(.5, .75))
+#    ax = plt.Axes(fig, [0., 0., 1., 1.])
+#    ax.set_axis_off()
+#    fig.add_axes(ax)
+#
+#    plot_nucleons(ax, gray_spect=True)
+#
+#    ax.set_aspect('equal')
+#    ax.set_xlim(-11.5, 11.5)
+#    ax.set_ylim(-9, 9)
+#
+#
+##@plot
+#def trento_model_thickness():
+#    """
+#    Participant thickness functions
+#
+#    """
+#    fig = plt.figure(figsize=figsize(.5, .75))
+#    ax = plt.Axes(fig, [0., 0., 1., 1.])
+#    ax.set_axis_off()
+#    fig.add_axes(ax)
+#
+#    # nucleon coordinates
+#    nucla, nuclb = nucleus()
+#
+#    for nucl, fill in [(nucla, True), (nuclb, True)]:
+#
+#        # unpack coord
+#        x, y, hit = nucl.T
+#
+#        # spectators
+#        c = np.random.uniform(low=.8, high=.9, size=sum(hit == 0))
+#        ax.scatter(x[hit == 0], y[hit == 0], c=c if fill else 'none', s=300,
+#                   lw=0.1, vmin=0, vmax=1, edgecolor=offblack, cmap=plt.cm.gray)
+#
+#
+#    xmax, ymax, dxy = (11.5, 9, .05)
+#    lx = np.arange(-xmax, xmax + dxy, dxy)
+#    ly = np.arange(-ymax, ymax + dxy, dxy)
+#    xx, yy = np.meshgrid(lx, ly)
+#
+#    TA, TB = thickness_functions(xx, yy)
+#
+#    for T, cmap in [(TA, plt.cm.Oranges_r), (TB, plt.cm.PuBu_r)]:
+#        ax.imshow(T, cmap=cmap_to_alpha(cmap=cmap, fraction=.1),
+#                  extent=(-xmax, xmax, -ymax, ymax), origin='lower', zorder=2)
+#
+#    ax.set_aspect('equal')
+#    ax.set_xlim(-xmax, xmax)
+#    ax.set_ylim(-ymax, ymax)
+#
+#
+##@plot
+#def trento_model_entropy():
+#    """
+#    Reduced thickness function for an example event
+#
+#    """
+#    fig = plt.figure(figsize=figsize(.5, .75))
+#    ax = plt.Axes(fig, [0., 0., 1., 1.])
+#    ax.set_axis_off()
+#    fig.add_axes(ax)
+#
+#    # scatter plot spectators
+#    for nucl in nucleus():
+#
+#        # unpack coord
+#        x, y, hit = nucl.T
+#
+#        # spectators
+#        c = np.random.uniform(low=.8, high=.9, size=sum(hit == 0))
+#        ax.scatter(x[hit == 0], y[hit == 0], c=c, s=300, lw=0.1, vmin=0, vmax=1,
+#                edgecolor=offblack, cmap=plt.cm.gray)
+#
+#    xmax, ymax, dxy = (11.5, 9, .05)
+#    lx = np.arange(-xmax, xmax + dxy, dxy)
+#    ly = np.arange(-ymax, ymax + dxy, dxy)
+#    xx, yy = np.meshgrid(lx, ly)
+#
+#    TA, TB = thickness_functions(xx, yy)
+#    TR = np.sqrt(TA*TB)
+#
+#    ax.imshow(TR, cmap=cmap_to_alpha(), extent=(-xmax, xmax, -ymax, ymax),
+#              origin='lower', zorder=2)
+#
+#    ax.set_aspect('equal')
+#    ax.set_xlim(-xmax, xmax)
+#    ax.set_ylim(-ymax, ymax)
+#
+#
+##@plot
+#def trento_model_freestream():
+#    """
+#    Reduced thickness function for an example event
+#
+#    """
+#    fig = plt.figure(figsize=figsize(.5, .75))
+#    ax = plt.Axes(fig, [0., 0., 1., 1.])
+#    ax.set_axis_off()
+#    fig.add_axes(ax)
+#
+#    # scatter plot spectators
+#    for nucl in nucleus():
+#
+#        # unpack coord
+#        x, y, hit = nucl.T
+#
+#        # spectators
+#        c = np.random.uniform(low=.8, high=.9, size=sum(hit == 0))
+#        ax.scatter(x[hit == 0], y[hit == 0], c=c, s=300, lw=0.1, vmin=0, vmax=1,
+#                edgecolor=offblack, cmap=plt.cm.gray)
+#
+#    xmax, ymax, dxy = (11.5, 9, .05)
+#    lx = np.arange(-xmax, xmax + dxy, dxy)
+#    ly = np.arange(-ymax, ymax + dxy, dxy)
+#    xx, yy = np.meshgrid(lx, lx)
+#
+#    TA, TB = thickness_functions(xx, yy)
+#    TR = np.sqrt(TA*TB)
+#
+#    fs = freestream.FreeStreamer(TR, xmax, 1)
+#    e = fs.energy_density()
+#    u0, ux, uy = [fs.flow_velocity(i) for i in range(3)]
+#    vx, vy = [u/u0 for u in (ux, uy)]
+#
+#    ax.imshow(e, cmap=cmap_to_alpha(), extent=(-xmax, xmax, -xmax, xmax),
+#              origin='lower', zorder=2)
+#
+#    fx, fy = [np.ma.masked_where(e < .1, e*v) for v in (vx, vy)]
+#    xx, yy, fx, fy = [d[::20, ::20] for d in (xx, yy, fx, fy)]
+#    ax.quiver(xx, yy, fx, fy, zorder=3)
+#
+#    ax.set_aspect('equal')
+#    ax.set_xlim(-xmax, xmax)
+#    ax.set_ylim(-ymax, ymax)
+#
+#
+##@plot
+#def coupling():
+#    """
+#    Cartoon showing how free streaming approximated the time dependence of the
+#    fluid coupling as a step function
+#
+#    """
+#    plt.figure(figsize=figsize(.4))
+#
+#    x = np.linspace(0, 1, 10**3)
+#    y = np.heaviside(x - .6, 1)
+#    plt.plot(x, y, color=theme)
+#
+#    plt.annotate('free stream', xy=(.3, .1), xycoords='data', ha='center')
+#    plt.annotate('hydro', xy=(.8, 1.1), xycoords='data', ha='center')
+#    plt.annotate(r'$\tau_\mathrm{fs}$', xy=(.63, .5), xycoords='data',
+#                 ha='left', va='center')
+#
+#    plt.xticks([])
+#    plt.xlabel('Time')
+#
+#    plt.yticks([0, 1.4], ['0', 'inf'])
+#    plt.ylim(-.1, 1.5)
+#    plt.ylabel('Coupling')
+#
+#    set_tight()
+#
+#
+##@plot
+#def collision_profile():
+#    """
+#    The collision probability Pcoll(b) for p+p collisions
+#
+#    """
+#    plt.figure(figsize=figsize(.5))
+#
+#    sigma_nn = 6.4
+#    b = np.linspace(0, 5, 1000)
+#
+#    # black-disk proton
+#    disk_radius = np.sqrt(sigma_nn/np.pi)
+#    black_disk = np.heaviside(-(b - disk_radius), 1)
+#    plt.plot(b, black_disk, color=offblack, label='black disk')
+#
+#    # Gaussian protons
+#    for w in [.4, .7, .9]:
+#        norm = 4*np.pi*w**2
+#
+#        def fit_xsection(x, A=6):
+#            c = A**2/4
+#            rhs = sigma_nn/norm
+#            return c - special.expi(-np.exp(x)) + special.expi(-np.exp(x-c)) - rhs
+#
+#        cross_sec_param = brentq(fit_xsection, -10, 20)
+#        pcoll = 1 - np.exp(-np.exp(cross_sec_param - .25*b**2/w**2))
+#        plt.plot(b, pcoll, label=r'$w={}$ [fm]'.format(w))
+#
+#    plt.xlim(0, 5)
+#    plt.xlabel('$b$ [fm]')
+#    plt.ylabel(r'$P_\mathrm{coll}(b)$')
+#
+#    plt.legend(
+#        title=r'$\sigma_\mathrm{nn}^\mathrm{inel}=6.4$ fm$^2$',
+#        loc='best'
+#    )
+#
+#    set_tight()
+#
+#
+##@plot
+#def proton_overlap():
+#    """
+#    The proton-proton overlap function Tpp
+#
+#    """
+#    plt.figure(figsize=figsize(.5))
+#
+#    def gaussian(x, loc=0, std=1):
+#        return np.exp(-(x - loc)**2/(2*std**2)) / np.sqrt(2*np.pi*std**2)
+#
+#    x = np.linspace(-2.7, 2.7, 1000)
+#    Tp1, Tp2 = [gaussian(x, mu, .6) for mu in (-.6, .6)]
+#    Tpp = Tp1*Tp2
+#
+#    plt.plot(x, 4*Tpp, color=theme, label=r'$4 \times T_{pp}$')
+#    plt.plot(x, Tp1, color=offblack, dashes=(8, 4), label=r'$T_p$')
+#    plt.plot(x, Tp2, color=offblack, dashes=(8, 4))
+#
+#    plt.annotate('b', xy=(0, .7), va='bottom', ha='center')
+#    plt.annotate(
+#        s='', xy=(-.6, .7), xytext=(.6, .7),
+#        arrowprops=dict(arrowstyle='<->', shrinkA=0, shrinkB=0),
+#        color=offblack
+#    )
+#
+#    plt.xlabel('x [fm]')
+#    plt.ylabel('Thickness [fm$^{-1}$]')
+#    plt.ylim(0, .8)
+#
+#    plt.legend(handlelength=1.3, bbox_to_anchor=(.67, .67), markerfirst=False)
+#
+#    set_tight()
+
+
+if __name__ == '__main__':
+    import argparse
+    from matplotlib.mathtext import MathTextWarning
+
+    warnings.filterwarnings(
+        'ignore',
+        category=MathTextWarning,
+        message='Substituting with a symbol from Computer Modern.'
+    )
+    warnings.filterwarnings(
+        'ignore',
+        category=UserWarning,
+        message=r"'[\w\.]+' can not be subsetted into a Type 3 font."
+    )
+
+    choices = list(plot_functions)
+
+    def arg_to_plot(arg):
+        arg = Path(arg).stem
+        if arg not in choices:
+            raise argparse.ArgumentTypeError(arg)
+        return arg
+
+    parser = argparse.ArgumentParser(description='generate plots')
+    parser.add_argument(
+        '--paper', action='store_true',
+        help='use paper style: cm serif font, true black text + axes'
+    )
+    parser.add_argument(
+        'plots', nargs='*', type=arg_to_plot, metavar='PLOT',
+        help='{} (default: all)'.format(', '.join(choices).join('{}'))
+    )
+    args = parser.parse_args()
+
+    if args.paper:
+        plt.rcParams.update({
+            'font.family': 'serif',
+            'font.serif': ['CMU Serif'],
+            'mathtext.fontset': 'cm',
+            'text.color': 'black',
+            'axes.edgecolor': 'black',
+            'axes.labelcolor': 'black',
+            'xtick.color': 'black',
+            'ytick.color': 'black',
+        })
+
+    if args.plots:
+        for p in args.plots:
+            plot_functions[p]()
+    else:
+        for f in plot_functions.values():
+            f()

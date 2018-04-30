@@ -323,7 +323,6 @@ def log_transform(data, system):
         for subobs, subobs_data in obs_data.items():
             y, yerr = [subobs_data[k] for k in ('y', 'yerr')]
             ystat, ysys = [yerr[k] for k in ('stat', 'sys')]
-
             np.divide(ystat, y, out=ystat)
             np.divide(ysys, y, out=ysys)
             np.log(y, out=y)
@@ -452,7 +451,10 @@ def cov(
         else:
             return np.zeros((x1.size, x2.size))
 
-    # compute the sys error covariance
+    # Use special sys error covariance matrix for p-Pb system
+    if system == 'pPb5020':
+        sys_corr_length = (5 if 'dNch_deta' not in [obs1, obs2] else 30)
+
     C = (
         np.exp(-.5*(np.subtract.outer(x1, x2)/sys_corr_length)**2) *
         np.outer(sys1, sys2)

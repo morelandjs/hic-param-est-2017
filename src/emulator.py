@@ -66,19 +66,17 @@ class Emulator:
     """
     # observables to emulate
     # list of 2-tuples: (obs, [list of subobs])
-
     PbPb5020 = [
         ('dNch_deta', [None]),
         ('vnk', [(2, 2), (3, 2), (4, 2)]),
     ]
-
     pPb5020 = [
         ('dNch_deta', [None]),
         ('mean_pT', [None]),
         ('vnk', [(2, 2), (3, 2)]),
     ]
 
-    def __init__(self, system, npc=10, nrestarts=0, exclude_points=[]):
+    def __init__(self, system, npc=7, nrestarts=0, exclude_points=[]):
         logging.info(
             'training emulator for system %s (%d PC, %d restarts)',
             system, npc, nrestarts
@@ -88,7 +86,7 @@ class Emulator:
         self._slices = {}
 
         # System specific observables
-        observables = {
+        self.observables = {
             'pPb5020': self.pPb5020,
             'PbPb5020': self.PbPb5020,
         }[system]
@@ -101,7 +99,7 @@ class Emulator:
 
         # Build an array of all observables to emulate.
         nobs = 0
-        for obs, subobslist in observables:
+        for obs, subobslist in self.observables:
             self._slices[obs] = {}
             for subobs in subobslist:
                 Y.append(model.data[system][obs][subobs]['Y'])
@@ -229,7 +227,7 @@ class Emulator:
             } for obs, slices in self._slices.items()
         }
 
-    def predict(self, X, return_cov=False, extra_std=0):
+    def predict(self, X, return_cov=False):
         """
         Predict model output at `X`.
         X must be a 2D array-like with shape ``(nsamples, ndim)``.  It is passed
@@ -251,9 +249,6 @@ class Emulator:
         ``(nsamples, n_cent_bins_1, n_cent_bins_2)``.
         NB: the covariance is only computed between observables and centrality
         bins, not between sample points.
-        `extra_std` is additional uncertainty which is added to each GP's
-        predictive uncertainty, e.g. to account for model systematic error.  It
-        may either be a scalar or an array-like of length nsamples.
         """
         gp_mean = [gp.predict(X, return_cov=return_cov) for gp in self.gps]
 
@@ -270,10 +265,6 @@ class Emulator:
             gp_var = np.concatenate([
                 c.diagonal()[:, np.newaxis] for c in gp_cov
             ], axis=1)
-
-            # Add extra uncertainty to predictive variance.
-            extra_std = np.array(extra_std, copy=False).reshape(-1, 1)
-            gp_var += extra_std**2
 
             # Compute the covariance at each sample point using the
             # pre-calculated arrays (see constructor).

@@ -125,7 +125,6 @@ class Chain:
         ('dNch_deta', [None]),
         ('vnk', [(2, 2), (3, 2), (4, 2)]),
     ]
-
     pPb5020 = [
         ('dNch_deta', [None]),
         ('mean_pT', [None]),
@@ -141,12 +140,7 @@ class Chain:
         attr = [(d.keys, d.labels, d.range) for d in designs]
         assert all(klr == next(iter(attr)) for klr in attr)
 
-        # append model systematic error
-        d = Design(next(iter(systems)))
-        d.keys.append('model_sys_err')
-        d.labels.append(r'$\sigma\ \mathrm{model\ sys}$')
-        d.range.append((0., .4))
-
+        d = designs[0]
         self.keys = d.keys
         self.labels = d.labels
         self.range = d.range
@@ -205,18 +199,13 @@ class Chain:
 
         """
         return {
-            sys: emulators[sys].predict(X[:, :-1], **kwargs)
+            sys: emulators[sys].predict(X, **kwargs)
             for n, sys in enumerate(systems)
         }
 
-    def log_posterior(self, X, extra_std_prior_scale=.05):
+    def log_posterior(self, X):
         """
         Evaluate the posterior at `X`.
-
-        `extra_std_prior_scale` is the scale parameter for the prior
-        distribution on the model sys error parameter:
-
-            prior ~ sigma^2 * exp(-sigma/scale)
 
         """
         X = np.array(X, copy=False, ndmin=2)
@@ -229,10 +218,7 @@ class Chain:
         nsamples = np.count_nonzero(inside)
 
         if nsamples > 0:
-            extra_std = X[inside, -1]
-            pred = self._predict(
-                X[inside], return_cov=True, extra_std=extra_std
-            )
+            pred = self._predict(X[inside], return_cov=True)
 
             for sys in systems:
                 nobs = self._expt_y[sys].size
@@ -257,9 +243,6 @@ class Chain:
 
                 # compute log likelihood at each point
                 lp[inside] += list(map(mvn_loglike, dY, cov))
-
-            # add prior for extra_std (model sys error)
-            lp[inside] += 2*np.log(extra_std) - extra_std/extra_std_prior_scale
 
         return lp
 

@@ -43,6 +43,7 @@ from scipy.optimize import brentq, curve_fit
 from sklearn.decomposition import PCA
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
+from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import KFold
 
 from . import cachedir, workdir, systems, parse_system, expt, model, mcmc
@@ -310,7 +311,7 @@ def obs_label(obs, subobs, differentials=False, full_cumulants=False):
     }
     if obs in id_parts_labels:
         return id_parts_labels[obs].format(
-            {'pion': '\pi', 'kaon': 'K', 'proton': 'p'}[subobs]
+                {'pion': '\pi', 'kaon': 'K', 'proton': 'p', None: '{}'}[subobs]
         )
 
     if obs == 'pT_fluct':
@@ -347,7 +348,7 @@ def _observables_plots():
         dict(
             title='Mean $p_T$',
             ylabel=r'$\langle p_T \rangle$ [GeV]',
-            ylim=(-2, 1),
+            ylim=(-1.25, 0.7),
             subplots=[
                 ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$', scale=1)),
             ]
@@ -437,6 +438,16 @@ def _observables(posterior=False):
             else:
                 ax.set_xlim(0, 55)
                 ax.set_xlabel('Centrality %')
+
+            if obs == 'dNch_deta':
+                ax.plot([0, 50], [6, 5])
+                ax.plot([0, 50], [2, 1])
+            if obs == 'mean_pT':
+                ax.axhline(0.5)
+                ax.axhline(-1.0)
+            if obs == 'vnk':
+                ax.axhline(-6)
+                ax.axhline(0)
 
         if plot.get('yscale') == 'log':
             ax.set_yscale('log')
@@ -635,123 +646,6 @@ def observables_map():
 
 
 @plot
-def observables_expt_only():
-    """
-    Observables plots of experimental data only.
-
-    """
-    plots = _observables_plots()
-
-    ylim = {
-        'Yields': (2, 1e5),
-        'Flow cumulants': (0, .15),
-        'Mean $p_T$': (0, 1.7),
-        'Mean $p_T$ fluctuations': (0, .045),
-    }
-
-    for n, p in enumerate(plots):
-        p['ylim'] = ylim[p['title']]
-        if p['title'] == 'Flow cumulants':
-            move_index = n
-            p.update(legend=True)
-
-    plots.insert(1, plots.pop(move_index))
-
-    ncols = int(len(plots)/2)
-
-    fig, axes = plt.subplots(
-        nrows=2, ncols=ncols,
-        figsize=figsize(1.1, aspect=1.5/ncols),
-        gridspec_kw=dict(
-            height_ratios=[p.get('height_ratio', 1) for p in plots[::ncols]]
-        )
-    )
-
-    for plot, ax in zip(plots, axes.flat):
-        labels = {}
-        handles = {}
-
-        for system, (obs, subobs, opts) in itertools.product(
-                systems, plot['subplots']
-        ):
-            try:
-                dset = expt.data[system][obs][subobs]
-            except KeyError:
-                continue
-
-            x = dset['x']
-            yexp = dset['y']
-            yerr = dset['yerr']
-            yerrstat = yerr.get('stat')
-            yerrsys = yerr.get('sys', yerr.get('sum'))
-
-            scale = opts.get('scale')
-            if scale is not None:
-                yexp = yexp*scale
-                if yerrstat is not None:
-                    yerrstat = yerrstat*scale
-                if yerrsys is not None:
-                    yerrsys = yerrsys*scale
-
-            color = obs_color(obs, subobs)
-            fill_markers = {'PbPb2760': True, 'PbPb5020': False}[system]
-
-            c = darken(color, .15)
-            h = ax.errorbar(
-                x, yexp, yerr=yerrstat, fmt='o',
-                capsize=0, color=c,
-                mec=c, mfc=(c if fill_markers else '.9'),
-                mew=((.2 if fill_markers else .6) *
-                     plt.rcParams['lines.linewidth']),
-                zorder=1000
-            )
-            if system not in handles:
-                handles[system] = h
-
-            ax.fill_between(
-                x, yexp - yerrsys, yexp + yerrsys,
-                facecolor='.9', zorder=-10,
-            )
-
-            if 'label' in opts and (obs, subobs) not in labels:
-                labels[obs, subobs] = ax.text(
-                    x[-1] + 3, yexp[-1],
-                    opts['label'],
-                    color=darken(color), ha='left', va='center'
-                )
-
-        if plot.get('yscale') == 'log':
-            ax.set_yscale('log')
-            ax.minorticks_off()
-        else:
-            auto_ticks(ax, 'y', nbins=4, minor=2)
-
-        ax.set_xlim(0, 80)
-        auto_ticks(ax, 'x', nbins=5, minor=2)
-
-        if ax.is_last_row():
-            ax.set_xlabel('Centrality %')
-
-        ax.set_ylim(plot['ylim'])
-        ax.set_ylabel(plot['ylabel'])
-
-        if plot.get('legend'):
-            ax.legend(
-                *zip(*[(handles[s], format_system(s)) for s in systems]),
-                loc='upper left', bbox_to_anchor=(0, .94),
-                handletextpad=0
-            )
-
-        ax.text(
-            .5, 1 if ax.is_first_row() else .97, plot['title'],
-            transform=ax.transAxes, ha='center', va='top',
-            size=plt.rcParams['axes.labelsize']
-        )
-
-    set_tight(fig)
-
-
-@plot
 def find_map():
     """
     Find the maximum a posteriori (MAP) point and compare emulator predictions
@@ -762,18 +656,19 @@ def find_map():
 
     chain = mcmc.Chain()
 
-    fixed_params = {
-        'trento_p': 0.,
-        'etas_min': .08,
-        'etas_slope': 1.1285,
-        'etas_crv': -0.5365,
-        'etas_hrg': .3,
-        'zetas_max': 0.0536,
-        'zetas_width': 0.0194,
-        'zetas_t0': 0.1824,
-        'Tswitch': 0.1515,
-        'model_sys_err': .1,
-    }
+    #fixed_params = {
+    #    'trento_p': 0.,
+    #    'etas_min': .08,
+    #    'etas_slope': 1.1285,
+    #    'etas_crv': -0.5365,
+    #    'etas_hrg': .3,
+    #    'zetas_max': 0.0536,
+    #    'zetas_width': 0.0194,
+    #    'zetas_t0': 0.1824,
+    #    'Tswitch': 0.1515,
+    #}
+
+    fixed_params = {}
 
     opt_params = [k for k in chain.keys if k not in fixed_params]
 
@@ -801,13 +696,13 @@ def find_map():
         )
     )
 
-    pred = chain._predict(np.atleast_2d(full_x(res.x)))
+    pred = chain._predict(np.atleast_2d(full_x(res.x)), return_cov=True)
 
     plots = _observables_plots()
 
     fig, axes = plt.subplots(
         nrows=2*len(plots), ncols=len(systems),
-        figsize=figsize(1.1, aspect=1.7),
+        figsize=figsize(1.1, 2),
         gridspec_kw=dict(
             height_ratios=list(itertools.chain.from_iterable(
                 (p.get('height_ratio', 1), .4) for p in plots
@@ -823,12 +718,18 @@ def find_map():
             scale = opts.get('scale')
 
             x = model.data[system][obs][subobs]['x']
-            y = pred[system][obs][subobs][0]
+            mean, cov = pred[system]
+            y = mean[obs][subobs][0]
+            yerr = np.sqrt(cov[(obs, subobs), (obs, subobs)][0].T.diagonal())
 
             if scale is not None:
                 y = y*scale
 
-            ax.plot(x, y, color=color)
+            ax.plot(x, y, color=color, zorder=1)
+            ax.fill_between(
+                x, y - yerr, y + yerr,
+                alpha=.2, color=color, lw=0, zorder=0
+            )
 
             if 'label' in opts:
                 ax.text(
@@ -856,7 +757,7 @@ def find_map():
                     yerrsys = yerrsys*scale
 
             ax.errorbar(
-                x, yexp, yerr=yerrstat, fmt='o',
+                x, yexp, yerr=yerrstat, fmt='o', ms=1.7,
                 capsize=0, color='.25', zorder=1000
             )
 
@@ -1113,7 +1014,6 @@ def posterior_p():
     set_tight(pad=0)
 
 
-<<<<<<< HEAD
 @plot
 def region_shear_bulk(cmap=plt.cm.Blues):
     """
@@ -1142,195 +1042,6 @@ def region_shear_bulk(cmap=plt.cm.Blues):
         ax.plot(
             T, function(T, *np.median(samples, axis=0)),
             color=cmap(.75), label='Posterior median'
-=======
-def _region(ax, name, cmap=plt.cm.Blues, legend=False, title=False):
-    """
-    Visual estimate (posterior median and credible region) of
-    temperature-dependent shear or bulk viscosity.
-
-    """
-    var, keys, function, ymax = dict(
-        shear=(
-            'eta',
-            ['min', 'slope', 'crv'],
-            lambda T, m, s, c: m + s*(T - Tc)*(T/Tc)**c,
-            .4
-        ),
-        bulk=(
-            'zeta',
-            ['max', 'width', 't0'],
-            lambda T, m, w, T0: m / (1 + ((T - T0)/w)**2),
-            .08
-        ),
-    )[name]
-
-    Tmin, Tmax = .150, .300
-    Tc = .154
-
-    samples = mcmc.Chain().load(*['{}s_{}'.format(var, k) for k in keys])
-
-    T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
-    ax.plot(
-        T, function(T, *np.median(samples, axis=0)),
-        color=cmap(.75), label='Posterior median'
-    )
-
-    Tsparse = np.linspace(T[0], T[-1], 25)
-    intervals = [
-        PchipInterpolator(Tsparse, y)(T)
-        for y in np.array([
-            mcmc.credible_interval(function(t, *samples.T))
-            for t in Tsparse
-        ]).T
-    ]
-    ax.fill_between(
-        T, *intervals,
-        color=cmap(.3), label='90% credible region'
-    )
-
-    ax.set_xlim(Tmin, Tmax)
-    ax.set_ylim(0, ymax)
-    auto_ticks(ax, nbins=5)
-    ax.xaxis.set_major_formatter(
-        ticker.FuncFormatter(lambda x, pos: int(1000*x))
-    )
-
-    ax.set_xlabel('Temperature [MeV]')
-    ax.set_ylabel(r'$\{}/s$'.format(var))
-
-    if title:
-        ax.set_title(name.capitalize() + ' viscosity')
-
-    if legend:
-        ax.legend(loc=legend if isinstance(legend, str) else 'best')
-
-    if name == 'shear':
-        ax.axhline(
-            1/(4*np.pi),
-            color='.5', linewidth=plt.rcParams['ytick.major.width']
-        )
-        ax.text(Tmax, .07, r'$1/4\pi$', va='top', ha='right', color='.3')
-
-
-@plot
-def region_shear():
-    """
-    Region plot for eta/s.
-
-    """
-    fig, ax = plt.subplots(figsize=figsize(.65))
-    _region(ax, 'shear', legend='upper left')
-
-
-@plot
-def region_bulk():
-    """
-    Region plot for zeta/s.
-
-    """
-    fig, ax = plt.subplots(figsize=figsize(.65))
-    _region(ax, 'bulk', legend='upper right')
-
-
-@plot
-def region_shear_bulk(cmap=plt.cm.Blues):
-    """
-    Region plot for both eta/s and zeta/s.
-
-    """
-    fig, axes = plt.subplots(ncols=2, figsize=figsize(1, .4))
-
-    for (name, legend), ax in zip(
-            [('shear', 'upper left'), ('bulk', False)],
-            axes
-    ):
-        _region(ax, name, legend=legend, title=True)
-
-    set_tight(w_pad=.2)
-
-
-@plot
-def flow_corr():
-    """
-    Symmetric cumulants SC(m, n) at the MAP point compared to experiment.
-
-    """
-    fig, axes = plt.subplots(
-        figsize=figsize(1.05, .7),
-        nrows=2, ncols=2, gridspec_kw=dict(width_ratios=[.8, 1])
-    )
-
-    cmapx_normal = .7
-    cmapx_pred = .5
-
-    def label(*mn, normed=False):
-        fmt = r'\mathrm{{SC}}({0}, {1})'
-        if normed:
-            fmt += r'/\langle v_{0}^2 \rangle\langle v_{1}^2 \rangle'
-        return fmt.format(*mn).join('$$')
-
-    for obs, ax in zip(
-            ['sc_central', 'sc', 'sc_normed_central', 'sc_normed'],
-            axes.flat
-    ):
-        for (mn, cmap), sys in itertools.product(
-                [
-                    ((4, 2), 'Blues'),
-                    ((3, 2), 'Oranges'),
-                ],
-                systems
-        ):
-            x = model.map_data[sys][obs][mn]['x']
-            y = model.map_data[sys][obs][mn]['Y']
-
-            pred = obs not in expt.data[sys]
-            cmapx = cmapx_pred if pred else cmapx_normal
-
-            kwargs = {}
-
-            if pred:
-                kwargs.update(linestyle='dashed')
-
-            if ax.is_first_col() and ax.is_first_row():
-                fmt = '{:.2f} TeV'
-                if pred:
-                    fmt += ' (prediction)'
-                lbl = fmt.format(parse_system(sys)[1]/1000)
-                if not any(l.get_label() == lbl for l in ax.get_lines()):
-                    ax.add_line(lines.Line2D(
-                        [], [], color=plt.cm.Greys(cmapx),
-                        label=lbl, **kwargs
-                    ))
-            elif ax.is_last_col() and not pred:
-                kwargs.update(label=label(*mn, normed='normed' in obs))
-
-            ax.plot(
-                x, y, lw=.75,
-                color=getattr(plt.cm, cmap)(cmapx),
-                **kwargs
-            )
-
-            if pred:
-                continue
-
-            x = expt.data[sys][obs][mn]['x']
-            y = expt.data[sys][obs][mn]['y']
-            yerr = expt.data[sys][obs][mn]['yerr']
-
-            ax.errorbar(
-                x, y, yerr=yerr['stat'],
-                fmt='o', ms=.8*plt.rcParams['lines.markersize'],
-                capsize=0, color='.25', zorder=100
-            )
-
-            ax.fill_between(
-                x, y - yerr['sys'], y + yerr['sys'],
-                color='.9', zorder=-10
-            )
-
-        ax.axhline(
-            0, color='.5', lw=plt.rcParams['xtick.major.width'],
-            zorder=-100
         )
 
         Tsparse = np.linspace(T[0], T[-1], 25)
@@ -1346,21 +1057,30 @@ def flow_corr():
             color=cmap(.3), label='90% credible region'
         )
 
-        if all(ax.get_legend_handles_labels()):
-            ax.legend(loc='best')
+        ax.set_xlim(Tmin, Tmax)
+        ax.set_ylim(0, ymax)
+        auto_ticks(ax, nbins=5)
+        ax.xaxis.set_major_formatter(
+            ticker.FuncFormatter(lambda x, pos: int(1000*x))
+        )
 
         ax.set_xlabel('Temperature [MeV]')
         ax.set_ylabel(r'$\{}/s$'.format(var))
         ax.set_title(name.capitalize() + ' viscosity')
 
-        if ax.is_first_row():
-            ax.set_title(
-                'Central'
-                if 'central' in obs else
-                'Minimum bias'
+        if name == 'shear':
+            ax.axhline(
+                1/(4*np.pi),
+                color='.5', linewidth=plt.rcParams['ytick.major.width']
             )
-        else:
-            ax.set_xlabel('Centrality %')
+            ax.text(Tmax, .07, r'$1/4\pi$', va='top', ha='right', color='.3')
+            ax.legend(loc='upper left')
+
+    set_tight(w_pad=.2)
+
+
+region_style = dict(color='.93', zorder=-100)
+Tc = .154
 
 
 @plot
@@ -1369,7 +1089,7 @@ def design():
     Projection of a LH design into two dimensions.
 
     """
-    fig = plt.figure(figsize=figsize(.6, aspect=1))
+    fig = plt.figure(figsize=figsize(.5, 1))
     ratio = 5
     gs = plt.GridSpec(ratio + 1, ratio + 1)
 
@@ -1390,6 +1110,7 @@ def design():
     ax_y.hist(y, orientation='horizontal', **hist_kw)
 
     for ax in fig.axes:
+        ax.tick_params(top='off', right='off')
         spines = ['top', 'right']
         if ax is ax_x:
             spines += ['left']
@@ -1397,14 +1118,13 @@ def design():
             spines += ['bottom']
         for spine in spines:
             ax.spines[spine].set_visible(False)
+        for ax_name in 'xaxis', 'yaxis':
+            getattr(ax, ax_name).set_ticks_position('none')
 
-    auto_ticks(ax_j, nbins=4)
+    auto_ticks(ax_j)
 
     for ax in ax_x, ax_y:
-        ax.tick_params(
-            bottom=False, left=False,
-            labelbottom=False, labelleft=False
-        )
+        ax.tick_params(labelbottom='off', labelleft='off')
 
     for i, xy in zip(indices, 'xy'):
         for f, l in [('lim', d.range), ('label', d.labels)]:
@@ -1420,11 +1140,19 @@ def gp():
 
     """
     fig, axes = plt.subplots(
-        figsize=figsize(.6, aspect=1.35),
+        figsize=figsize(.5, 2*aspect),
         nrows=2, sharex='col'
     )
 
-    gp = GPR(1.*kernels.RBF(.8), optimizer=None)
+    def dummy_optimizer(obj_func, initial_theta, bounds):
+        return initial_theta, 0.
+
+    gp = GPR(1.*kernels.RBF(.8), optimizer=dummy_optimizer)
+
+    def sample_y(*args, **kwargs):
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            return gp.sample_y(*args, **kwargs)
 
     x = np.linspace(0, 5, 1000)
     X = x[:, np.newaxis]
@@ -1434,29 +1162,24 @@ def gp():
 
     for title, ax in zip(['Random functions', 'Conditioned on data'], axes):
         if title.startswith('Conditioned'):
-            y = gp.sample_y(X_train, random_state=23158).squeeze()
+            y = sample_y(X_train, random_state=23158).squeeze()
             y -= .5*(y.max() + y.min())
             gp.fit(X_train, y)
-            training_data, = plt.plot(
-                x_train, y, 'o',
-                markersize=1.4*plt.rcParams['lines.markersize'],
-                color='.3', zorder=50
-            )
+            training_data, = plt.plot(x_train, y, 'o', color='.3', zorder=50)
 
         for s, c in zip(
-                gp.sample_y(X, n_samples=4, random_state=34576).T,
+                sample_y(X, n_samples=4, random_state=34576).T,
                 ['Blues', 'Greens', 'Oranges', 'Purples']
         ):
             ax.plot(x, s, color=getattr(plt.cm, c)(.6))
 
         mean, std = gp.predict(X, return_std=True)
         std = ax.fill_between(x, mean - std, mean + std, color='.92')
-        mean, = ax.plot(x, mean, color='.42', linestyle='dashed')
+        mean, = ax.plot(x, mean, color='.42', dashes=(3.5, 1.5))
 
-        ax.set_xlim(x[0], x[-1])
         ax.set_ylim(-2, 2)
         ax.set_ylabel('Output')
-        auto_ticks(ax, nbins=5)
+        auto_ticks(ax)
 
         ax.set_title(title, y=.9)
 
@@ -1528,6 +1251,7 @@ def pca():
         )
 
     for ax in fig.axes:
+        ax.tick_params(top='off', right='off')
         spines = ['top', 'right']
         if ax is ax_x:
             spines += ['left']
@@ -1535,12 +1259,11 @@ def pca():
             spines += ['bottom']
         for spine in spines:
             ax.spines[spine].set_visible(False)
+        for ax_name in 'xaxis', 'yaxis':
+            getattr(ax, ax_name).set_ticks_position('none')
 
     for ax in ax_x, ax_y:
-        ax.tick_params(
-            bottom=False, left=False,
-            labelbottom=False, labelleft=False
-        )
+        ax.tick_params(labelbottom='off', labelleft='off')
 
     auto_ticks(ax_j, nbins=5, prune='upper')
 
@@ -1554,93 +1277,7 @@ def pca():
 
 
 @plot
-<<<<<<< HEAD
 def pca_vectors_variance(system='pPb5020'):
-=======
-def pca_vectors_variance(system='PbPb2760'):
-    """
-    PCA vectors and explained variance.
-
-    """
-    fig, axes = plt.subplots(
-        figsize=figsize(1.2, aspect=.4),
-        ncols=2, gridspec_kw=dict(width_ratios=[5, 1])
-    )
-
-    emu = emulators[system]
-    pca = emu.pca
-
-    ax = axes[0]
-
-    for n, (pc, var) in enumerate(zip(
-            pca.components_[:3], pca.explained_variance_ratio_
-    ), start=1):
-        ax.plot(pc, 'o', label='PC {} ({:.0f}%)'.format(n, 100*var))
-
-    ax.axhline(
-        0,
-        color='.5', linewidth=plt.rcParams['ytick.major.width'],
-        zorder=-100
-    )
-
-    x = -.5
-    ticks = []
-    ticklabels = []
-
-    for obs, subobslist in emu.observables:
-        for subobs in subobslist:
-            i = model.data[system][obs][subobs]['Y'].shape[1]
-            ticks.append(x + .5*i)
-            ticklabels.append(obs_label(obs, subobs))
-            x += i
-
-    ax.set_xticks(ticks)
-    ax.set_xticklabels(ticklabels)
-    ax.tick_params(
-        'x',
-        bottom=False, labelbottom=False,
-        labeltop=True, pad=1
-    )
-    for t in ax.get_xticklabels():
-        t.set_verticalalignment('baseline')
-
-    ax.set_ylim(-.1, .3)
-    ax.set_ylabel('PCA coefficient', labelpad=1)
-    auto_ticks(ax, 'y', nbins=4, minor=2)
-    ax.legend(loc='upper left', handletextpad=0)
-
-    ax = axes[1]
-
-    npc = 10
-    ax.plot(
-        np.arange(1, 1 + npc),
-        pca.explained_variance_ratio_.cumsum()[:npc],
-        '-o',
-    )
-
-    ax.set_xlim(.5, npc + .5)
-    ax.set_ylim(0, 1)
-
-    majorticks = [1, 4, 7, 10]
-    ax.set_xticks(majorticks)
-    ax.set_xticks(sorted(set(range(1, npc)) - set(majorticks)), minor=True)
-    auto_ticks(ax, 'y', nbins=5, minor=2)
-    ax.xaxis.set_ticks_position('top')
-
-    ax.set_xlabel('Number of PC')
-    ax.set_ylabel('Cumulative explained variance fraction')
-    ax.xaxis.set_ticks_position('top')
-    ax.xaxis.set_label_position('top')
-
-    for ax in axes:
-        for s in ax.spines.values():
-            s.set_visible(True)
-
-    set_tight(w_pad=.5)
-
-
-@plot
-def trento_events():
     """
     PCA vectors and explained variance.
 
@@ -1699,8 +1336,6 @@ def trento_events():
         np.arange(1, 1 + npc),
         pca.explained_variance_ratio_.cumsum()[:npc],
         '-o',
-        nrows=3, sharex='col',
-        figsize=figsize(.38, aspect=2.7)
     )
 
     ax.set_xlim(.5, npc + .5)
@@ -1721,7 +1356,7 @@ def trento_events():
         for s in ax.spines.values():
             s.set_visible(True)
 
-    set_tight(fig, rect=(.08, 0, 1, 1))
+    set_tight(w_pad=.5)
 
 
 def boxplot(
@@ -1761,7 +1396,7 @@ def boxplot(
         )
 
 
-def validation_data(system, n_splits=20, npc=7):
+def validation_data(system, n_splits=20, npc=6):
     """
     Partition the design into training and test data using K-fold
     cross validation. Train the emulator on each fold (subset of the design)
@@ -1842,10 +1477,9 @@ def validation_all(system='pPb5020'):
             ):
                 boxplot(ax_box, percentiles, x=i, box_width=.8, color=color)
 
-            Ymin, Ymax = np.percentile(Y, (.5, 99.5))
-            perc_error = (Y_ - Y) / (Ymax - Ymin)
-            rms = 100*np.sqrt(np.square(perc_error).mean(axis=0))
-
+            Ymin, Ymax = np.percentile(Y, (1, 99))
+            Yerr = (Y_ - Y)/(Ymax - Ymin)
+            rms = 100*np.sqrt(np.square(Yerr).mean(axis=0))
             ax_rms.plot(
                 np.arange(index, index + rms.size), rms, 'o', color=color
             )
@@ -1879,8 +1513,8 @@ def validation_all(system='pPb5020'):
     )
 
     ax_rms.set_xticks([])
-    ax_rms.set_yticks(np.arange(0, 16, 5))
-    ax_rms.set_ylim(0, 15)
+    ax_rms.set_yticks(np.arange(0, 26, 5))
+    ax_rms.set_ylim(0, 25)
     ax_rms.set_ylabel('RMS % error')
 
     for y in ax_rms.get_yticks():
@@ -1894,9 +1528,9 @@ def validation_all(system='pPb5020'):
 @plot
 def validation_example(
         system='pPb5020',
-        obs='vnk', subobs=(2, 2),
-        label=r'$v_2\{2\}$',
-        mult=(2.5, 3.0)
+        obs='mean_pT', subobs=None,
+        label=r'mean $p_T$',
+        mult=(2.395, 2.479)
 ):
     """
     Example of emulator validation for a single observable.  Scatterplot of
@@ -1999,76 +1633,6 @@ def validation_example(
         fontdict=dict(rotation=-90),
         labelpad=4*plt.rcParams['axes.labelpad']
     )
-
-
-@plot
-def correlation_matrices(system='PbPb2760'):
-    """
-    Correlation (normalized covariance) matrices for model and experiment.
-
-    """
-    chain = mcmc.Chain()
-
-    emu = emulators[system]
-    emu_slices = [
-        (obs, subobs, slc)
-        for obs, subobs_slc in emu._slices.items()
-        for subobs, slc in subobs_slc.items()
-    ]
-
-    design = Design(system)
-    X = np.random.uniform(design.min, design.max).reshape(1, -1)
-    emu_cov = emu.predict(X, return_cov=True)[1].array[0]
-
-    fig, axes = plt.subplots(
-        ncols=3, figsize=figsize(1.7, .47),
-        gridspec_kw=dict(width_ratios=[1, 1, .02])
-    )
-
-    for (cov, slices, title), ax in zip([
-            (emu_cov, emu_slices, 'Model (emulator)'),
-            (chain._expt_cov[system], chain._slices[system], 'Experiment'),
-    ], axes):
-        s = np.sqrt(cov.diagonal())
-        img = ax.imshow(
-            cov / np.outer(s, s), vmin=-1, vmax=1,
-            interpolation='nearest', cmap='RdBu'
-        )
-
-        ticks = []
-        ticklabels = []
-
-        for obs, subobs, slc in slices:
-            ticks.append(.5*(slc.start + slc.stop - 1))
-            ticklabels.append(obs_label(obs, subobs))
-
-        ax.set_xticks(ticks)
-        ax.set_yticks(ticks)
-        ax.set_xticklabels(ticklabels)
-        ax.set_yticklabels(ticklabels)
-        ax.set_title(title, y=1.05)
-
-        ax.tick_params(
-            bottom=False, top=False, left=False, right=False,
-            labelbottom=False, labeltop=True,
-            pad=0
-        )
-
-        for s in ax.spines.values():
-            s.set_visible(False)
-
-    axes[0].tick_params(labelleft=False)
-    for t in axes[1].get_yticklabels():
-        t.set_horizontalalignment('center')
-        t.set_x(-.05)
-
-    cax = axes[-1]
-    fig.colorbar(img, cax=cax, ticks=[-1, -.5, 0, .5, 1])
-    cax.set_aspect(40)
-    cax.yaxis.set_ticks_position('left')
-    cax.set_title('Correlation', y=1.02, fontsize=fontsize['normal'])
-
-    set_tight(fig, rect=(0, 0, 1, .96))
 
 
 default_system = 'pPb5020'
@@ -2268,7 +1832,6 @@ def diag_emu_partial():
         params=['trento_p', 'tau_fs', 'etas_min'],
         label_all=False
     )
-<<<<<<< HEAD
 
 
 def cms_radius(npartons=1, sampling_radius=.88, parton_width=.88, size=10**4):
@@ -2578,7 +2141,7 @@ def thickness_functions(xx, yy):
     return TA, TB
 
 
-@plot
+#@plot
 def trento_model_nuclei():
     """
     Example nucleon positions
@@ -2596,7 +2159,7 @@ def trento_model_nuclei():
     ax.set_ylim(-9, 9)
 
 
-@plot
+#@plot
 def trento_model_part():
     """
     Glauber participant nucleons
@@ -2614,7 +2177,7 @@ def trento_model_part():
     ax.set_ylim(-9, 9)
 
 
-@plot
+#@plot
 def trento_model_thickness():
     """
     Participant thickness functions
@@ -2655,7 +2218,7 @@ def trento_model_thickness():
     ax.set_ylim(-ymax, ymax)
 
 
-@plot
+#@plot
 def trento_model_entropy():
     """
     Reduced thickness function for an example event
@@ -2693,7 +2256,7 @@ def trento_model_entropy():
     ax.set_ylim(-ymax, ymax)
 
 
-@plot
+#@plot
 def trento_model_freestream():
     """
     Reduced thickness function for an example event
@@ -2740,7 +2303,7 @@ def trento_model_freestream():
     ax.set_ylim(-ymax, ymax)
 
 
-@plot
+#@plot
 def coupling():
     """
     Cartoon showing how free streaming approximated the time dependence of the
@@ -2768,7 +2331,7 @@ def coupling():
     set_tight()
 
 
-@plot
+#@plot
 def collision_profile():
     """
     The collision probability Pcoll(b) for p+p collisions
@@ -2809,7 +2372,7 @@ def collision_profile():
     set_tight()
 
 
-@plot
+#@plot
 def proton_overlap():
     """
     The proton-proton overlap function Tpp
@@ -2962,6 +2525,65 @@ def entropy_scaling():
         ax.set_title(str(pt))
 
     set_tight(fig)
+
+
+@plot
+def trim_design_points():
+    """
+    Identify design points with observables which fall outside a reasonable
+    prior range.
+
+    """
+    plots = _observables_plots()
+    model_data = model._data(default_system)
+
+    observables = [
+        (obs, subobs, y, point) for plot in plots
+        for (obs, subobs, opts) in plot['subplots']
+        for point, y in enumerate(model_data[obs][subobs]['Y'])
+    ]
+
+    def bad(obs, y):
+        if obs == 'dNch_deta':
+            return not all((1 < y) & (y < 6))
+        elif obs == 'mean_pT':
+            return not all((-1 < y) & (y < .5))
+        elif obs == 'vnk':
+            return not all((-6 < y) & (y < 0))
+        else:
+            return any(np.isnan(y))
+
+    bad_points = [
+        point for (obs, subobs, y, point) in observables
+        if bad(obs, y)
+    ]
+
+    print('{} bad points'.format(len(bad_points)))
+    print(bad_points)
+
+
+@plot
+def proton_shape_post():
+
+    chain = mcmc.Chain()
+    keys = ['nucleon_width', 'parton_struct']
+    data = chain.load(*keys).T
+
+    nucleon_width, parton_struct = data
+
+    min_width = .2
+    parton_width = min_width + parton_struct*(nucleon_width - min_width)
+
+    plt.figure(figsize=figsize(.6))
+
+    plt.hist2d(
+        nucleon_width, parton_width, bins=100,
+        cmap=plt.cm.Blues, cmin=1
+    )
+
+    plt.xlabel('Proton width [fm]')
+    plt.ylabel('Parton width [fm]')
+    set_tight()
 
 
 if __name__ == '__main__':

@@ -18,6 +18,9 @@ from . import cachedir
 from .design import Design
 
 
+import matplotlib.pyplot as plt
+
+
 def run_cmd(*args):
     """
     Run and log a subprocess.

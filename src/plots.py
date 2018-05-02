@@ -33,7 +33,7 @@ from matplotlib import lines
 from matplotlib import patches
 from matplotlib import ticker
 from matplotlib import cm
-from matplotlib.colors import ListedColormap
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from scipy import special
 from scipy.interpolate import PchipInterpolator
 from scipy.optimize import curve_fit
@@ -332,10 +332,9 @@ def _observables_plots():
         dict(
             title='Yields',
             ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
-            ylim=(-1, 6),
-            height_ratio=1,
+            ylim=(0, 9),
             subplots=[
-                ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$', scale=1)),
+                ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$')),
             ]
         ),
         dict(
@@ -343,7 +342,7 @@ def _observables_plots():
             ylabel=r'$\langle p_T \rangle$ [GeV]',
             ylim=(-1.25, 0.7),
             subplots=[
-                ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$', scale=1)),
+                ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$')),
             ]
         ),
         dict(
@@ -352,7 +351,7 @@ def _observables_plots():
             ylim=(-7, 0),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
-                for n in [2, 3]
+                for n in [2, 3, 4]
             ]
         )
     ]
@@ -419,28 +418,33 @@ def _observables(posterior=False):
                     capsize=0, color='.25', zorder=1000
                 )
 
-            if system == 'pPb5020' and obs == 'mean_pT':
-                ax.set_xlim(1, 6)
-                ax.set_xlabel(r'$N_\mathrm{ch}\,/\langle N_\mathrm{ch} \rangle$')
-            elif system == 'pPb5020' and obs == 'vnk':
-                ax.set_xlim(1, 6)
-                ax.set_xlabel('/'.join([
-                    r'$N^\mathrm{offline}_\mathrm{trk}$',
-                    r'$\langle N^\mathrm{offline}_\mathrm{trk} \rangle$',
-                ]))
-            else:
-                ax.set_xlim(0, 55)
-                ax.set_xlabel('Centrality %')
+            if system == 'pPb5020':
+                if obs == 'dNch_deta':
+                    ax.set_xlim(0, 55)
+                    ax.set_xlabel('Centrality %')
 
-            if obs == 'dNch_deta':
-                ax.plot([0, 50], [6, 5])
-                ax.plot([0, 50], [2, 1])
-            if obs == 'mean_pT':
-                ax.axhline(0.5)
-                ax.axhline(-1.0)
-            if obs == 'vnk':
-                ax.axhline(-6)
-                ax.axhline(0)
+                    # TODO guidlines
+                    #ax.plot([0, 50], [6, 5])
+                    #ax.plot([0, 50], [2, 1])
+                elif obs == 'mean_pT':
+                    ax.set_xlim(1, 6)
+                    ax.set_xlabel(r'$n_\mathrm{ch}\,/\langle n_\mathrm{ch} \rangle$')
+
+                    # TODO guidlines
+                    #ax.axhline(0.5)
+                    #ax.axhline(-1.0)
+                elif obs == 'vnk':
+                    ax.set_xlim(1, 6)
+                    ax.set_xlabel('/'.join([
+                        r'$n^\mathrm{offline}_\mathrm{trk}$',
+                        r'$\langle n^\mathrm{offline}_\mathrm{trk} \rangle$',
+                    ]))
+
+                    # TODO guidlines
+                    #ax.axhline(-6)
+                    #ax.axhline(0)
+            else:
+                ax.set_xlim(0, 76)
 
         if plot.get('yscale') == 'log':
             ax.set_yscale('log')
@@ -710,7 +714,12 @@ def find_map():
             color = obs_color(obs, subobs)
             scale = opts.get('scale')
 
-            x = model.data[system][obs][subobs]['x']
+            try:
+                model_data = model.data[system][obs][subobs]
+            except KeyError:
+                continue
+
+            x = model_data['x']
             mean, cov = pred[system]
             y = mean[obs][subobs][0]
             yerr = np.sqrt(cov[(obs, subobs), (obs, subobs)][0].T.diagonal())
@@ -718,6 +727,7 @@ def find_map():
             if scale is not None:
                 y = y*scale
 
+            print(y[0])
             ax.plot(x, y, color=color, zorder=1)
             ax.fill_between(
                 x, y - yerr, y + yerr,
@@ -759,6 +769,8 @@ def find_map():
                 color='.9', zorder=-10
             )
 
+            print(yexp[0])
+            print()
             ratio_ax.plot(x, y/yexp, color=color)
 
         if plot.get('yscale') == 'log':
@@ -1103,7 +1115,7 @@ def design():
     ax_y.hist(y, orientation='horizontal', **hist_kw)
 
     for ax in fig.axes:
-        ax.tick_params(top='off', right='off')
+        ax.tick_params(top=False, right=False)
         spines = ['top', 'right']
         if ax is ax_x:
             spines += ['left']
@@ -1117,7 +1129,7 @@ def design():
     auto_ticks(ax_j)
 
     for ax in ax_x, ax_y:
-        ax.tick_params(labelbottom='off', labelleft='off')
+        ax.tick_params(labelbottom=False, labelleft=False)
 
     for i, xy in zip(indices, 'xy'):
         for f, l in [('lim', d.range), ('label', d.labels)]:
@@ -1244,7 +1256,7 @@ def pca():
         )
 
     for ax in fig.axes:
-        ax.tick_params(top='off', right='off')
+        ax.tick_params(top=False, right=False)
         spines = ['top', 'right']
         if ax is ax_x:
             spines += ['left']
@@ -1256,7 +1268,7 @@ def pca():
             getattr(ax, ax_name).set_ticks_position('none')
 
     for ax in ax_x, ax_y:
-        ax.tick_params(labelbottom='off', labelleft='off')
+        ax.tick_params(labelbottom=False, labelleft=False)
 
     auto_ticks(ax_j, nbins=5, prune='upper')
 
@@ -1450,7 +1462,10 @@ def validation_all(system='pPb5020'):
             color = obs_color(obs, subobs)
 
             # model data
-            Y = model_data[obs][subobs]['Y']
+            try:
+                Y = model_data[obs][subobs]['Y']
+            except KeyError:
+                continue
 
             # emulator predictions
             Y_ = np.concatenate(
@@ -1896,6 +1911,7 @@ def observable_normality():
 
     """
     plots = _observables_plots()
+    default_system = 'PbPb5020'
     model_data = model._data(default_system)
 
     observables = [
@@ -1924,44 +1940,6 @@ def observable_normality():
         axes[nx][ny].set_axis_off()
 
     set_tight(fig)
-
-
-@plot
-def statistics():
-    """
-    Event statistics in each p-Pb trigger bin
-
-    """
-    plt.figure(figsize=figsize())
-    ax = plt.gca()
-
-    files = [
-        Path(workdir, 'model_output', 'main', default_system, '{}.dat'.format(p))
-        for p in Design(default_system, validation=False).points
-    ]
-
-    events = [
-        tuple(event)
-        for point, events in model.ModelData(default_system, *files).design_events
-        for event in events['trigger']
-    ]
-
-    counter = Counter(events).most_common()
-    shift = 0
-
-    labels = ['flow bins', 'minimum bias', 'mean $p_T$ bins']
-
-    for label, counts in zip(labels, np.split(counter, [8, 9])):
-        lbl, height = zip(*counts)
-        loc = np.arange(len(lbl))
-        ax.bar(loc + shift, height, label=label)
-        shift += len(lbl)
-
-    plt.ylabel('Events')
-    plt.xticks([])
-    plt.legend()
-
-    set_tight()
 
 
 @plot
@@ -2006,41 +1984,6 @@ def entropy_scaling():
         ax.set_title(str(pt))
 
     set_tight(fig)
-
-
-@plot
-def trim_design_points():
-    """
-    Identify design points with observables which fall outside a reasonable
-    prior range.
-
-    """
-    plots = _observables_plots()
-    model_data = model._data(default_system)
-
-    observables = [
-        (obs, subobs, y, point) for plot in plots
-        for (obs, subobs, opts) in plot['subplots']
-        for point, y in enumerate(model_data[obs][subobs]['Y'])
-    ]
-
-    def bad(obs, y):
-        if obs == 'dNch_deta':
-            return not all((1 < y) & (y < 6))
-        elif obs == 'mean_pT':
-            return not all((-1 < y) & (y < .5))
-        elif obs == 'vnk':
-            return not all((-6 < y) & (y < 0))
-        else:
-            return any(np.isnan(y))
-
-    bad_points = [
-        point for (obs, subobs, y, point) in observables
-        if bad(obs, y)
-    ]
-
-    print('{} bad points'.format(len(bad_points)))
-    print(bad_points)
 
 
 def cms_radius(npartons=1, sampling_radius=.88, parton_width=.88, size=10**4):
@@ -2101,7 +2044,7 @@ def proton_radius():
 
     # proton dimensions
     sampling_radius = .88
-    parton_width = .6
+    parton_width = .2
     nparton_values = list(range(1, 11))
 
     # protons rms radii in com frame
@@ -2141,25 +2084,117 @@ def proton_posterior_shape():
 
     """
     chain = mcmc.Chain()
-    keys = ['nucleon_width', 'parton_struct']
-    data = chain.load(*keys).T
-
-    nucleon_width, parton_struct = data
+    nucleon_width, parton_struct = chain.load(
+        'nucleon_width', 'parton_struct'
+    ).T
 
     min_width = .2
     parton_width = min_width + parton_struct*(nucleon_width - min_width)
 
-    plt.figure(figsize=figsize(.6))
+    # print parton width 90% credible region
+    median = np.median(parton_width)
+    cred_low, cred_high = mcmc.credible_interval(parton_width)
+    parton_width_est = 'parton width = {:.2f} -{:.2f} +{:.2f} fm'.format(
+        median, median - cred_low, cred_high - median
+    )
+    print(parton_width_est)
+
+    fig = plt.figure(figsize=figsize(.5, aspect=1.15))
+
+    cdict = plt.cm.Blues._segmentdata.copy()
+    cdict['red'][0] = (0, 1, 1)
+    cdict['blue'][0] = (0, 1, 1)
+    cdict['green'][0] = (0, 1, 1)
+    cmap = LinearSegmentedColormap('Blues', cdict)
 
     plt.hist2d(
-        nucleon_width, parton_width, bins=100,
-        cmap=plt.cm.Blues, cmin=1
+        nucleon_width, parton_width, bins=100, cmap=cmap
     )
 
-    plt.xlabel('Proton width [fm]')
+    plt.plot((.4, 1.2), (.4, 1.2), color='.5', clip_on=False)
+    plt.annotate('$w_\mathrm{parton} = w_\mathrm{nucleon}$',
+                 xy=(.77, .83), xycoords='data', fontsize=fontsize['large'],
+                 ha='center', va='center', color='.5', rotation=45)
+
+    plt.xlabel('Parton sampling radius [fm]')
     plt.ylabel('Parton width [fm]')
+    plt.gca().set_aspect('equal')
+
+    set_tight(fig, pad=.2)
+
+
+@plot
+def statistics():
+    """
+    Event statistics in each p-Pb trigger bin
+
+    """
+    plt.figure(figsize=figsize())
+    ax = plt.gca()
+
+    files = [
+        Path(workdir, 'model_output', 'main', default_system, '{}.dat'.format(p))
+        for p in Design(default_system, validation=False).points
+    ]
+
+    events = [
+        tuple(event)
+        for point, events in model.ModelData(default_system, *files).design_events
+        for event in events['trigger']
+    ]
+
+    counter = Counter(events).most_common()
+    shift = 0
+
+    labels = ['flow bins', 'minimum bias', 'mean $p_T$ bins']
+
+    for label, counts in zip(labels, np.split(counter, [8, 9])):
+        lbl, height = zip(*counts)
+        loc = np.arange(len(lbl))
+        ax.bar(loc + shift, height, label=label)
+        shift += len(lbl)
+
+    plt.ylabel('Events')
+    plt.xticks([])
+    plt.legend()
 
     set_tight()
+
+
+@plot
+def trim_design_points():
+    """
+    Identify design points with observables which fall outside a reasonable
+    prior range.
+
+    """
+    plots = _observables_plots()
+
+    def bad(obs, y):
+        """
+        Flag 'bad" design points with extreme observable values
+
+        """
+        if obs == 'dNch_deta':
+            return any(y < 1)
+        elif obs == 'mean_pT':
+            return any(y < -1)
+        elif obs == 'vnk':
+            return any(y < -6)
+        else:
+            return any(np.isnan(y))
+
+    bad_points = set()
+
+    for system in systems:
+        model_data = model._data(system)
+        for obs, obs_data in model_data.items():
+            for subobs, subobs_data in obs_data.items():
+                for point, y in enumerate(subobs_data['Y']):
+                    if bad(obs, y):
+                        bad_points.add(point)
+
+    print('{} bad points\n{}'.format(len(bad_points), bad_points))
 
 
 if __name__ == '__main__':

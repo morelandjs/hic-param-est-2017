@@ -383,8 +383,9 @@ def _data():
                     maxcent=100
                 )
 
-    """Log transform p-Pb observables"""
+    # Log transform observables
     log_transform(data, 'pPb5020')
+    log_transform(data, 'PbPb5020')
 
     return data
 

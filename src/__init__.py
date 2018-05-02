@@ -24,7 +24,7 @@ cachedir.mkdir(parents=True, exist_ok=True)
 #: such as ``'PbPb2760'``, ``'AuAu200'``, ``'pPb5020'``.
 #: Even if the project uses only a single system,
 #: this should still be a list of one system string.
-systems = ['pPb5020',]
+systems = ['pPb5020', 'PbPb5020']
 
 
 def parse_system(system):

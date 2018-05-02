@@ -258,14 +258,14 @@ class ModelData:
 
                 """
                 minbias_events = events[(trigger == minbias).all(axis=1)]
-                #binned_events = correct_centrality(
-                #    self.system, design_point, minbias_events, bins
-                #)
                 n = minbias_events.size
                 binned_events = [
                     minbias_events[int((1 - b/100)*n):int((1 - a/100)*n)]
                     for a, b in bins
                 ]
+                #binned_events = correct_centrality(
+                #    self.system, design_point, minbias_events, bins
+                #)
             elif bin_type == 'mult':
                 """
                 Many p-Pb observables are plotted as a function of <Nch>. These
@@ -287,8 +287,9 @@ class ModelData:
             for design_point, events in self.design_events
         ]).squeeze()
 
-        """Log-transform p-Pb events"""
-        return {'x': x, bin_type: bins, 'Y': np.log(Y) if self.pPb_event else Y}
+        # Log-transform events
+        assert np.all(Y > 0)
+        return {'x': x, bin_type: bins, 'Y': np.log(Y)}
 
 
 def _data(system, dataset='main'):
@@ -347,7 +348,7 @@ def _data(system, dataset='main'):
             cent=cent,
             x=np.array([(a + b)/2 for a, b in cent]),
         )
-        data = dict(mean_pT=dict(charged=mean_pT), **data)
+        data = dict({'mean_pT': {None: mean_pT}}, **data)
 
     data = ModelData(system, *files).observables_like(data)
 

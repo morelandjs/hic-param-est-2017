@@ -191,7 +191,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
       \texttt{\scshape\color{theme}frzout} {\small sampler}\\
       \smallskip\hrule\medskip
       {\scriptsize non-RTA shear \& bulk corrections}\\
-      {\tiny\color{theme} J.E.\ Bernhard thesis}
+      {\tiny \color{theme} (Bernhard thesis) arXiv:1804.06469}
     \end{column}
     \hfill
     \begin{column}{0.3\textwidth}
@@ -278,7 +278,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
           TeV beam energies \textcolor{theme}{\scshape (New!)} 
         \item Parametric initial conditions and medium parameters\
         \item Quantitative estimates on $\eta/s$ and $\zeta/s$ with meaningful uncertainties
-        \item See thesis by Jonah Bernhard {\small [\url{99999}]}
+        \item See thesis by Jonah Bernhard {\small [\textcolor{theme}{\url{1804.06469}}]}
       \end{itemize}
       \bigskip
       \includegraphics<1>[width=\textwidth]{region_shear_bulk}
@@ -395,7 +395,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
       \begin{itemize}
         \small
         \item Parton spatial correlations,\\
-          see talk by Alba Soto Ontoso 
+          see talk by Alba Soto Ontoso
       \end{itemize}
     \end{column}
   \end{columns}
@@ -405,7 +405,8 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \begin{figure}
-        \includegraphics[width=\textwidth]{trento_participants}\\
+        \includegraphics<1>[width=\textwidth]{trento_nucleons}
+        \includegraphics<2>[width=\textwidth]{trento_participants}\\
         \small MC-Glauber cross sections\\
         (proton d.o.f. shown)
       \end{figure}
@@ -479,9 +480,8 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
           \min(T_A, T_B) & p \rightarrow -\infty.
         \end{cases}
       \end{equation*}
-      \smallskip
       \begin{center}
-        \small $T$ denotes \emph{participant} thickness function
+        \smallskip \small $T$ denotes \emph{participant} thickness function
       \end{center}
     \end{column}
   \end{columns}
@@ -613,11 +613,24 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \includegraphics[height=.8\textheight]{find_map}
 \end{frame}
 
-\begin{frame}{\scshape Numerical grid error}
-  \begin{figure}
-    \includegraphics[width=\textwidth]{grid_error}
-    \caption{Numerical grid error tame for $dxy=.2 \times \text{parton width}$}
-  \end{figure}
+\begin{frame}{\scshape Posterior nucleon shape}
+  \begin{columns}
+    \begin{column}{.45\textwidth}
+      \begin{figure}
+        \includegraphics[width=\textwidth]{proton_posterior_shape}
+    \end{figure}
+    \end{column}
+    \begin{column}{.55\textwidth}
+      \begin{itemize}
+        \item Parton sampling radius (approx nucleon width) is not well constrained\\[2ex]
+        \item Analysis prefers small partons,\\
+          $w_\text{parton} = 0.38_{-0.18}^{+0.21}$~fm\\[2ex]
+        \item[\small\faicon{exclamation-triangle}] Results are likely sensitive to assumed
+          details of the model, e.g.\ equation of state, pre-equilibirum dynamics and viscous
+          corrections to freezeout
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \usebackgroundtemplate{}

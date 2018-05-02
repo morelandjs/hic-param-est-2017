@@ -4,7 +4,6 @@ from collections import OrderedDict
 import logging
 import os
 from pathlib import Path
-import subprocess
 import warnings
 
 import h5py
@@ -104,7 +103,7 @@ plotdir.mkdir(exist_ok=True)
 
 plot_functions = {}
 
-np.random.seed(289356)
+np.random.seed(6)
 
 
 def plot(f):
@@ -180,7 +179,7 @@ def cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2):
 
 
 def woods_saxon_nucleus(atomic_mass=208, radius=6.62, diffuseness=0.546,
-                        dmin=1.5, shift=0):
+                        dmin=1.7, shift=0):
     """
     Sample a spherically symmetric Woods-Saxon nucleus with a minimum
     nucleon-nucleon distance criteria.
@@ -241,7 +240,7 @@ def fit_cross_sec_param(nucleon_width, sigma_nn):
     return brentq(fit_xsection, -10, 20)
 
 
-def participate(nucla, nuclb, nucleon_width=0.6, sigma_nn=6.4):
+def participate(nucla, nuclb, nucleon_width=.7, sigma_nn=6.4):
     """
     Sample participants for a collision between nucleus A and nucleus B.
 
@@ -275,7 +274,7 @@ def participate(nucla, nuclb, nucleon_width=0.6, sigma_nn=6.4):
     return parta, partb, specta, spectb
 
 
-def thickness_functions(nucla, nuclb, grid, nucleon_width=.6):
+def thickness_functions(nucla, nuclb, grid, nucleon_width=.7):
     """
     Participant nuclear thickness functions
 
@@ -292,53 +291,6 @@ def thickness_functions(nucla, nuclb, grid, nucleon_width=.6):
         return sum([gaussian(x, y) for (x, y) in zip(xvals, yvals)])
 
     return [thickness(x, y) for (x, y, z) in (zip(*parta), zip(*partb))]
-
-
-def cms_radius(npartons=1, sampling_radius=.88, parton_width=.88, size=10**4):
-    """
-    Find center-of-mass RMS radius for an ensemble of sampled protons
-    with partonic substructure
-
-    """
-    # parton sampling radius
-    size = 2*npartons*int(size / (2*npartons))
-    parton_radius = np.sqrt(sampling_radius**2 - parton_width**2)
-
-    # sample protons
-    protons = np.random.normal(
-        scale=parton_radius, size=size
-    ).reshape(npartons, 2, -1)
-
-    # recenter
-    centers = protons.mean(axis=0)
-    protons -= centers
-
-    # mesh grid
-    l = np.linspace(-4*sampling_radius, 4*sampling_radius, 10**2)
-    xx, yy = np.meshgrid(l, l)
-
-    # mesh grid radii
-    rr_sq = xx**2 + yy**2
-    rr = np.sqrt(rr_sq)
-
-    # place a quark
-    def quark(xx, yy):
-        norm = 1/(2*np.pi*parton_width**2*npartons)
-        return norm * np.exp(-(xx**2 + yy**2)/(2*parton_width**2))
-
-    # place a proton
-    def proton(quarks):
-        return np.sum([quark(xx-xi, yy-yi) for (xi, yi) in quarks.T], axis=0)
-
-    # proton rms radius in cms frame
-    def rms_radius(rho):
-        return np.sqrt(np.average(rr_sq, weights=rho/rr))
-
-    # ensemble averaged rms radius
-    logging.info(
-        "calculating rms proton radius, npartons = {}".format(npartons)
-    )
-    return np.mean([rms_radius(proton(quarks)) for quarks in protons.T], axis=0)
 
 
 @plot
@@ -382,7 +334,7 @@ def collision_profile():
     The collision probability Pcoll(b) for p+p collisions
 
     """
-    plt.figure(figsize=figsize(.6))
+    plt.figure(figsize=figsize(.5))
 
     sigma_nn = 6.4
     b = np.linspace(0, 5, 1000)
@@ -411,48 +363,10 @@ def collision_profile():
 
 
 @plot
-def proton_radius():
-    """
-    Protons rms radius in the center of mass frame, as a function of parton
-    number
-
-    """
-    plt.figure(figsize=figsize(.6))
-
-    sampling_radius = .88
-    parton_width = .2
-    nparton_values = list(range(1, 11))
-
-    radii = [
-        cms_radius(
-            npartons=npartons,
-            sampling_radius=sampling_radius,
-            parton_width=parton_width,
-            size=10**4
-        ) for npartons in nparton_values
-    ]
-
-    plt.plot(nparton_values, radii, 'o', label='parton number')
-    plt.axhline(sampling_radius, color=offblack, label='sampling radius')
-
-    plt.annotate(
-        '\n'.join([
-            r'proton sampling radius${} = .88$ fm',
-            r'parton width${} = .2$ fm'
-        ]), xy=(.95, .05), xycoords='axes fraction', ha='right'
-    )
-
-    plt.xlabel('parton number')
-    plt.ylabel('proton rms radius [fm]')
-    plt.ylim(0, 1)
-
-    set_tight()
-
-
-@plot
 def gaussian_proton():
     """
-    Plot a simple azimuthally symmetric Gaussian proton
+    Plot a simple azimuthally symmetric Gaussian proton.
+    Dimensions are not to scale.
 
     """
     fig = plt.figure(figsize=figsize(.25, 1), frameon=False)
@@ -460,24 +374,22 @@ def gaussian_proton():
     ax.set_axis_off()
     fig.add_axes(ax)
 
-    l = np.linspace(-2, 2, 400)
+    l = np.linspace(-3, 3, 300)
     xx, yy = np.meshgrid(l, l)
-
-    w = .88
-    rho = np.exp(-(xx**2 + yy**2)/(2*w*w**2))
+    rho = np.exp(-(xx**2 + yy**2)/2)
 
     cmap = cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2)
-    ax.imshow(rho, cmap=cmap, interpolation='none', extent=(-2, 2, -2, 2))
+    ax.imshow(rho, cmap=cmap, interpolation='none', vmin=.02, extent=(-3, 3, -3, 3))
 
-    plt.xlim(-2, 2)
-    plt.ylim(-2, 2)
-    set_tight(fig)
+    plt.xlim(-3, 3)
+    plt.ylim(-3, 3)
 
 
 @plot
 def deformed_proton():
     """
-    Plot a deformed (lumpy) proton with partonic substructure
+    Plot a deformed (lumpy) proton with partonic substructure.
+    Dimensions are not to scale.
 
     """
     fig = plt.figure(figsize=figsize(.25, 1), frameon=False)
@@ -485,23 +397,21 @@ def deformed_proton():
     ax.set_axis_off()
     fig.add_axes(ax)
 
-    l = np.linspace(-2, 2, 400)
+    l = np.linspace(-3, 3, 300)
     xx, yy = np.meshgrid(l, l)
 
-    w = .6
     rho1, rho2, rho3 = [
-        np.exp(-((xx + dx)**2 + (yy + dy)**2)/(2*w*w**2))
-        for (dx, dy) in [(.6, 0), (-.3, .52), (-.3, -.52)]
+        np.exp(-((xx + dx)**2 + (yy + dy)**2))
+        for (dx, dy) in [(1.2, 0), (-.6, 1), (-.6, -1)]
     ]
 
-    cmap = cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2)
-
     rho = rho1 + rho2 + rho3
-    ax.imshow(rho, cmap=cmap, interpolation='none', extent=(-2, 2, -2, 2))
 
-    plt.xlim(-2, 2)
-    plt.ylim(-2, 2)
-    set_tight(fig)
+    cmap = cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2)
+    ax.imshow(rho, cmap=cmap, interpolation='none', vmin=.02, extent=(-3, 3, -3, 3))
+
+    plt.xlim(-3, 3)
+    plt.ylim(-3, 3)
 
 
 @plot
@@ -511,7 +421,7 @@ def coupling():
     fluid coupling as a step function
 
     """
-    plt.figure(figsize=figsize(.4))
+    plt.figure(figsize=figsize(.35, aspect=.55))
 
     x = np.linspace(0, 1, 10**3)
     y = np.heaviside(x - .6, 1)
@@ -547,6 +457,9 @@ nucla, nuclb = [woods_saxon_nucleus(shift=shift) for shift in (-2, 2)]
 parta, partb, specta, spectb = participate(nucla, nuclb)
 thicka, thickb = thickness_functions(nucla, nuclb, grid)
 
+spect = specta + spectb
+spect_colors = np.random.uniform(low=.6, high=.8, size=len(spect))
+
 
 @plot
 def trento_nucleons():
@@ -564,11 +477,12 @@ def trento_nucleons():
         c = np.random.uniform(low=.6, high=.8, size=len(nucl))
         ax.scatter(
             x, y, c=c, s=300, lw=0.1, vmin=0, vmax=1,
-            edgecolor=offblack, cmap=cmap
+            edgecolor=None, cmap=cmap
         )
 
     ax.set_xlim(-xmax, xmax)
     ax.set_ylim(-ymax, ymax)
+    ax.set_aspect('equal')
 
 
 @plot
@@ -583,12 +497,10 @@ def trento_participants():
     fig.add_axes(ax)
 
     # spectators
-    spect = specta + spectb
     x, y, z = zip(*spect)
-    c = np.random.uniform(low=.6, high=.8, size=len(spect))
     ax.scatter(
-        x, y, c=c, s=300, lw=0.1, vmin=0, vmax=1,
-        edgecolor=offblack, cmap=plt.cm.gray
+        x, y, c=spect_colors, s=300, lw=0.1, vmin=0, vmax=1,
+        edgecolor=None, cmap=plt.cm.gray
     )
 
     # participants
@@ -597,11 +509,12 @@ def trento_participants():
         c = np.random.uniform(low=.6, high=.8, size=len(part))
         ax.scatter(
             x, y, c=c, s=300, lw=0.1, vmin=0, vmax=1,
-            edgecolor=offblack, cmap=cmap
+            edgecolor=None, cmap=cmap
         )
 
     ax.set_xlim(-xmax, xmax)
     ax.set_ylim(-ymax, ymax)
+    ax.set_aspect('equal')
 
 
 @plot
@@ -616,18 +529,16 @@ def trento_thickness():
     fig.add_axes(ax)
 
     # spectators
-    spect = specta + spectb
     x, y, z = zip(*spect)
-    c = np.random.uniform(low=.6, high=.8, size=len(spect))
     ax.scatter(
-        x, y, c=c, s=300, lw=0.1, vmin=0, vmax=1,
-        edgecolor=offblack, cmap=plt.cm.gray
+        x, y, c=(spect_colors + .15), s=300, lw=0.1, vmin=0, vmax=1,
+        edgecolor=None, cmap=plt.cm.gray
     )
 
     # participant thickness functions
     for thick, cmap in [(thicka, plt.cm.Oranges_r), (thickb, plt.cm.PuBu_r)]:
-        ax.imshow(thick, cmap=cmap_to_alpha(cmap=cmap, fraction=.1),
-                  extent=(-xmax, xmax, -ymax, ymax), origin='lower', zorder=2)
+        ax.imshow(thick, cmap=cmap_to_alpha(cmap=cmap),
+                  extent=(-xmax, xmax, -xmax, xmax), origin='lower', zorder=2)
 
     ax.set_xlim(-xmax, xmax)
     ax.set_ylim(-ymax, ymax)
@@ -646,18 +557,16 @@ def trento_entropy():
     fig.add_axes(ax)
 
     # spectators
-    spect = specta + spectb
     x, y, z = zip(*spect)
-    c = np.random.uniform(low=.6, high=.8, size=len(spect))
     ax.scatter(
-        x, y, c=c, s=300, lw=0.1, vmin=0, vmax=1,
-        edgecolor=offblack, cmap=plt.cm.gray
+        x, y, c=(spect_colors+.15), s=300, lw=0.1, vmin=0, vmax=1,
+        edgecolor=None, cmap=plt.cm.gray
     )
 
     # initial entropy profile
     thickr = np.sqrt(thicka*thickb)
-    ax.imshow(thickr, cmap=cmap_to_alpha(), extent=(-xmax, xmax, -ymax, ymax),
-              origin='lower', zorder=2)
+    ax.imshow(thickr, cmap=cmap_to_alpha(), extent=(-xmax, xmax, -xmax, xmax),
+        origin='lower', zorder=2)
 
     ax.set_xlim(-xmax, xmax)
     ax.set_ylim(-ymax, ymax)
@@ -676,12 +585,10 @@ def trento_freestream():
     fig.add_axes(ax)
 
     # spectators
-    spect = specta + spectb
     x, y, z = zip(*spect)
-    c = np.random.uniform(low=.6, high=.8, size=len(spect))
     ax.scatter(
-        x, y, c=c, s=300, lw=0.1, vmin=0, vmax=1,
-        edgecolor=offblack, cmap=plt.cm.gray
+        x, y, c=(spect_colors + .15), s=300, lw=0.1, vmin=0, vmax=1,
+        edgecolor=None, cmap=plt.cm.gray
     )
 
     thickr = np.sqrt(thicka*thickb)
@@ -706,6 +613,12 @@ def trento_freestream():
 if __name__ == '__main__':
     import argparse
     from matplotlib.mathtext import MathTextWarning
+
+    logging.basicConfig(
+        #stream=sys.stdout,
+        format='[%(levelname)s][%(module)s] %(message)s',
+        level=os.getenv('LOGLEVEL', 'info').upper()
+    )
 
     warnings.filterwarnings(
         'ignore',

@@ -1,10 +1,13 @@
 """ Project initialization and common objects. """
 
+import copy
 import logging
 import os
 from pathlib import Path
 import re
 import sys
+
+import numpy as np
 
 
 logging.basicConfig(
@@ -49,3 +52,27 @@ class lazydict(dict):
     def __missing__(self, key):
         self[key] = value = self.function(key, *self.args, **self.kwargs)
         return value
+
+
+def transform(data):
+    """
+    Log transform model or experimental data,
+
+    y = log y,
+    d(log y) = dy/y.
+
+    This transformation improves PCA decomposition and emulator performance.
+
+    """
+    if 'x' in data:
+        d = {}
+        for k, v in data.items():
+            if k in ['y', 'Y']:
+                d[k] = np.log(v)
+            elif k == 'yerr':
+                d[k] = {s: data['yerr'][s]/data['y'] for s in ['stat', 'sys']}
+            else:
+                d[k] = v
+        return d
+    else:
+        return {k: transform(v) for k, v in data.items()}

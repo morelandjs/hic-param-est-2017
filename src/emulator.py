@@ -23,7 +23,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
 from sklearn.preprocessing import StandardScaler
 
-from . import cachedir, lazydict, model
+from . import cachedir, lazydict, model, transform
 from .design import Design
 
 
@@ -103,7 +103,7 @@ class Emulator:
         for obs, subobslist in self.observables:
             self._slices[obs] = {}
             for subobs in subobslist:
-                Y.append(model.data[system][obs][subobs]['Y'])
+                Y.append(transform(model.data[system][obs][subobs])['Y'])
                 n = Y[-1].shape[1]
                 self._slices[obs][subobs] = slice(nobs, nobs + n)
                 nobs += n
@@ -211,7 +211,7 @@ class Emulator:
 
         return emu
 
-    def _inverse_transform(self, Z):
+    def _inverse_transform(self, Z, log_space=True):
         """
         Inverse transform principal components to observables.
         Returns a nested dict of arrays.
@@ -221,14 +221,16 @@ class Emulator:
         Y = np.dot(Z, self._trans_matrix[:Z.shape[-1]])
         Y += self.scaler.mean_
 
-        return {
+        mean = {
             obs: {
-                subobs: Y[..., s]
+                subobs: Y[..., s] if log_space else np.exp(Y[..., s])
                 for subobs, s in slices.items()
             } for obs, slices in self._slices.items()
         }
 
-    def predict(self, X, return_cov=False):
+        return mean
+
+    def predict(self, X, return_cov=False, log_space=True):
         """
         Predict model output at `X`.
         X must be a 2D array-like with shape ``(nsamples, ndim)``.  It is passed
@@ -257,7 +259,8 @@ class Emulator:
             gp_mean, gp_cov = zip(*gp_mean)
 
         mean = self._inverse_transform(
-            np.concatenate([m[:, np.newaxis] for m in gp_mean], axis=1)
+            np.concatenate([m[:, np.newaxis] for m in gp_mean], axis=1),
+            log_space=log_space
         )
 
         if return_cov:
@@ -277,27 +280,6 @@ class Emulator:
             return mean, _Covariance(cov, self._slices)
         else:
             return mean
-
-    def sample_y(self, X, n_samples=1, random_state=None):
-        """
-        Sample model output at `X`.
-        Returns a nested dict of observable arrays, each with shape
-        ``(n_samples_X, n_samples, n_cent_bins)``.
-        """
-        # Sample the GP for each emulated PC.  The remaining components are
-        # assumed to have a standard normal distribution.
-        return self._inverse_transform(
-            np.concatenate([
-                gp.sample_y(
-                    X, n_samples=n_samples, random_state=random_state
-                )[:, :, np.newaxis]
-                for gp in self.gps
-            ] + [
-                np.random.standard_normal(
-                    (X.shape[0], n_samples, self.pca.n_components_ - self.npc)
-                )
-            ], axis=2)
-        )
 
 
 emulators = lazydict(Emulator.from_cache)
@@ -340,7 +322,8 @@ if __name__ == '__main__':
     kwargs = vars(args)
 
     for s in kwargs.pop('systems'):
-        emu = Emulator.from_cache(s, **kwargs)
+        npc = {'pPb5020': 7, 'PbPb5020': 12}[s]
+        emu = Emulator.from_cache(s, npc=npc, **kwargs)
 
         print(s)
         print('{} PCs explain {:.5f} of variance'.format(

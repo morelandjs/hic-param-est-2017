@@ -33,7 +33,7 @@ import h5py
 import numpy as np
 from scipy.linalg import lapack
 
-from . import workdir, systems, expt
+from . import workdir, systems, expt, transform
 from .design import Design
 from .emulator import emulators
 
@@ -152,8 +152,11 @@ class Chain:
         self._expt_y = {}
         self._expt_cov = {}
 
+        # log transform experimental data
+        expt_data = transform(expt.data)
+
         # pre-compute the experimental data vectors and covariance matrices
-        for sys, sysdata in expt.data.items():
+        for sys, sysdata in expt_data.items():
 
             # system specific observables
             observables = {
@@ -187,7 +190,7 @@ class Chain:
             self._expt_cov[sys] = np.empty((nobs, nobs))
 
             for obs1, subobs1, slc1 in self._slices[sys]:
-                self._expt_y[sys][slc1] = expt.data[sys][obs1][subobs1]['y']
+                self._expt_y[sys][slc1] = expt_data[sys][obs1][subobs1]['y']
                 for obs2, subobs2, slc2 in self._slices[sys]:
                     self._expt_cov[sys][slc1, slc2] = expt.cov(
                         sys, obs1, subobs1, obs2, subobs2
@@ -369,7 +372,7 @@ class Chain:
         with self.dataset() as d:
             return np.array(d[:, ::thin, indices]).reshape(-1, ndim)
 
-    def samples(self, n=1):
+    def samples(self, n=1, log_space=False):
         """
         Predict model output at `n` parameter points randomly drawn from the
         chain.
@@ -382,7 +385,7 @@ class Chain:
                 ])
             ])
 
-        return self._predict(X)
+        return self._predict(X, log_space=log_space)
 
 
 def credible_interval(samples, ci=.9):

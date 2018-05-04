@@ -36,6 +36,7 @@ Of course, if you have a different data organization scheme and/or format,
 that's fine.  Modify the code for your needs.
 """
 
+import copy
 import logging
 from pathlib import Path
 import pickle
@@ -287,9 +288,7 @@ class ModelData:
             for design_point, events in self.design_events
         ]).squeeze()
 
-        # Log-transform events
-        assert np.all(Y > 0)
-        return {'x': x, bin_type: bins, 'Y': np.log(Y)}
+        return {'x': x, bin_type: bins, 'Y': Y}
 
 
 def _data(system, dataset='main'):
@@ -360,7 +359,6 @@ def _data(system, dataset='main'):
 
 
 data = lazydict(_data, 'main')
-validation_data = lazydict(_data, 'validation')
 map_data = lazydict(_data, 'map')
 
 

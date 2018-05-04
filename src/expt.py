@@ -4,6 +4,7 @@ Prints all data when run as a script.
 """
 
 from collections import defaultdict
+import copy
 import logging
 import pickle
 import re
@@ -13,7 +14,7 @@ from urllib.request import urlopen
 import numpy as np
 import yaml
 
-from . import cachedir, systems
+from . import cachedir, systems, transform
 
 
 class HEPData:
@@ -308,26 +309,6 @@ def pPb5020_flows(mode):
     )
 
 
-def log_transform(data, system):
-    """
-    Transform experimental data and errors to log space,
-
-    y = log y,
-    d(log y) = dy/y.
-
-    This transformation, which is also performed on the model observables,
-    improves PCA decomposition and emulator performance.
-
-    """
-    for obs, obs_data in data[system].items():
-        for subobs, subobs_data in obs_data.items():
-            y, yerr = [subobs_data[k] for k in ('y', 'yerr')]
-            ystat, ysys = [yerr[k] for k in ('stat', 'sys')]
-            np.divide(ystat, y, out=ystat)
-            np.divide(ysys, y, out=ysys)
-            np.log(y, out=y)
-
-
 def _data():
     """
     Curate the experimental data using the `HEPData` class and return a nested
@@ -383,10 +364,6 @@ def _data():
                     maxcent=100
                 )
 
-    # Log transform observables
-    log_transform(data, 'pPb5020')
-    log_transform(data, 'PbPb5020')
-
     return data
 
 
@@ -428,7 +405,7 @@ def cov(
 
     """
     def unpack(obs, subobs):
-        dset = data[system][obs][subobs]
+        dset = transform(data[system][obs][subobs])
         yerr = dset['yerr']
 
         try:

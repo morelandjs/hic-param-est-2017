@@ -332,7 +332,8 @@ def _observables_plots():
         dict(
             title='Yields',
             ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
-            ylim=(0, 9),
+            ylim=(1, 5000),
+            yscale='log',
             subplots=[
                 ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$')),
             ]
@@ -340,7 +341,7 @@ def _observables_plots():
         dict(
             title='Mean $p_T$',
             ylabel=r'$\langle p_T \rangle$ [GeV]',
-            ylim=(-1.25, 0.7),
+            ylim=(0, 1.5),
             subplots=[
                 ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$')),
             ]
@@ -348,7 +349,7 @@ def _observables_plots():
         dict(
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
-            ylim=(-7, 0),
+            ylim=(0, .2),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
                 for n in [2, 3, 4]
@@ -693,7 +694,7 @@ def find_map():
         )
     )
 
-    pred = chain._predict(np.atleast_2d(full_x(res.x)), return_cov=True)
+    pred = chain._predict(np.atleast_2d(full_x(res.x)), log_space=False)
 
     plots = _observables_plots()
 
@@ -715,24 +716,15 @@ def find_map():
             scale = opts.get('scale')
 
             try:
-                model_data = model.data[system][obs][subobs]
+                x = model.data[system][obs][subobs]['x']
             except KeyError:
                 continue
-
-            x = model_data['x']
-            mean, cov = pred[system]
-            y = mean[obs][subobs][0]
-            yerr = np.sqrt(cov[(obs, subobs), (obs, subobs)][0].T.diagonal())
+            y = pred[system][obs][subobs][0]
 
             if scale is not None:
                 y = y*scale
 
-            print(y[0])
-            ax.plot(x, y, color=color, zorder=1)
-            ax.fill_between(
-                x, y - yerr, y + yerr,
-                alpha=.2, color=color, lw=0, zorder=0
-            )
+            ax.plot(x, y, color=color)
 
             if 'label' in opts:
                 ax.text(
@@ -769,8 +761,6 @@ def find_map():
                 color='.9', zorder=-10
             )
 
-            print(yexp[0])
-            print()
             ratio_ax.plot(x, y/yexp, color=color)
 
         if plot.get('yscale') == 'log':

@@ -953,7 +953,7 @@ def posterior_p():
     Distribution of trento p parameter with annotations for other models.
 
     """
-    plt.figure(figsize=figsize(.8, .35))
+    plt.figure(figsize=figsize(.6, .35))
     ax = plt.axes()
 
     data = mcmc.Chain().load('trento_p').ravel()
@@ -1007,6 +1007,49 @@ def posterior_p():
     ax.set_ylim(0, 1.01*y.max())
 
     set_tight(pad=0)
+
+
+def posterior_parameter(parameter, label, xticks):
+    """
+    Marginal distribution of a single parameter.
+
+    """
+    plt.figure(figsize=figsize(.6, .35))
+    ax = plt.axes()
+
+    data = mcmc.Chain().load(parameter).ravel()
+
+    counts, edges = np.histogram(data, bins=50)
+    x = (edges[1:] + edges[:-1]) / 2
+    y = counts / counts.max()
+    interp = PchipInterpolator(x, y)
+    x = np.linspace(x[0], x[-1], 10*x.size)
+    y = interp(x)
+    ax.plot(x, y, color=plt.cm.Blues(0.8))
+    ax.fill_between(x, y, color=plt.cm.Blues(0.15), zorder=-10)
+    ax.spines['left'].set_visible(False)
+
+    ax.set_xlabel(label)
+    ax.set_xticks(xticks)
+    ax.set_yticks([])
+    ax.set_ylim(0, 1.01*y.max())
+
+    set_tight(pad=0)
+
+
+@plot
+def posterior_parton_number():
+    posterior_parameter('parton_number', 'Parton number', [1, 3, 5, 7, 9])
+
+
+@plot
+def posterior_freestreaming():
+    posterior_parameter('tau_fs', 'Free streaming time [fm/$c$]', [.1, .8, 1.5])
+
+
+@plot
+def posterior_structure():
+    posterior_parameter('parton_struct', '$\chi_\mathrm{struct}$', [0, .5, 1])
 
 
 @plot
@@ -2101,12 +2144,14 @@ def proton_posterior_shape():
         nucleon_width, parton_width, bins=100, cmap=cmap
     )
 
-    plt.plot((.4, 1.2), (.4, 1.2), color='.5', clip_on=False)
-    plt.annotate('$w_\mathrm{parton} = w_\mathrm{nucleon}$',
-                 xy=(.77, .83), xycoords='data', fontsize=fontsize['large'],
-                 ha='center', va='center', color='.5', rotation=45)
+    plt.fill_between([.4, 1.2], [.4, 1.2], [1.2, 1.2], color='.9')
+    plt.annotate(
+        'parton width > nucleon width', xy=(.45, 1.15), xycoords='data',
+        ha='left', va='top', color='.4'
+    )
 
-    plt.xlabel('Parton sampling radius [fm]')
+
+    plt.xlabel('Nucleon width [fm]')
     plt.ylabel('Parton width [fm]')
     plt.gca().set_aspect('equal')
 

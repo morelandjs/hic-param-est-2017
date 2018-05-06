@@ -42,7 +42,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
 from sklearn.model_selection import KFold
 
-from . import cachedir, workdir, systems, parse_system, expt, model, mcmc
+from . import cachedir, workdir, systems, parse_system, expt, model, mcmc, transform
 from .design import Design
 from .emulator import Emulator, emulators
 
@@ -423,29 +423,17 @@ def _observables(posterior=False):
                 if obs == 'dNch_deta':
                     ax.set_xlim(0, 55)
                     ax.set_xlabel('Centrality %')
-
-                    # TODO guidlines
-                    #ax.plot([0, 50], [6, 5])
-                    #ax.plot([0, 50], [2, 1])
                 elif obs == 'mean_pT':
                     ax.set_xlim(1, 6)
                     ax.set_xlabel(r'$n_\mathrm{ch}\,/\langle n_\mathrm{ch} \rangle$')
-
-                    # TODO guidlines
-                    #ax.axhline(0.5)
-                    #ax.axhline(-1.0)
                 elif obs == 'vnk':
                     ax.set_xlim(1, 6)
                     ax.set_xlabel('/'.join([
                         r'$n^\mathrm{offline}_\mathrm{trk}$',
                         r'$\langle n^\mathrm{offline}_\mathrm{trk} \rangle$',
                     ]))
-
-                    # TODO guidlines
-                    #ax.axhline(-6)
-                    #ax.axhline(0)
             else:
-                ax.set_xlim(0, 76)
+                ax.set_xlim(0, 80)
 
         if plot.get('yscale') == 'log':
             ax.set_yscale('log')
@@ -1242,7 +1230,7 @@ def pca():
     ax_y = fig.add_subplot(gs[1:, -1], sharey=ax_j)
 
     x, y = (
-        model.data['pPb5020'][obs][subobs]['Y'][:, 3]
+        model.data['PbPb5020'][obs][subobs]['Y'][:, 3]
         for obs, subobs in [('dNch_deta', None), ('vnk', (2, 2))]
     )
     xlabel = r'$dN_\mathrm{ch}/d\eta$'
@@ -1314,8 +1302,11 @@ def pca():
     set_tight(pad=.1, h_pad=.3, w_pad=.3)
 
 
+default_system = 'PbPb5020'
+
+
 @plot
-def pca_vectors_variance(system='pPb5020'):
+def pca_vectors_variance(system=default_system):
     """
     PCA vectors and explained variance.
 
@@ -1433,7 +1424,7 @@ def boxplot(
         )
 
 
-def validation_data(system, n_splits=20, npc=6):
+def validation_data(system, n_splits=20, npc=10):
     """
     Partition the design into training and test data using K-fold
     cross validation. Train the emulator on each fold (subset of the design)
@@ -1471,7 +1462,7 @@ def validation_data(system, n_splits=20, npc=6):
 
 
 @plot
-def validation_all(system='pPb5020'):
+def validation_all(system='PbPb5020'):
     """
     Emulator validation: normalized residuals and RMS error for each
     observable.
@@ -1496,7 +1487,7 @@ def validation_all(system='pPb5020'):
 
             # model data
             try:
-                Y = model_data[obs][subobs]['Y']
+                Y = transform(model_data[obs][subobs])['Y']
             except KeyError:
                 continue
 
@@ -1567,10 +1558,10 @@ def validation_all(system='pPb5020'):
 
 @plot
 def validation_example(
-        system='pPb5020',
-        obs='mean_pT', subobs=None,
-        label=r'mean $p_T$',
-        mult=(2.395, 2.479)
+        system='PbPb5020',
+        obs='dNch_deta', subobs=None,
+        label=r'$dN_\mathrm{ch}/d\eta$',
+        cent=(20, 30)
 ):
     """
     Example of emulator validation for a single observable.  Scatterplot of
@@ -1588,16 +1579,16 @@ def validation_example(
     # model data
     model_data  = model.data[system]
     vdata = model_data[obs][subobs]
-    mult_slc = (slice(None), vdata['mult'].index(mult))
-    y = vdata['Y'][mult_slc]
+    cent_slc = (slice(None), vdata['cent'].index(cent))
+    y = vdata['Y'][cent_slc]
 
     # emulator predictions
     mean_folds, cov_folds = validation_data(system)
     y_ = np.concatenate(
-        [mean[obs][subobs][mult_slc] for mean in mean_folds], axis=0
+        [mean[obs][subobs][cent_slc] for mean in mean_folds], axis=0
     )
     std_ = np.concatenate(
-        [np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal()[mult_slc])
+        [np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal()[cent_slc])
             for cov in cov_folds], axis=0
     )
 
@@ -1616,7 +1607,7 @@ def validation_example(
     ax_scatter.set_xlabel('Emulator prediction')
     ax_scatter.set_ylabel('Model calculation')
     ax_scatter.text(
-        .04, .96, '{} {}–{}'.format(label, *mult),
+        .04, .96, '{} {}–{}'.format(label, *cent),
         horizontalalignment='left', verticalalignment='top',
         transform=ax_scatter.transAxes
     )
@@ -1675,7 +1666,6 @@ def validation_example(
     )
 
 
-default_system = 'pPb5020'
 
 
 @plot
@@ -2213,9 +2203,9 @@ def trim_design_points():
         if obs == 'dNch_deta':
             return any(y < 1)
         elif obs == 'mean_pT':
-            return any(y < -1)
+            return any(y < .3)
         elif obs == 'vnk':
-            return any(y < -6)
+            return any(y < 0.002)
         else:
             return any(np.isnan(y))
 

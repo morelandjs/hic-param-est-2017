@@ -141,7 +141,7 @@ class HEPData:
             .format(name, quals)
         )
 
-    def dataset(self, name=None, maxcent=100, ignore_bins=[], **quals):
+    def dataset(self, name=None, maxcent=70, ignore_bins=[], **quals):
         """
         Return a dict containing:
 
@@ -361,7 +361,7 @@ def _data():
                     'V{}{{{}{}}}'.format(
                         n, k, ', |DELTAETA|>1' if k == 2 else ''
                     ),
-                    maxcent=100
+                    maxcent=(70 if n == 2 else 50)
                 )
 
     return data

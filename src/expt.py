@@ -14,7 +14,7 @@ from urllib.request import urlopen
 import numpy as np
 import yaml
 
-from . import cachedir, systems, transform
+from . import cachedir, systems
 
 
 class HEPData:
@@ -405,7 +405,7 @@ def cov(
 
     """
     def unpack(obs, subobs):
-        dset = transform(data[system][obs][subobs])
+        dset = data[system][obs][subobs]
         yerr = dset['yerr']
 
         try:

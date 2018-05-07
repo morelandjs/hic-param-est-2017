@@ -131,7 +131,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
 
 \newcommand{\boxtitle}[1]{\textbf{#1}\\[.5ex]}
 
-\begin{frame}{\scshape Flow in small systems}
+\begin{frame}{\scshape Collectivity in small systems, is it flow?}
   \smallskip
   \begin{columns}[T]
     \begin{column}{.62\textwidth}
@@ -160,56 +160,6 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{center}
     \Large I. Bayesian parameter estimation of heavy-ion collisions
   \end{center}
-\end{frame}
-
-\begin{frame}[t]{\scshape Heavy-ion collision model}
-  \centering
-  \medskip
-  \begin{tikzpicture}
-    \node (a) {\includegraphics[width=.95\textwidth]{hannah_collision}};
-    \node[align=left, anchor=north west] at (a.north west) {%
-      \scriptsize Figure: H. Petersen, MADAI
-      };
-  \end{tikzpicture}
-  \begin{columns}[T]
-    \begin{column}{0.3\textwidth}
-      \texttt{\scshape\color{theme} TrENTo} {\small initial conditions}\\
-      \smallskip\hrule\medskip
-      {\scriptsize parametric entropy deposition}\\
-      {\tiny \color{theme}PRC.92.011901}\\[2ex]
-      \texttt{\scshape\color{theme} freestream} {\small pre-flow}\\
-      \smallskip\hrule\medskip
-      {\scriptsize infinitely weak coupling limit}\\
-      {\tiny \color{theme} PRC.91.064906, ~PRC.80.034902}
-    \end{column}
-    \hfill
-    \begin{column}{0.3\textwidth}
-      \texttt{\scshape\color{theme} VISH2+1} {\small viscous hydro}\\
-      \smallskip\hrule\medskip
-      {\scriptsize 14-mom.\ approx w/ shear \& bulk}\\
-      {\tiny \color{theme} PRC.77.064901, ~J.CPC.2015.08.039}\\[2ex]
-      \texttt{\scshape\color{theme}frzout} {\small sampler}\\
-      \smallskip\hrule\medskip
-      {\scriptsize non-RTA shear \& bulk corrections}\\
-      {\tiny \color{theme} (Bernhard thesis) arXiv:1804.06469}
-    \end{column}
-    \hfill
-    \begin{column}{0.3\textwidth}
-      \texttt{\scshape\color{theme} UrQMD} {\small Boltzmann cascade}
-      \smallskip\hrule\medskip
-      {\scriptsize hadronic afterburner, simulate scatterings and decays}\\
-      {\tiny\color{theme} PPNP.98.00058, ~JPG.25.9.308}\\[2ex]
-      {\scriptsize Final observables calculated as similar as possible to experiment}
-    \end{column}
-  \end{columns}
-  \begin{tikzpicture}[overlay]
-    \draw (-3, -.2) -- (-2.7, -.2);
-    \draw (-2.7, -.2) -- (-2.7, 3.6);
-    \draw (-2.7, 3.6) -- (-2.4, 3.6);
-    \draw (2.4, -.2) -- (2.7, -.2);
-    \draw (2.7, -.2) -- (2.7, 3.6);
-    \draw (2.7, 3.6) -- (3.0, 3.6);
-  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}[t]{\scshape Bayesian parameter estimation}
@@ -264,6 +214,56 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
           \textit{given the model, data and \textbf{known uncertainties}}
       \end{itemize}
   \end{textblock}
+\end{frame}
+
+\begin{frame}[t]{\scshape Heavy-ion collision model}
+  \centering
+  \medskip
+  \begin{tikzpicture}
+    \node (a) {\includegraphics[width=.95\textwidth]{hannah_collision}};
+    \node[align=left, anchor=north west] at (a.north west) {%
+      \scriptsize Figure: H. Petersen, MADAI
+      };
+  \end{tikzpicture}
+  \begin{columns}[T]
+    \begin{column}{0.3\textwidth}
+      \texttt{\scshape\color{theme} TrENTo} {\small initial conditions}\\
+      \smallskip\hrule\medskip
+      {\scriptsize parametric entropy deposition}\\
+      {\tiny \color{theme}PRC.92.011901}\\[2ex]
+      \texttt{\scshape\color{theme} freestream} {\small pre-flow}\\
+      \smallskip\hrule\medskip
+      {\scriptsize infinitely weak coupling limit}\\
+      {\tiny \color{theme} PRC.91.064906, ~PRC.80.034902}
+    \end{column}
+    \hfill
+    \begin{column}{0.3\textwidth}
+      \texttt{\scshape\color{theme} VISH2+1} {\small viscous hydro}\\
+      \smallskip\hrule\medskip
+      {\scriptsize 14-mom.\ approx w/ shear \& bulk}\\
+      {\tiny \color{theme} PRC.77.064901, ~J.CPC.2015.08.039}\\[2ex]
+      \texttt{\scshape\color{theme}frzout} {\small sampler}\\
+      \smallskip\hrule\medskip
+      {\scriptsize non-RTA shear \& bulk corrections}\\
+      {\tiny \color{theme} (Bernhard thesis) arXiv:1804.06469}
+    \end{column}
+    \hfill
+    \begin{column}{0.3\textwidth}
+      \texttt{\scshape\color{theme} UrQMD} {\small Boltzmann cascade}
+      \smallskip\hrule\medskip
+      {\scriptsize hadronic afterburner, simulate scatterings and decays}\\
+      {\tiny\color{theme} PPNP.98.00058, ~JPG.25.9.308}\\[2ex]
+      {\scriptsize Final observables calculated as similar as possible to experiment}
+    \end{column}
+  \end{columns}
+  \begin{tikzpicture}[overlay]
+    \draw (-3, -.2) -- (-2.7, -.2);
+    \draw (-2.7, -.2) -- (-2.7, 3.6);
+    \draw (-2.7, 3.6) -- (-2.4, 3.6);
+    \draw (2.4, -.2) -- (2.7, -.2);
+    \draw (2.7, -.2) -- (2.7, 3.6);
+    \draw (2.7, 3.6) -- (3.0, 3.6);
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}[b, plain]{\scshape Parameter estimates from lead-lead collisions}

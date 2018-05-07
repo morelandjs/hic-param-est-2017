@@ -23,7 +23,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
 from sklearn.preprocessing import StandardScaler
 
-from . import cachedir, lazydict, model, transform
+from . import cachedir, lazydict, model
 from .design import Design
 
 
@@ -103,7 +103,7 @@ class Emulator:
         for obs, subobslist in self.observables:
             self._slices[obs] = {}
             for subobs in subobslist:
-                Y.append(transform(model.data[system][obs][subobs])['Y'])
+                Y.append(model.data[system][obs][subobs]['Y'])
                 n = Y[-1].shape[1]
                 self._slices[obs][subobs] = slice(nobs, nobs + n)
                 nobs += n
@@ -211,7 +211,7 @@ class Emulator:
 
         return emu
 
-    def _inverse_transform(self, Z, log_space=True):
+    def _inverse_transform(self, Z):
         """
         Inverse transform principal components to observables.
         Returns a nested dict of arrays.
@@ -223,14 +223,14 @@ class Emulator:
 
         mean = {
             obs: {
-                subobs: Y[..., s] if log_space else np.exp(Y[..., s])
+                subobs: Y[..., s]
                 for subobs, s in slices.items()
             } for obs, slices in self._slices.items()
         }
 
         return mean
 
-    def predict(self, X, return_cov=False, log_space=True):
+    def predict(self, X, return_cov=False):
         """
         Predict model output at `X`.
         X must be a 2D array-like with shape ``(nsamples, ndim)``.  It is passed
@@ -259,8 +259,7 @@ class Emulator:
             gp_mean, gp_cov = zip(*gp_mean)
 
         mean = self._inverse_transform(
-            np.concatenate([m[:, np.newaxis] for m in gp_mean], axis=1),
-            log_space=log_space
+            np.concatenate([m[:, np.newaxis] for m in gp_mean], axis=1)
         )
 
         if return_cov:

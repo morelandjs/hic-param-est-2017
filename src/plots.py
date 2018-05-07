@@ -42,7 +42,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
 from sklearn.model_selection import KFold
 
-from . import cachedir, workdir, systems, parse_system, expt, model, mcmc, transform
+from . import cachedir, workdir, systems, parse_system, expt, model, mcmc
 from .design import Design
 from .emulator import Emulator, emulators
 
@@ -682,7 +682,7 @@ def find_map():
         )
     )
 
-    pred = chain._predict(np.atleast_2d(full_x(res.x)), log_space=False)
+    pred = chain._predict(np.atleast_2d(full_x(res.x)))
 
     plots = _observables_plots()
 
@@ -1487,7 +1487,7 @@ def validation_all(system):
 
             # model data
             try:
-                Y = transform(model_data[obs][subobs])['Y']
+                Y = model_data[obs][subobs]['Y']
             except KeyError:
                 continue
 
@@ -1590,7 +1590,7 @@ def validation_example(
     ax_scatter, ax_hist = axes
 
     # model data
-    model_data  = transform(model.data[system])
+    model_data  = model.data[system]
     vdata = model_data[obs][subobs]
     cent_slc = (slice(None), vdata['cent'].index(cent))
     y = vdata['Y'][cent_slc]

@@ -322,7 +322,7 @@ if __name__ == '__main__':
     kwargs = vars(args)
 
     for s in kwargs.pop('systems'):
-        npc = {'pPb5020': 7, 'PbPb5020': 8}[s]
+        npc = {'pPb5020': 7, 'PbPb5020': 9}[s]
         emu = Emulator.from_cache(s, npc=npc, **kwargs)
 
         print(s)

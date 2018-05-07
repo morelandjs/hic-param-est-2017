@@ -56,7 +56,7 @@ class lazydict(dict):
 
 def transform(data):
     """
-    Log transform model or experimental data,
+    Used to log transform model and experimental data,
 
     y = log y,
     d(log y) = dy/y.

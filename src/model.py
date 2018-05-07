@@ -234,28 +234,22 @@ class ModelData:
         compute_bin = _compute_bin()
 
         def compute_all_bins(events, design_point):
+            """
+            Cooper-Frye sampling neglects all energy in the collision which
+            starts below the particlization temperature Tsw. This function
+            corrects dNch/deta for missing particles below Tsw, assuming
+            that particle production follows a simple power law.
+
+            """
             trigger = events['trigger']
             minbias = (0, float('inf'))
 
-            if self.pPb_event:
-                """
-                Cooper-Frye sampling neglects all energy in the collision which
-                starts below the particlization temperature Tsw. This function
-                corrects dNch/deta for missing particles below Tsw, assuming
-                that particle production follows a simple power law.
-
-                """
-                events = correct_yield(events)
+            events = correct_yield(events)
 
             if bin_type == 'cent':
                 """
-                Sorting events into centrality bins is inaccurate for small minimum
-                bias event samples. We correct this bias by using initial entropy
-                (from a far greater number of events) to define centrality classes.
-
-                The `correct_centrality` function runs initial condition events
-                with parameters selected from each design point and uses them
-                to partition the provided minimum bias sample into centrality bins.
+                Sort minimum bias events into bins by their charged particle
+                yield.
 
                 """
                 minbias_events = events[(trigger == minbias).all(axis=1)]
@@ -264,9 +258,6 @@ class ModelData:
                     minbias_events[int((1 - b/100)*n):int((1 - a/100)*n)]
                     for a, b in bins
                 ]
-                #binned_events = correct_centrality(
-                #    self.system, design_point, minbias_events, bins
-                #)
             elif bin_type == 'mult':
                 """
                 Many p-Pb observables are plotted as a function of <Nch>. These

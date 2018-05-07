@@ -396,7 +396,7 @@ def _observables(posterior=False):
                 Y = Y*scale
 
             for y in Y:
-                ax.plot(x, y, color=color, alpha=.08, lw=.3)
+                ax.plot(x, y, color=color, alpha=.15, lw=.3)
 
             try:
                 dset = expt.data[system][obs][subobs]
@@ -1424,7 +1424,7 @@ def boxplot(
         )
 
 
-def validation_data(system, n_splits=20, npc=10):
+def validation_data(system, n_splits=20):
     """
     Partition the design into training and test data using K-fold
     cross validation. Train the emulator on each fold (subset of the design)
@@ -1433,6 +1433,7 @@ def validation_data(system, n_splits=20, npc=10):
     """
     design = Design(system)
     kf = KFold(n_splits=n_splits)
+    npc = {'pPb5020': 7, 'PbPb5020': 9}[system]
 
     mean_folds = []
     cov_folds = []
@@ -1461,8 +1462,7 @@ def validation_data(system, n_splits=20, npc=10):
     return mean_folds, cov_folds
 
 
-@plot
-def validation_all(system='PbPb5020'):
+def validation_all(system):
     """
     Emulator validation: normalized residuals and RMS error for each
     observable.
@@ -1508,7 +1508,7 @@ def validation_all(system='PbPb5020'):
             ):
                 boxplot(ax_box, percentiles, x=i, box_width=.8, color=color)
 
-            Ymin, Ymax = np.percentile(Y, (1, 99))
+            Ymin, Ymax = np.percentile(Y, (.5, 99.5))
             Yerr = (Y_ - Y)/(Ymax - Ymin)
             rms = 100*np.sqrt(np.square(Yerr).mean(axis=0))
             ax_rms.plot(
@@ -1521,11 +1521,14 @@ def validation_all(system='PbPb5020'):
             index = i + 2
 
     ax_box.set_xticks(ticks)
+    ax_box.tick_params(axis='x', pad=-6)
     ax_box.set_xticklabels(ticklabels)
     ax_box.tick_params('x', bottom=False, labelsize=plt.rcParams['font.size'])
 
     ax_box.set_ylim(-2.25, 2.25)
     ax_box.set_ylabel(r'Normalized residuals')
+    nuclei, roots = parse_system(system)
+    ax_box.set_title('{}-{} {} TeV'.format(*nuclei, roots/1000))
 
     q, p = np.sqrt(2) * special.erfinv(2*np.array([.75, .90]) - 1)
     ax_box.axhspan(-q, q, color='.85', zorder=-20)
@@ -1544,8 +1547,8 @@ def validation_all(system='PbPb5020'):
     )
 
     ax_rms.set_xticks([])
-    ax_rms.set_yticks(np.arange(0, 26, 5))
-    ax_rms.set_ylim(0, 25)
+    ax_rms.set_yticks(np.arange(0, 21, 5))
+    ax_rms.set_ylim(0, 20)
     ax_rms.set_ylabel('RMS % error')
 
     for y in ax_rms.get_yticks():
@@ -1554,6 +1557,16 @@ def validation_all(system='PbPb5020'):
     for ax in fig.axes:
         ax.set_xlim(0, index - 1)
         ax.spines['bottom'].set_visible(False)
+
+
+@plot
+def validation_pPb5020():
+    validation_all('pPb5020')
+
+
+@plot
+def validation_PbPb5020():
+    validation_all('PbPb5020')
 
 
 @plot
@@ -1577,7 +1590,7 @@ def validation_example(
     ax_scatter, ax_hist = axes
 
     # model data
-    model_data  = model.data[system]
+    model_data  = transform(model.data[system])
     vdata = model_data[obs][subobs]
     cent_slc = (slice(None), vdata['cent'].index(cent))
     y = vdata['Y'][cent_slc]
@@ -2066,7 +2079,7 @@ def proton_radius():
     plt.figure(figsize=figsize(.5))
 
     # proton dimensions
-    sampling_radius = .88
+    sampling_radius = 88
     parton_width = .2
     nparton_values = list(range(1, 11))
 
@@ -2136,12 +2149,12 @@ def proton_posterior_shape():
 
     plt.fill_between([.4, 1.2], [.4, 1.2], [1.2, 1.2], color='.9')
     plt.annotate(
-        'parton width > nucleon width', xy=(.45, 1.15), xycoords='data',
+        'parton width > sampling radius', xy=(.45, 1.15), xycoords='data',
         ha='left', va='top', color='.4'
     )
 
 
-    plt.xlabel('Nucleon width [fm]')
+    plt.xlabel('Parton sampling radius [fm]')
     plt.ylabel('Parton width [fm]')
     plt.gca().set_aspect('equal')
 
@@ -2149,7 +2162,7 @@ def proton_posterior_shape():
 
 
 @plot
-def statistics():
+def statistics(system='pPb5020'):
     """
     Event statistics in each p-Pb trigger bin
 
@@ -2158,13 +2171,13 @@ def statistics():
     ax = plt.gca()
 
     files = [
-        Path(workdir, 'model_output', 'main', default_system, '{}.dat'.format(p))
-        for p in Design(default_system, validation=False).points
+        Path(workdir, 'model_output', 'main', system, '{}.dat'.format(p))
+        for p in Design(system, validation=False).points
     ]
 
     events = [
         tuple(event)
-        for point, events in model.ModelData(default_system, *files).design_events
+        for point, events in model.ModelData(system, *files).design_events
         for event in events['trigger']
     ]
 

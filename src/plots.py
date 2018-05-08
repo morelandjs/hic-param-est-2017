@@ -20,6 +20,7 @@ decorator.
 from collections import OrderedDict, Counter
 import itertools
 import logging
+import multiprocessing
 from pathlib import Path
 import pickle
 import tempfile
@@ -35,7 +36,7 @@ from matplotlib import ticker
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from scipy import special
-from scipy.interpolate import PchipInterpolator
+from scipy.interpolate import PchipInterpolator, interp2d
 from scipy.optimize import curve_fit
 from sklearn.decomposition import PCA
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
@@ -281,12 +282,34 @@ def obs_color_hsluv(obs, subobs):
     raise ValueError('unknown observable: {} {}'.format(obs, subobs))
 
 
+def obs_color_tableau(obs, subobs):
+    """
+    Observable tableau colors
+
+    """
+    if obs in {'dNch_deta', 'pT_fluct'}:
+        return colors['blue']
+
+    if obs == 'mean_pT':
+        return colors['purple']
+
+    if obs == 'vnk':
+        return {
+            (2, 2): colors['orange'],
+            (3, 2): colors['red'],
+            (4, 2): colors['purple'],
+        }[subobs]
+
+    raise ValueError('unknown observable: {} {}'.format(obs, subobs))
+
+
 def obs_color(obs, subobs):
     """
     Return a nice color for the given observable.
 
     """
-    return hsluv.hsluv_to_rgb(obs_color_hsluv(obs, subobs))
+    return obs_color_tableau(obs, subobs)
+    #return hsluv.hsluv_to_rgb(obs_color_hsluv(obs, subobs))
 
 
 def obs_label(obs, subobs, differentials=False, full_cumulants=False):
@@ -368,7 +391,7 @@ def _observables(posterior=False):
 
     fig, axes = plt.subplots(
         nrows=len(plots), ncols=len(systems),
-        figsize=figsize(1.1, aspect=1.25),
+        figsize=figsize(.8, aspect=1.25),
         gridspec_kw=dict(
             height_ratios=[p.get('height_ratio', 1) for p in plots]
         )
@@ -434,6 +457,7 @@ def _observables(posterior=False):
                     ]))
             else:
                 ax.set_xlim(0, 80)
+                ax.set_xlabel('Centrality %')
 
         if plot.get('yscale') == 'log':
             ax.set_yscale('log')
@@ -941,7 +965,7 @@ def posterior_p():
     Distribution of trento p parameter with annotations for other models.
 
     """
-    plt.figure(figsize=figsize(.6, .35))
+    plt.figure(figsize=figsize(.6, .5))
     ax = plt.axes()
 
     data = mcmc.Chain().load('trento_p').ravel()
@@ -1002,7 +1026,7 @@ def posterior_parameter(parameter, label, xticks):
     Marginal distribution of a single parameter.
 
     """
-    plt.figure(figsize=figsize(.6, .35))
+    plt.figure(figsize=figsize(.6, .75))
     ax = plt.axes()
 
     data = mcmc.Chain().load(parameter).ravel()
@@ -1048,59 +1072,74 @@ def region_shear_bulk(cmap=plt.cm.Blues):
 
     """
     fig, axes = plt.subplots(ncols=2, figsize=figsize(1, .4))
+    ax_shear, ax_bulk = axes
 
     Tmin, Tmax = .150, .300
     Tc = .154
 
-    chain = mcmc.Chain()
+    prj_path = Path('/home/jsm55/prj', 'mcmc', 'chain.hdf')
+    energies = (mcmc.Chain(prj_path), plt.cm.Blues, .6, 'Pb-Pb 2.76, 5.02 TeV')
+    nuclei = (mcmc.Chain(), plt.cm.Oranges, .25, 'p-Pb, Pb-Pb 5.02 TeV')
+    handles = []
 
-    for (name,  var, keys, function, ymax), ax in zip([
-            ('shear', 'eta', ['min', 'slope', 'crv'],
-             lambda T, m, s, c: m + s*(T - Tc)*(T/Tc)**c,
-             .4),
-            ('bulk', 'zeta', ['max', 'width', 't0'],
-             lambda T, m, w, T0: m / (1 + ((T - T0)/w)**2),
-             .08)
-    ], axes):
-        samples = chain.load(*['{}s_{}'.format(var, k) for k in keys])
+    for zorder, (chain, cmap, darkness, label) in enumerate([nuclei, energies]):
+        for (name,  var, keys, function, ymax), ax in zip([
+                ('shear', 'eta', ['min', 'slope', 'crv'],
+                lambda T, m, s, c: m + s*(T - Tc)*(T/Tc)**c,
+                .4),
+                ('bulk', 'zeta', ['max', 'width', 't0'],
+                lambda T, m, w, T0: m / (1 + ((T - T0)/w)**2),
+                .08)
+        ], axes):
+            samples = chain.load(*['{}s_{}'.format(var, k) for k in keys], thin=100)
 
-        T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
-        ax.plot(
-            T, function(T, *np.median(samples, axis=0)),
-            color=cmap(.75), label='Posterior median'
-        )
-
-        Tsparse = np.linspace(T[0], T[-1], 25)
-        intervals = [
-            PchipInterpolator(Tsparse, y)(T)
-            for y in np.array([
-                mcmc.credible_interval(function(t, *samples.T))
-                for t in Tsparse
-            ]).T
-        ]
-        ax.fill_between(
-            T, *intervals,
-            color=cmap(.3), label='90% credible region'
-        )
-
-        ax.set_xlim(Tmin, Tmax)
-        ax.set_ylim(0, ymax)
-        auto_ticks(ax, nbins=5)
-        ax.xaxis.set_major_formatter(
-            ticker.FuncFormatter(lambda x, pos: int(1000*x))
-        )
-
-        ax.set_xlabel('Temperature [MeV]')
-        ax.set_ylabel(r'$\{}/s$'.format(var))
-        ax.set_title(name.capitalize() + ' viscosity')
-
-        if name == 'shear':
-            ax.axhline(
-                1/(4*np.pi),
-                color='.5', linewidth=plt.rcParams['ytick.major.width']
+            T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
+            ax.plot(
+                T, function(T, *np.median(samples, axis=0)),
+                color=cmap(.75), label='Posterior median', zorder=zorder
             )
-            ax.text(Tmax, .07, r'$1/4\pi$', va='top', ha='right', color='.3')
-            ax.legend(loc='upper left')
+
+            Tsparse = np.linspace(T[0], T[-1], 25)
+            intervals = [
+                PchipInterpolator(Tsparse, y)(T)
+                for y in np.array([
+                    mcmc.credible_interval(function(t, *samples.T))
+                    for t in Tsparse
+                ]).T
+            ]
+            ax.fill_between(
+                T, *intervals,
+                color=cmap(darkness), label='90% credible region', zorder=zorder,
+                alpha=.6 if zorder == 1 else 1, lw=0
+            )
+
+            ax.set_xlim(Tmin, Tmax)
+            ax.set_ylim(0, ymax)
+            auto_ticks(ax, nbins=5)
+            ax.xaxis.set_major_formatter(
+                ticker.FuncFormatter(lambda x, pos: int(1000*x))
+            )
+
+            ax.set_xlabel('Temperature [MeV]')
+            ax.set_ylabel(r'$\{}/s$'.format(var))
+            ax.set_title(name.capitalize() + ' viscosity')
+
+            if name == 'shear':
+                ax.axhline(
+                    1/(4*np.pi),
+                    color='.5', linewidth=plt.rcParams['ytick.major.width']
+                )
+                ax.text(Tmax, .07, r'$1/4\pi$', va='top', ha='right', color='.3')
+
+        line = lines.Line2D([], [], color=cmap(.8))
+        band = patches.Patch(color=cmap(.3))
+        handles.append((band, line))
+
+    line = lines.Line2D([], [], color=offblack, label='Posterior median')
+    band = patches.Patch(color='.85', label='90% credible region')
+    ax_shear.legend(handles=[band, line], loc='upper left')
+    labels = ["p-Pb, Pb-Pb 5.02 TeV", "Pb-Pb 2.76, 5.02 TeV"]
+    ax_bulk.legend(handles, labels, loc='upper right', markerfirst=False)
 
     set_tight(w_pad=.2)
 
@@ -2022,92 +2061,85 @@ def entropy_scaling():
     set_tight(fig)
 
 
-def cms_radius(npartons=1, sampling_radius=.88, parton_width=.88, size=10**4):
+def rms_nucleon_width(args, samples=10**3):
     """
-    Find center-of-mass RMS radius for an ensemble of sampled protons
-    with partonic substructure
+    Find center-of-mass root-mean-square radius for an ensemble of
+    sampled protons with nucleon substructure.
 
     """
-    # parton sampling radius
-    size = 2*npartons*int(size / (2*npartons))
-    parton_radius = np.sqrt(sampling_radius**2 - parton_width**2)
+    # unpack arguments
+    number, radius, struct = args
+    width = .2 + struct*(radius - .2)
 
-    # sample protons
-    protons = np.random.normal(
-        scale=parton_radius, size=size
-    ).reshape(npartons, 2, -1)
+    # sample constituent positions
+    positions = np.random.normal(
+            scale=np.sqrt(radius**2 - width**2),
+            size=2*number*samples
+            ).reshape(number, 2, -1)
 
     # recenter
-    centers = protons.mean(axis=0)
-    protons -= centers
+    centers = positions.mean(axis=0)
+    positions -= centers
 
-    # mesh grid
-    l = np.linspace(-4*sampling_radius, 4*sampling_radius, 10**2)
-    xx, yy = np.meshgrid(l, l)
+    # cartesian grid
+    r = np.arange(-4*radius, 4*radius, .2*width)
+    xx, yy = np.meshgrid(r, r)
 
-    # mesh grid radii
-    rr_sq = xx**2 + yy**2
-    rr = np.sqrt(rr_sq)
+    # sum over all gaussian constituents
+    rho = np.zeros_like(r)
+    for pos in positions.T:
+        for (xi, yi) in pos.T:
+            rsq = (xx - xi)**2 + (yy - yi)**2
+            rho += np.exp(-rsq/(2*width**2)).sum(axis=0)
 
-    # place a quark
-    def quark(xx, yy):
-        norm = 1/(2*np.pi*parton_width**2*npartons)
-        return norm * np.exp(-(xx**2 + yy**2)/(2*parton_width**2))
-
-    # place a proton
-    def proton(quarks):
-        return np.sum([quark(xx-xi, yy-yi) for (xi, yi) in quarks.T], axis=0)
-
-    # proton rms radius in cms frame
-    def rms_radius(rho):
-        return np.sqrt(np.average(rr_sq, weights=rho/rr))
-
-    # ensemble averaged rms radius
-    logging.info(
-        "calculating rms proton radius, npartons = {}".format(npartons)
-    )
-    return np.mean([rms_radius(proton(quarks)) for quarks in protons.T], axis=0)
+    # return rms radius in com frame
+    return np.sqrt(np.average(r**2, weights=rho))
 
 
-@plot
-def proton_radius():
+def correct_widths(number_values, width_values, struct_values):
     """
-    Protons rms radius in the center of mass frame, as a function of parton
-    number
+    This function calculates the rms width of the nucleon in its center of mass
+    frame, given the constituent number, sampling width and constituent
+    structure parameters.
 
     """
-    plt.figure(figsize=figsize(.5))
+    design = Design(systems.pop())
+    param_ranges = dict(zip(design.keys, design.range))
 
-    # proton dimensions
-    sampling_radius = 88
-    parton_width = .2
-    nparton_values = list(range(1, 11))
-
-    # protons rms radii in com frame
-    radii = [
-        cms_radius(
-            npartons=npartons,
-            sampling_radius=sampling_radius,
-            parton_width=parton_width,
-            size=10**4
-        ) for npartons in nparton_values
+    width, struct = [
+        np.linspace(*param_ranges[k], 10)
+        for k in ('nucleon_width', 'parton_struct')
     ]
 
-    plt.plot(nparton_values, radii, 'o', label='parton number')
-    plt.axhline(sampling_radius, color=offblack, label='sampling radius')
+    nmin, nmax = param_ranges['parton_number']
+    number = list(range(nmin, nmax + 1))
 
-    plt.annotate(
-        '\n'.join([
-            r'proton sampling radius${} = .88$ fm',
-            r'parton width${} = .2$ fm'
-        ]), xy=(.95, .05), xycoords='axes fraction', ha='right'
-    )
+    cachefiles = [
+        Path(cachedir / 'nucleon' / '{0:02d}.pkl'.format(n)) for n in number
+    ]
 
-    plt.xlabel('parton number')
-    plt.ylabel('proton rms radius [fm]')
-    plt.ylim(0, 1)
+    if all([f.exists() for f in cachefiles]):
+        rms_width = {
+            n: pickle.load(open(f, 'rb'))
+            for n, f in enumerate(cachefiles, start=1)
+        }
+        parameters = zip(number_values, width_values, struct_values)
+        return [rms_width[int(n)](w, s)[0] for (n, w, s) in parameters]
+    else:
+        ncpu = multiprocessing.cpu_count()
+        for n, cachefile in enumerate(cachefiles, start=1):
+            logging.info("{} constituents".format(n))
+            args = [[n, w, s] for (w, s) in itertools.product(width, struct)]
+            rms_width = np.reshape(
+                    multiprocessing.Pool(ncpu).map(rms_nucleon_width, args),
+                    (len(width), len(struct))
+                    )
 
-    set_tight()
+            interp = interp2d(width, struct, rms_width, kind='cubic')
+            cachefile.parent.mkdir(parents=True, exist_ok=True)
+
+            with cachefile.open(mode='wb') as f:
+                pickle.dump(interp, f)
 
 
 @plot
@@ -2119,13 +2151,23 @@ def proton_posterior_shape():
     Plot the resulting joint posterior distribution.
 
     """
-    chain = mcmc.Chain()
-    nucleon_width, parton_struct = chain.load(
-        'nucleon_width', 'parton_struct'
-    ).T
+    #chain = mcmc.Chain()
+    #nucleon_radius, parton_number, parton_struct = chain.load(
+    #    'nucleon_width', 'parton_number',  'parton_struct', thin=10
+    #).T
 
-    min_width = .2
-    parton_width = min_width + parton_struct*(nucleon_width - min_width)
+    #min_width = .2
+    #parton_width = min_width + parton_struct*(nucleon_radius - min_width)
+
+    size=10**2
+    nucleon_radius = np.random.uniform(.4, 1.2, size=size)
+    parton_number = np.random.randint(low=1, high=11, size=size)
+    parton_struct = np.random.rand(size)
+    parton_width = .2 + parton_struct*(nucleon_radius - .2)
+    nucleon_width = correct_widths(parton_number, nucleon_radius, parton_struct)
+
+    for w1, w2 in zip(nucleon_radius, nucleon_width):
+        print(w1, w2)
 
     # print parton width 90% credible region
     median = np.median(parton_width)
@@ -2133,7 +2175,7 @@ def proton_posterior_shape():
     parton_width_est = 'parton width = {:.2f} -{:.2f} +{:.2f} fm'.format(
         median, median - cred_low, cred_high - median
     )
-    print(parton_width_est)
+    logging.info(parton_width_est)
 
     fig = plt.figure(figsize=figsize(.5, aspect=1.15))
 
@@ -2149,7 +2191,7 @@ def proton_posterior_shape():
 
     plt.fill_between([.4, 1.2], [.4, 1.2], [1.2, 1.2], color='.9')
     plt.annotate(
-        'parton width > sampling radius', xy=(.45, 1.15), xycoords='data',
+        'width > radius', xy=(.5, 1.15), xycoords='data',
         ha='left', va='top', color='.4'
     )
 

@@ -97,7 +97,7 @@
 }
 
 \title{Estimating nucleon substructure properties in a\\[.2ex]
-unified hydrodynamic model of p-Pb and Pb-Pb collisions}
+unified model of p-Pb and Pb-Pb collisions}
 \author[J.\ S.\ Moreland]{\scshape J.\ S.\ Moreland, J.\ E.\ Bernhard \& S.\ A.\ Bass}
 \institute[Duke]{\scshape Duke University}
 \date{\scshape 14 May 2018}
@@ -139,13 +139,13 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
       Important questions:\\
       \begin{itemize}
         \item Is hydro applicable to small collision systems?
-        \item If so, can we fit small system collectivity using current hydro models?
+        \item If so, can we describe small system collectivity using current hydro models?
       \end{itemize}
       \smallskip
       First question precludes the second, but also more difficult to answer.\\[1ex]
       Let's tackle the second question \textit{assuming} hydrodynamic models make
       sense down to length scales $\Delta x=.2$~fm.\\[1ex]
-      Under this assumption, does a unified hydrodynamic description of p+A and A+A data even exist?
+      Under this assumption, does a unified hydrodynamic description of p+A and A+A data exist?
     \end{column}
     \begin{column}{.3\textwidth}
       \centering
@@ -275,7 +275,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
     \begin{column}{.57\textwidth}
       \begin{itemize}
         \item Combined analysis of 2.76 and 5.02
-          TeV beam energies \textcolor{theme}{\scshape (New!)} 
+          TeV beam energies \textcolor{theme}{\scshape (New!)}
         \item Parametric initial conditions and medium parameters\
         \item Quantitative estimates on $\eta/s$ and $\zeta/s$ with meaningful uncertainties
         \item See thesis by Jonah Bernhard {\small [\textcolor{theme}{\url{1804.06469}}]}
@@ -299,15 +299,15 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
     \begin{column}{.4\textwidth}
       \begin{figure}
         \includegraphics[width=.9\columnwidth]{pb208}\\
-        Pb$^{208}$ nucleus
+        $^{208}$Pb nucleus
       \end{figure}
     \end{column}
     \begin{column}{.6\textwidth}
       \bigskip
       \textcolor{theme}{Original \trento\ model:}
       \begin{itemize}
-        \item Sample nucleon radii from spherical or deformed Woods-Saxon distributions
-        \item Euler angles resampled to preserve minimum nucleon distance
+        \item Sample nucleon positions from spherical or deformed Woods-Saxon distributions
+        \item Solid angles resampled to preserve minimum nucleon distance
           $d_\mathrm{min}$ [fm]
         \item Gaussian nucleons of width $w$ [fm]
       \end{itemize}
@@ -340,7 +340,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
       \end{figure}
     \end{column}
     \begin{column}{.2\textwidth}
-      \centering \small Parton width
+      \centering \small Constituent width
       \begin{figure}
         \begin{tikzpicture}[scale=.9]
           \draw [thick, dashed] (0, 0) circle (1cm);
@@ -358,8 +358,8 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
         \end{tikzpicture}
       \end{figure}
     \end{column}
-    \begin{column}{.2\textwidth}
-      \centering \small Parton number
+    \begin{column}{.23\textwidth}
+      \centering \small Constituent number
       \begin{figure}
         \begin{tikzpicture}[scale=.9]
           \draw [thick, dashed] (0,0) circle (1cm);
@@ -370,31 +370,33 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
             \draw [thick] ({\theta}:\radius) circle (.3cm);
           }
           \draw [thick, dashed] (0, -2.2) circle (1cm);
-          \foreach \theta in {0, 120, 240}{
-            \draw [thick] ({\theta}:.39) [yshift=-2.2cm] circle (.3cm);
+          \foreach \theta/\radius in {
+            0/.4, 65/.5, 115/.45, 190/.53, 240/.44, 310/.62
+          }{
+            \draw [thick] ({\theta}:\radius) [yshift=-2.2cm] circle (.3cm);
           }
           \draw [thick, dashed] (0, -4.4) circle (1cm);
-          \foreach \theta in {0, 180}{
+          \foreach \theta in {0, 120, 240}{
             \draw [thick] ({\theta}:.39) [yshift=-4.4cm] circle (.3cm);
           }
         \end{tikzpicture}
       \end{figure}
     \end{column}
-    \begin{column}{.4\textwidth}
+    \begin{column}{.37\textwidth}
       \centering
       \textcolor{theme}{Free parameters:}\\[1ex]
       \begin{itemize}
         \small
-        \item Width of the Gaussian distribution used to sample
-          parton radial coordinates
-        \item Number of Gaussian partons inside each nucleon
-        \item Width of the Gaussian partons
+        \item Radius of Gaussian distribution used to sample
+          constituent positions
+        \item Gaussian constituent width
+        \item Number of constituents in each nucleon
       \end{itemize}
       \bigskip
       \textcolor{theme}{Absent from this work:}\\[1ex]
       \begin{itemize}
         \small
-        \item Parton spatial correlations,\\
+        \item Spatial correlations,
           see talk by Alba Soto Ontoso
       \end{itemize}
     \end{column}
@@ -405,17 +407,16 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \begin{figure}
-        \includegraphics<1>[width=\textwidth]{trento_nucleons}
-        \includegraphics<2>[width=\textwidth]{trento_participants}\\
+        \includegraphics[width=\textwidth]{trento_participants}\\
         \small MC-Glauber cross sections\\
-        (proton d.o.f. shown)
+        (one constituent)
       \end{figure}
     \end{column}
     \begin{column}{.5\textwidth}
       \centering \bigskip
       \textcolor{theme}{Original \trento\ model:}
       \begin{align*}
-        P_\text{coll} &= 1 - \exp[-\sigma_{gg} T_{pp}(b)] \\
+        P_\text{coll} &= 1 - \exp[-\sigma_\text{eff} T_\text{pp}(b)] \\
         \sigma_\text{nn}^\text{inel} &= \int 2\pi b\, db\, P_\text{coll}(b)
       \end{align*}
       \only<1>{\includegraphics<1>[scale=.8]{collision_profile}}
@@ -425,7 +426,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
           P_\text{coll} \rightarrow 1 - \prod_{i,j=1}^{n_\text{part}}
           [1 - P_\text{coll}(b_{ij})]
         \end{equation*}
-        Solve for opacity parameter $\sigma_{gg}$ numerically
+        Solve for effective cross section parameter $\sigma_\text{eff}$ numerically
       }
     \end{column}
   \end{columns}
@@ -435,7 +436,8 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \begin{figure}
-        \includegraphics[width=\textwidth]{trento_thickness}
+        \includegraphics[width=\textwidth]{trento_thickness}\\
+        \small Participant matter
       \end{figure}
     \end{column}
     \begin{column}{.5\textwidth}
@@ -450,7 +452,7 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
       \textcolor{theme}{This work:}
       \begin{equation*}
         \gamma_i\, T_\text{proton} \rightarrow \sum\limits_{j=1}^{N_\text{parton}}
-        \gamma_j\,T_\text{parton} 
+        \gamma_j\,T_\text{parton}
       \end{equation*}
     \end{column}
   \end{columns}
@@ -460,7 +462,8 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \begin{figure}
-        \includegraphics[width=\textwidth]{trento_entropy}
+        \includegraphics[width=\textwidth]{trento_entropy}\\
+        \small Entropy density
       \end{figure}
     \end{column}
     \begin{column}{.5\textwidth}
@@ -492,12 +495,12 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
     \begin{column}{.5\textwidth}
       \begin{figure}
         \includegraphics[width=\textwidth]{trento_freestream}\\
-        \small arrows: fluid velocity\\weighted by energy density
+        \small Arrows: fluid velocity\\weighted by energy density
       \end{figure}
     \end{column}
     \begin{column}{.5\textwidth}
       \bigskip \centering
-      \textcolor{theme}{Pre-equillibrium phase:}
+      \textcolor{theme}{Pre-equilibrium phase:}
       \begin{itemize}
         \small
         \item Massless non-interacting parton gas matched to viscous hydrodynamics
@@ -549,8 +552,8 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
       \smallskip
       \begin{itemize}
         \small
-        \item Parton width reparametrized:\\[1ex]
-          $v = v_\text{min} + \X(v_\text{max} - v_\text{min})$\\[1ex]
+        \item Recast constituent width $w$ as:\\[1ex]
+          $w = w_\text{min} + \X(r - w_\text{min})$\\[1ex]
           $v_\text{min} = 0.2$~fm,~ $v_\text{max} = w$\\[1ex]
         \item Parton sampling radius is \emph{not} equivalent to the proton radius
           in the proton c.o.m.\ frame, see\\
@@ -574,21 +577,25 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
       \includegraphics[height=.95\paperheight]{observables_posterior}
       };
     \draw[<-] (current page.center) ++(-.75, 1.7) --
-      node[above] {\footnotesize Prior}
-      node[below] {\tiny (training data)}
+      node[above] {\small Prior}
+      node[below] {\scriptsize (training data)}
       ++(1.5, 0);
     \draw[->] (current page.center) ++(-.75, -1.2) --
-      node[above] {\footnotesize Posterior}
-      node[below] {\tiny (samples)}
+      node[above] {\small Posterior}
+      node[below] {\scriptsize (samples)}
       ++(1.5, 0);
   \end{tikzpicture}
 \end{frame}
 
 
 \begin{frame}[plain]
-  \begin{tikzpicture}
-    \node {\includegraphics[height=.98\paperheight]{posterior}};
-    \node (title) at (5.75, 3.5) {\color{theme}{\scshape \Large Bayesian posterior}};
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=west] at (current page.west) {
+      \includegraphics[height=.98\paperheight]{posterior}
+    };
+    \node[anchor=north, xshift=3cm, yshift=-.5cm] (title) at (current page.north) {
+      \color{theme}{\scshape \Large Bayesian posterior}
+    };
     \node<1>[draw=none, text width=6.5cm, align=left, below=.4cm of title] (b1) {%
       \small One row (column) for each parameter
       };
@@ -601,35 +608,29 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
     \node<1>[draw=none, text width=6.5cm, align=left, below=.2cm of b3] (b4) {%
       \textcolor{theme}{Let's look at some specific regions...}
       };
-    \draw<1>[->, thick, theme] (b2.west) to [out=180, in=90] (-.35, .8);
-    \draw<1>[->, thick, theme] (b3.west) to [out=180, in=90] (.1, -.95);
-    \node<2>[xshift=-2.7cm, yshift=3.2cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
+    \draw<1>[->, thick, theme] (b2.west) to [out=180, in=90] (2.6, .8);
+
+    \draw<1>[->, thick, theme] (b3.west) to [out=180, in=90] (2.6, -.6);
+
+    \node<2>[xshift=0cm, yshift=0cm, scale=.3] {
+      \includegraphics[scale=.15]{magnifying-glass}
+    };
     \node<2>[below=.4cm of title, align=center] {
-        \includegraphics[scale=.7]{posterior_p}\\[2ex]
+        \includegraphics[width=.5\textwidth]{posterior_p}\\[1ex]
         \small Initial entropy deposition\\
         \small consistent with geometric mean\\[.5ex]
         $dS/dy \sim \sqrt{T_A T_B}$
       };
-    \node<3>[xshift=-1.05cm, yshift=1.5cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
-    \node<3>[below=.4cm of title, align=center] {
-        \includegraphics[scale=.7]{posterior_parton_number}\\[2ex]
-        \small Evidence for nucleon substructure $N_\text{partons} > 1$.\\
-        \small Does not prefer a specific parton number.
-      };
-    \node<4>[xshift=.62cm, yshift=-.15cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
-    \node<4>[below=.4cm of title, align=center] {
-        \includegraphics[scale=.7]{posterior_freestreaming}\\[2ex]
-        \small Analysis cannot tolerate free-streaming\\
-        \small times larger than ${\sim} 1$~fm/$c$
-      };
-    \node<5>[xshift=-.5cm, yshift=.9cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
-    \node<5>[below=.4cm of title, align=center] {
-        \includegraphics[scale=.7]{posterior_structure}\\[2ex]
-        \small Parton structure param.\ $\chi_\mathrm{struct} = 0.28_{-0.16}^{+0.17}$,\\
-        \small Was used to reparametrize parton width as\\[.5ex]
-        \small $v = v_\text{min} + \chi_\text{struct}(w - v_\text{min})$.\\[1ex]
-        \small \hfill Let's revert $\chi_\text{struct}$ back to a width...
-      };
+    %\node<3>[xshift=-1.05cm, yshift=1.5cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
+    %\node<3>[below=.4cm of title, align=center] {
+    %    \includegraphics[width=.5\textwidth]{posterior_parton_number}\\[2ex]
+    %    \small Evidence for nucleon substructure, $N_\text{partons} > 1$.\\
+    %    \small Does not prefer a specific constituent number.
+    %  };
+    %\node<4>[xshift=-1.6cm, yshift=1.0cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
+    %\node<4>[below=.4cm of title, align=center] {
+    %    \includegraphics[scale=.7]{proton_posterior_shape}\\[2ex]
+    %  };
   \end{tikzpicture}
 \end{frame}
 
@@ -642,12 +643,12 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
     \end{column}
     \begin{column}{.55\textwidth}
       \begin{itemize}
-        \item Parton sampling radius\, $w = 1.04_{-0.15}^{+0.16}$~fm\\[.5ex]
-          $^*$Note: the actual rms radius in the center of mass frame is somewhat smaller.\\[2ex]
-        \item Parton width\, $v = 0.51_{-0.17}^{+0.19}$~fm\\[.5ex]
-          (width of Gaussian constituents)\\[2ex]
+        \item Parton sampling radius,\\[.5ex]
+          $\sigma_\mathrm{const} = 0.99_{-0.15}^{+0.17}$~fm\\[2ex]
+        \item Parton (Gaussian constituent) width,\\[.5ex]
+          $w_\mathrm{const} = 0.47_{-0.15}^{+0.20}$~fm\\[2ex]
         \item Results likely sensitive to model details,
-          e.g.\ equation of state, pre-equilibirum dynamics and viscous
+          e.g.\ equation of state, pre-equilibrium dynamics and viscous
           corrections $\delta f$\\[2ex]
       \end{itemize}
     \end{column}
@@ -655,6 +656,12 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
 \end{frame}
 
 \begin{frame}{\scshape QGP medium properties}
+  \begin{figure}
+    \includegraphics[width=.9\textwidth]{region_shear_bulk}
+  \end{figure}
+  \begin{center}
+    Pb-Pb at 2.76 and 5.02 TeV, better constraint on $\eta/s$ than p-Pb and Pb-Pb at 5.02 TeV
+  \end{center}
 \end{frame}
 
 \begin{frame}{\scshape Maximum a posteriori parameters}
@@ -676,7 +683,6 @@ unified hydrodynamic model of p-Pb and Pb-Pb collisions}
     \begin{column}{.35\textwidth}
       {\scshape Preprocessing}
       \begin{enumerate}
-        \item log transform data
         \item subtract mean and divide out variance
         \item project onto principle component basis
       \end{enumerate}

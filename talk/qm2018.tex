@@ -139,7 +139,7 @@ unified model of p-Pb and Pb-Pb collisions}
       Important questions:\\
       \begin{itemize}
         \item Is hydro applicable to small collision systems?
-        \item If so, can we describe small system collectivity using current hydro models?
+        \item If so, can small system collectivity be described using current hydro models?
       \end{itemize}
       \smallskip
       First question precludes the second, but also more difficult to answer.\\[1ex]
@@ -593,81 +593,104 @@ unified model of p-Pb and Pb-Pb collisions}
     \node[anchor=west] at (current page.west) {
       \includegraphics[height=.98\paperheight]{posterior}
     };
-    \node[anchor=north, xshift=3cm, yshift=-.5cm] (title) at (current page.north) {
+    \node<1>[anchor=north, xshift=3cm, yshift=-.5cm] (title) at (current page.north) {
       \color{theme}{\scshape \Large Bayesian posterior}
     };
     \node<1>[draw=none, text width=6.5cm, align=left, below=.4cm of title] (b1) {%
       \small One row (column) for each parameter
-      };
+    };
     \node<1>[draw=none, text width=6.5cm, align=left, below=.1cm of b1] (b2) {%
       \small Diagonal panels: marginal distribution of a single model parameter
-      };
+    };
     \node<1>[draw=none, text width=6.5cm, align=left, below=.1cm of b2] (b3) {%
       \small Off-diagonal panels: joint distribution between a pair of model parameters
-      };
+    };
     \node<1>[draw=none, text width=6.5cm, align=left, below=.2cm of b3] (b4) {%
       \textcolor{theme}{Let's look at some specific regions...}
-      };
+    };
+
     \draw<1>[->, thick, theme] (b2.west) to [out=180, in=90] (2.6, .8);
 
     \draw<1>[->, thick, theme] (b3.west) to [out=180, in=90] (2.6, -.6);
 
-    \node<2>[xshift=0cm, yshift=0cm, scale=.3] {
-      \includegraphics[scale=.15]{magnifying-glass}
+    \node<2>[xshift=1cm, yshift=2.1cm] {
+      \includegraphics[scale=.065]{magnifying-glass}
     };
-    \node<2>[below=.4cm of title, align=center] {
-        \includegraphics[width=.5\textwidth]{posterior_p}\\[1ex]
+    \node<2>[anchor=north east, align=center, inner sep=.6cm] (post_p) at (current page.north east){
+        \includegraphics[width=.6\textwidth]{posterior_p}\\[1ex]
         \small Initial entropy deposition\\
-        \small consistent with geometric mean\\[.5ex]
+        \small consistent with geometric mean\\[1ex]
         $dS/dy \sim \sqrt{T_A T_B}$
-      };
-    %\node<3>[xshift=-1.05cm, yshift=1.5cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
-    %\node<3>[below=.4cm of title, align=center] {
-    %    \includegraphics[width=.5\textwidth]{posterior_parton_number}\\[2ex]
-    %    \small Evidence for nucleon substructure, $N_\text{partons} > 1$.\\
-    %    \small Does not prefer a specific constituent number.
-    %  };
-    %\node<4>[xshift=-1.6cm, yshift=1.0cm, scale=.3] {\includegraphics[scale=.15]{magnifying-glass}};
-    %\node<4>[below=.4cm of title, align=center] {
-    %    \includegraphics[scale=.7]{proton_posterior_shape}\\[2ex]
-    %  };
+    };
+    \node<3>[xshift=2.7cm, yshift=0.5cm] {
+      \includegraphics[scale=.065]{magnifying-glass}
+    };
+    \node<3>[anchor=north east, inner sep=.8cm, align=center] at (current page.north east) {
+        \includegraphics[width=.5\textwidth]{posterior_parton_number}\\[2ex]
+        No strong preference for a specific\\
+        constituent number
+    };
+    \node<3>[align=center] (disfavor) at (6, 2) {
+        One constituent\\
+        (no substructure) disfavored
+    };
+    \draw<3>[->, thick, theme] (disfavor.south) to [out=-90, in=90] (7.55, -1.2);
+    \node<4>[xshift=2.15cm, yshift=0cm] {
+      \includegraphics[scale=.065]{magnifying-glass}
+    };
+    \node<4>[anchor=east] (proton) at (current page.east) {
+      \includegraphics[width=.5\textwidth]{proton_posterior_shape}
+    };
+    \node<4>[xshift=-3.2cm, yshift=-1.6cm, align=right] (proton_label) at (proton.north west) {
+      Informative posterior on constituent\\
+      sampling radius $r$ and width $w$\\[2ex]
+      $r=0.99_{-0.15}^{+0.17}$~fm\\[1ex]
+      $w=0.47_{-0.15}^{+0.20}$~fm
+    };
+    \node<5>[anchor=north east, inner sep=.8cm, align=center] at (current page.north east) {
+      \includegraphics[width=.6\textwidth]{region_shear}
+    };
+    \node<6>[anchor=north east, inner sep=.8cm, align=center] at (current page.north east) {
+      \includegraphics[width=.6\textwidth]{region_bulk}
+    };
   \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{\scshape Nucleon size and shape}
+%\begin{frame}{\scshape QGP medium properties}
+%  \begin{figure}
+%    \includegraphics[width=.9\textwidth]{region_shear_bulk}
+%  \end{figure}
+%  \begin{center}
+%    Pb-Pb at 2.76 and 5.02 TeV, better constraint on $\eta/s$ than p-Pb and Pb-Pb at 5.02 TeV
+%  \end{center}
+%\end{frame}
+
+\begin{frame}[plain]
   \begin{columns}
-    \begin{column}{.45\textwidth}
-      \begin{figure}
-        \includegraphics[width=\textwidth]{proton_posterior_shape}
-      \end{figure}
+    \begin{column}{.5\textwidth}
+      Right: maximum a posteriori (best fit) predictions from the calibrated emulator; \emph{not a model calculation}.\\[2ex]
+      \begin{tabular}{ll}
+        norm           & 20.7 \\
+        $p$            & 0.0314 \\
+        $\sigma_\text{fluct}$  & 0.835 \\
+        $r$      & 0.903 \\
+        $n$ partons  & 6.48 \\
+        $\chi$  & 0.288 \\
+        $d_\text{min}^3$          & 1.11 \\
+        $\tau$ fs         & 0.595 \\
+        $\eta/s$ min       & 0.122 \\
+        $\eta/s$ slope     & 0.742 \\
+        $\eta/s$ crv       & -0.203 \\
+        $\zeta/s$ max      & 0.0510 \\
+        $\zeta/s$ width    & 0.0275 \\
+        $\zeta/s$ $T_0$       & 0.185 \\
+        $T_\text{sw}$        & 0.143
+      \end{tabular}
     \end{column}
-    \begin{column}{.55\textwidth}
-      \begin{itemize}
-        \item Parton sampling radius,\\[.5ex]
-          $\sigma_\mathrm{const} = 0.99_{-0.15}^{+0.17}$~fm\\[2ex]
-        \item Parton (Gaussian constituent) width,\\[.5ex]
-          $w_\mathrm{const} = 0.47_{-0.15}^{+0.20}$~fm\\[2ex]
-        \item Results likely sensitive to model details,
-          e.g.\ equation of state, pre-equilibrium dynamics and viscous
-          corrections $\delta f$\\[2ex]
-      \end{itemize}
+    \begin{column}{.4\textwidth}
+      \includegraphics[height=.95\textheight]{find_map}
     \end{column}
   \end{columns}
-\end{frame}
-
-\begin{frame}{\scshape QGP medium properties}
-  \begin{figure}
-    \includegraphics[width=.9\textwidth]{region_shear_bulk}
-  \end{figure}
-  \begin{center}
-    Pb-Pb at 2.76 and 5.02 TeV, better constraint on $\eta/s$ than p-Pb and Pb-Pb at 5.02 TeV
-  \end{center}
-\end{frame}
-
-\begin{frame}{\scshape Maximum a posteriori parameters}
-  \begin{center}
-    \Large To do if time allows...
-  \end{center}
 \end{frame}
 
 \appendix

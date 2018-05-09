@@ -308,8 +308,8 @@ def obs_color(obs, subobs):
     Return a nice color for the given observable.
 
     """
-    return obs_color_tableau(obs, subobs)
-    #return hsluv.hsluv_to_rgb(obs_color_hsluv(obs, subobs))
+    #return obs_color_tableau(obs, subobs)
+    return hsluv.hsluv_to_rgb(obs_color_hsluv(obs, subobs))
 
 
 def obs_label(obs, subobs, differentials=False, full_cumulants=False):
@@ -356,6 +356,7 @@ def _observables_plots():
             title='Yields',
             ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
             ylim=(1, 5000),
+            ylim_tight=(10, 4000),
             yscale='log',
             subplots=[
                 ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$')),
@@ -365,6 +366,7 @@ def _observables_plots():
             title='Mean $p_T$',
             ylabel=r'$\langle p_T \rangle$ [GeV]',
             ylim=(0, 1.5),
+            ylim_tight=(0, 1.1),
             subplots=[
                 ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$')),
             ]
@@ -373,6 +375,7 @@ def _observables_plots():
             title='Flow cumulants',
             ylabel=r'$v_n\{2\}$',
             ylim=(0, .2),
+            ylim_tight=(0, .12),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
                 for n in [2, 3, 4]
@@ -654,19 +657,17 @@ def observables_map():
 
     set_tight(fig)
 
-
 @plot
 def find_map():
     """
     Find the maximum a posteriori (MAP) point and compare emulator predictions
     to experimental data.
-
     """
     from scipy.optimize import minimize
 
     chain = mcmc.Chain()
 
-    #fixed_params = {
+    fixed_params = {
     #    'trento_p': 0.,
     #    'etas_min': .08,
     #    'etas_slope': 1.1285,
@@ -676,9 +677,7 @@ def find_map():
     #    'zetas_width': 0.0194,
     #    'zetas_t0': 0.1824,
     #    'Tswitch': 0.1515,
-    #}
-
-    fixed_params = {}
+    }
 
     opt_params = [k for k in chain.keys if k not in fixed_params]
 
@@ -712,11 +711,12 @@ def find_map():
 
     fig, axes = plt.subplots(
         nrows=2*len(plots), ncols=len(systems),
-        figsize=figsize(1.1, 2),
+        figsize=figsize(1.0, 1.5),
         gridspec_kw=dict(
             height_ratios=list(itertools.chain.from_iterable(
                 (p.get('height_ratio', 1), .4) for p in plots
-            ))
+            )),
+            left=0.09, right=0.94, bottom=0.05, top=0.97, wspace=.2, hspace=0.4
         )
     )
 
@@ -738,9 +738,9 @@ def find_map():
 
             ax.plot(x, y, color=color)
 
-            if 'label' in opts:
+            if 'label' in opts and obs == 'vnk':
                 ax.text(
-                    x[-1] + 3, y[-1],
+                    x[-1] + (.1 if system == 'pPb5020' else 3), y[-1],
                     opts['label'],
                     color=darken(color), ha='left', va='center'
                 )
@@ -782,29 +782,27 @@ def find_map():
             auto_ticks(ax, 'y', nbins=4, minor=2)
 
         ax.set_xticklabels([])
-
-        ax.set_ylim(plot['ylim'])
+        ax.set_ylim(plot['ylim_tight'])
 
         if ax.is_first_row():
             ax.set_title(format_system(system))
-        elif ax.is_last_row():
-            ax.set_xlabel('Centrality %')
 
         if ax.is_first_col():
             ax.set_ylabel(plot['ylabel'])
+            ratio_ax.set_ylabel('Ratio')
 
         if ax.is_last_col():
             ax.text(
-                1.02, .5, plot['title'],
+                1.08, .5, plot['title'],
                 transform=ax.transAxes, ha='left', va='center',
                 size=plt.rcParams['axes.labelsize'], rotation=-90
             )
 
         ratio_ax.axhline(1, lw=.5, color='0.5', zorder=-100)
         ratio_ax.axhspan(0.9, 1.1, color='0.95', zorder=-200)
+        ratio_ax.set_xlabel('Centrality')
         ratio_ax.set_ylim(0.8, 1.2)
         ratio_ax.set_yticks(np.arange(80, 121, 20)/100)
-        ratio_ax.set_ylabel('Ratio')
 
     set_tight(fig, rect=[0, 0, .97, 1])
 
@@ -1026,7 +1024,7 @@ def posterior_parameter(parameter, label, xticks):
     Marginal distribution of a single parameter.
 
     """
-    plt.figure(figsize=figsize(.6, .75))
+    plt.figure(figsize=figsize(.5, .75))
     ax = plt.axes()
 
     data = mcmc.Chain().load(parameter).ravel()
@@ -1062,6 +1060,98 @@ def posterior_freestreaming():
 @plot
 def posterior_structure():
     posterior_parameter('parton_struct', '$\chi_\mathrm{struct}$', [0, .5, 1])
+
+
+def _region(ax, name, chain, cmap=plt.cm.Blues, legend=False, title=False):
+    """
+    Visual estimate (posterior median and credible region) of
+    temperature-dependent shear or bulk viscosity.
+    """
+    var, keys, function, ymax = dict(
+        shear=(
+            'eta',
+            ['min', 'slope', 'crv'],
+            lambda T, m, s, c: m + s*(T - Tc)*(T/Tc)**c,
+            .4
+        ),
+        bulk=(
+            'zeta',
+            ['max', 'width', 't0'],
+            lambda T, m, w, T0: m / (1 + ((T - T0)/w)**2),
+            .08
+        ),
+    )[name]
+
+    Tmin, Tmax = .150, .300
+    Tc = .154
+
+    samples = chain.load(
+        *['{}s_{}'.format(var, k) for k in keys], thin=100
+    )
+
+    T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
+    ax.plot(
+        T, function(T, *np.median(samples, axis=0)),
+        color=cmap(.75), label='Posterior median'
+    )
+
+    Tsparse = np.linspace(T[0], T[-1], 25)
+    intervals = [
+        PchipInterpolator(Tsparse, y)(T)
+        for y in np.array([
+            mcmc.credible_interval(function(t, *samples.T))
+            for t in Tsparse
+        ]).T
+    ]
+    ax.fill_between(
+        T, *intervals,
+        color=cmap(.3), label='90% credible region'
+    )
+
+    ax.set_xlim(Tmin, Tmax)
+    ax.set_ylim(0, ymax)
+    auto_ticks(ax, nbins=5)
+    ax.xaxis.set_major_formatter(
+        ticker.FuncFormatter(lambda x, pos: int(1000*x))
+    )
+
+    ax.set_xlabel('Temperature [MeV]')
+    ax.set_ylabel(r'$\{}/s$'.format(var))
+
+    if title:
+        ax.set_title(name.capitalize() + ' viscosity')
+
+    if legend:
+        ax.legend(loc=legend if isinstance(legend, str) else 'best')
+
+    if name == 'shear':
+        ax.axhline(
+            1/(4*np.pi),
+            color='.5', linewidth=plt.rcParams['ytick.major.width']
+        )
+        ax.text(Tmax, .07, r'$1/4\pi$', va='top', ha='right', color='.3')
+
+
+@plot
+def region_shear():
+    """
+    Region plot for eta/s.
+    """
+    chain = mcmc.Chain()
+    fig, ax = plt.subplots(figsize=figsize(.6, .65))
+    _region(ax, 'shear', chain, legend='upper left')
+    set_tight(fig)
+
+
+@plot
+def region_bulk():
+    """
+    Region plot for zeta/s.
+    """
+    chain = mcmc.Chain()
+    fig, ax = plt.subplots(figsize=figsize(.6, .65))
+    _region(ax, 'bulk', chain, legend='upper right')
+    set_tight(fig)
 
 
 @plot
@@ -2151,23 +2241,20 @@ def proton_posterior_shape():
     Plot the resulting joint posterior distribution.
 
     """
-    #chain = mcmc.Chain()
-    #nucleon_radius, parton_number, parton_struct = chain.load(
-    #    'nucleon_width', 'parton_number',  'parton_struct', thin=10
-    #).T
+    chain = mcmc.Chain()
+    nucleon_radius, parton_number, parton_struct = chain.load(
+        'nucleon_width', 'parton_number',  'parton_struct', thin=100
+    ).T
 
-    #min_width = .2
-    #parton_width = min_width + parton_struct*(nucleon_radius - min_width)
+    min_width = .2
+    parton_width = min_width + parton_struct*(nucleon_radius - min_width)
 
-    size=10**2
-    nucleon_radius = np.random.uniform(.4, 1.2, size=size)
-    parton_number = np.random.randint(low=1, high=11, size=size)
-    parton_struct = np.random.rand(size)
-    parton_width = .2 + parton_struct*(nucleon_radius - .2)
-    nucleon_width = correct_widths(parton_number, nucleon_radius, parton_struct)
-
-    for w1, w2 in zip(nucleon_radius, nucleon_width):
-        print(w1, w2)
+    #size=10**2
+    #nucleon_radius = np.random.uniform(.4, 1.2, size=size)
+    #parton_number = np.random.randint(low=1, high=11, size=size)
+    #parton_struct = np.random.rand(size)
+    #parton_width = .2 + parton_struct*(nucleon_radius - .2)
+    #nucleon_width = correct_widths(parton_number, nucleon_radius, parton_struct)
 
     # print parton width 90% credible region
     median = np.median(parton_width)
@@ -2186,18 +2273,22 @@ def proton_posterior_shape():
     cmap = LinearSegmentedColormap('Blues', cdict)
 
     plt.hist2d(
-        nucleon_width, parton_width, bins=100, cmap=cmap
+        nucleon_radius, parton_width, bins=100, cmap=cmap
     )
 
-    plt.fill_between([.4, 1.2], [.4, 1.2], [1.2, 1.2], color='.9')
+    plt.fill_between(
+        [.4, 1.2], [.4, 1.2], [1.2, 1.2],
+        color='.95', edgecolor=None
+    )
     plt.annotate(
-        'width > radius', xy=(.5, 1.15), xycoords='data',
-        ha='left', va='top', color='.4'
+        'width > radius', xy=(.45, 1.15), xycoords='data',
+        ha='left', va='top', color='.5'
     )
 
-
-    plt.xlabel('Parton sampling radius [fm]')
-    plt.ylabel('Parton width [fm]')
+    plt.xticks([.4, .6, .8, 1.2])
+    plt.yticks([.2, .4, .6, .8, 1, 1.2])
+    plt.xlabel('Constituent sampling radius [fm]')
+    plt.ylabel('Constituent width [fm]')
     plt.gca().set_aspect('equal')
 
     set_tight(fig, pad=.2)

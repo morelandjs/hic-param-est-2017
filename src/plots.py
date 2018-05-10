@@ -30,6 +30,7 @@ import h5py
 import hsluv
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from matplotlib import lines
 from matplotlib import patches
 from matplotlib import ticker
@@ -339,6 +340,19 @@ def obs_label(obs, subobs, differentials=False, full_cumulants=False):
             n,
             (r'\{' + str(k) + r'\}') if full_cumulants else ''
         )
+
+def xlabel(system, obs):
+    """
+    x-axis labels for p-Pb and Pb-Pb systems
+
+    """
+    pPb5020 = dict(
+        dNch_deta='Centrality %',
+        mean_pT=r'$n_\mathrm{ch} / \langle n_\mathrm{ch} \rangle$',
+        vnk=r'$n_\mathrm{trk}^\mathrm{offline} / \langle n_\mathrm{trk}^\mathrm{offline}\rangle$'
+    )
+
+    return 'Centrality %' if system == 'PbPb5020' else pPb5020[obs]
 
 
 def _observables_plots():
@@ -709,19 +723,23 @@ def find_map():
 
     plots = _observables_plots()
 
-    fig, axes = plt.subplots(
-        nrows=2*len(plots), ncols=len(systems),
-        figsize=figsize(1.0, 1.5),
-        gridspec_kw=dict(
-            height_ratios=list(itertools.chain.from_iterable(
-                (p.get('height_ratio', 1), .4) for p in plots
-            )),
-            left=0.09, right=0.94, bottom=0.05, top=0.97, wspace=.2, hspace=0.4
-        )
-    )
+    fig = plt.figure(figsize=figsize(1, 1.5))
+    gs = gridspec.GridSpec(6, 2, height_ratios=[3, 1, 3, 1, 3, 1])
+
+    axes = []
+    ratio_axes = []
+
+    nrow = len(plots)
+    ncol = len(systems)
+
+    for row, col in itertools.product(range(0, 2*nrow, 2), range(ncol)):
+        ax = fig.add_subplot(gs[row, col])
+        ratio_ax = fig.add_subplot(gs[row + 1, col], sharex=ax)
+        axes.append(ax)
+        ratio_axes.append(ratio_ax)
 
     for (plot, system), ax, ratio_ax in zip(
-            itertools.product(plots, systems), axes[::2].flat, axes[1::2].flat
+            itertools.product(plots, systems), axes, ratio_axes
     ):
         for obs, subobs, opts in plot['subplots']:
             color = obs_color(obs, subobs)
@@ -800,11 +818,11 @@ def find_map():
 
         ratio_ax.axhline(1, lw=.5, color='0.5', zorder=-100)
         ratio_ax.axhspan(0.9, 1.1, color='0.95', zorder=-200)
-        ratio_ax.set_xlabel('Centrality')
+        ratio_ax.set_xlabel(xlabel(system, obs))
         ratio_ax.set_ylim(0.8, 1.2)
         ratio_ax.set_yticks(np.arange(80, 121, 20)/100)
 
-    set_tight(fig, rect=[0, 0, .97, 1])
+    set_tight(fig, rect=(0, 0, .95, 1))
 
 
 def format_ci(samples, ci=.9):
@@ -1049,7 +1067,7 @@ def posterior_parameter(parameter, label, xticks):
 
 @plot
 def posterior_parton_number():
-    posterior_parameter('parton_number', 'Parton number', [1, 3, 5, 7, 9])
+    posterior_parameter('parton_number', 'Constituent number', [1, 3, 5, 7, 9])
 
 
 @plot
@@ -1154,7 +1172,7 @@ def region_bulk():
     set_tight(fig)
 
 
-@plot
+#@plot
 def region_shear_bulk(cmap=plt.cm.Blues):
     """
     Visual estimates (posterior median and credible region) of the
@@ -2243,18 +2261,11 @@ def proton_posterior_shape():
     """
     chain = mcmc.Chain()
     nucleon_radius, parton_number, parton_struct = chain.load(
-        'nucleon_width', 'parton_number',  'parton_struct', thin=100
+        'nucleon_width', 'parton_number',  'parton_struct'
     ).T
 
     min_width = .2
     parton_width = min_width + parton_struct*(nucleon_radius - min_width)
-
-    #size=10**2
-    #nucleon_radius = np.random.uniform(.4, 1.2, size=size)
-    #parton_number = np.random.randint(low=1, high=11, size=size)
-    #parton_struct = np.random.rand(size)
-    #parton_width = .2 + parton_struct*(nucleon_radius - .2)
-    #nucleon_width = correct_widths(parton_number, nucleon_radius, parton_struct)
 
     # print parton width 90% credible region
     median = np.median(parton_width)
@@ -2278,14 +2289,14 @@ def proton_posterior_shape():
 
     plt.fill_between(
         [.4, 1.2], [.4, 1.2], [1.2, 1.2],
-        color='.95', edgecolor=None
+        color='.9', edgecolor=None
     )
     plt.annotate(
         'width > radius', xy=(.45, 1.15), xycoords='data',
-        ha='left', va='top', color='.5'
+        ha='left', va='top', color=offblack
     )
 
-    plt.xticks([.4, .6, .8, 1.2])
+    plt.xticks([.4, .6, .8, 1, 1.2])
     plt.yticks([.2, .4, .6, .8, 1, 1.2])
     plt.xlabel('Constituent sampling radius [fm]')
     plt.ylabel('Constituent width [fm]')

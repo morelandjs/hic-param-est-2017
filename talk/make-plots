@@ -531,7 +531,7 @@ def trento_thickness():
     # spectators
     x, y, z = zip(*spect)
     ax.scatter(
-        x, y, c=(spect_colors + .15), s=300, lw=0.1, vmin=0, vmax=1,
+        x, y, c=spect_colors, s=300, lw=0.1, vmin=0, vmax=1,
         edgecolor=None, cmap=plt.cm.gray
     )
 
@@ -559,7 +559,7 @@ def trento_entropy():
     # spectators
     x, y, z = zip(*spect)
     ax.scatter(
-        x, y, c=(spect_colors+.15), s=300, lw=0.1, vmin=0, vmax=1,
+        x, y, c=spect_colors, s=300, lw=0.1, vmin=0, vmax=1,
         edgecolor=None, cmap=plt.cm.gray
     )
 
@@ -587,7 +587,7 @@ def trento_freestream():
     # spectators
     x, y, z = zip(*spect)
     ax.scatter(
-        x, y, c=(spect_colors + .15), s=300, lw=0.1, vmin=0, vmax=1,
+        x, y, c=spect_colors, s=300, lw=0.1, vmin=0, vmax=1,
         edgecolor=None, cmap=plt.cm.gray
     )
 

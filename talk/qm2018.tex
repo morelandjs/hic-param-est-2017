@@ -124,8 +124,8 @@ unified model of p-Pb and Pb-Pb collisions}
     inner sep=1ex,
     background default fill=black!10,
     background default text=black!30,
-    background fill=theme!10,
-    background text=theme,
+    background fill=theme!20,
+    background text=offblack,
   }
 }
 
@@ -263,34 +263,34 @@ unified model of p-Pb and Pb-Pb collisions}
   \makebox[\textwidth]{
     \begin{tikzpicture}[overlay]
       \node[box=1, font=\small] (input) at (-5, -1) {
-      \boxtitle{Input parameters}
+          \boxtitle{\color{theme} Input parameters}
       IC and QGP properties
     };
     \node[box, below=of input.south west, anchor=north west, yshift=.6cm, font=\small] (physics) {
-      \boxtitle{Physics theory}
+        \boxtitle{\color{theme} Physics theory}
       initial stages, hydro, and\\
       Boltzmann transport
     };
     \node[box, right=of input.east, anchor=west, xshift=-.2cm, font=\small] (model) {
-      \boxtitle{Computer model}
+        \boxtitle{\color{theme} Computer model}
       minimum bias event-by-\\
       event simulations
     };
     \node[box, right=of model.east, anchor=west, xshift=-.2cm, font=\small] (gp) {
-      \boxtitle{Gaussian process emulator}
+        \boxtitle{\color{theme} Gaussian process emulator}
       surrogate model
     };
     \node[box, below=of gp.south, anchor=north, font=\small] (mcmc) {
-      \boxtitle{MCMC}
+        \boxtitle{\color{theme} MCMC}
       calibrate model to data
     };
     \node[box, below=of mcmc.south, anchor=north, font=\small] (posterior) {
-      \boxtitle{Posterior distribution}
+        \boxtitle{\color{theme} Posterior distribution}
       quantitative estimates \\
       of each parameter
     };
     \node[box, left=of mcmc.west, anchor=east, font=\small] (exp) {
-      \boxtitle{Experimental data}
+        \boxtitle{\color{theme} Experimental data}
       yields, mean $p_T$, flows
     };
     \begin{scope}[color=black!70, ->, thick]
@@ -341,7 +341,7 @@ unified model of p-Pb and Pb-Pb collisions}
       {\tiny \color{theme} PRC.77.064901, ~J.CPC.2015.08.039}\\[2ex]
       \texttt{\scshape\color{theme}frzout} {\small sampler}\\
       \smallskip\hrule\medskip
-      {\scriptsize non-RTA shear \& bulk corrections}\\
+      {\scriptsize shear \& bulk corrections}\\
       {\tiny \color{theme} (Bernhard thesis) arXiv:1804.06469}
     \end{column}
     \hfill
@@ -548,9 +548,10 @@ unified model of p-Pb and Pb-Pb collisions}
       and variance $1/k$.}\\[2ex]
       \textcolor{theme}{This work:}
       \begin{equation*}
-        \gamma_i\, T_\text{proton} \rightarrow \sum\limits_{j=1}^{N_\text{parton}}
-        \gamma_j\,T_\text{parton}
+        \gamma_i\, T_\text{proton} \rightarrow \sum\limits_{j=1}^{M}
+        \gamma_j\,T_\text{constituent}
       \end{equation*}
+      \small where $M$ is the number of constituents.
     \end{column}
   \end{columns}
 \end{frame}
@@ -630,9 +631,9 @@ unified model of p-Pb and Pb-Pb collisions}
         Norm              & Overall normalization              & 12--28          \\
         $p$               & Entropy deposition parameter       & $-1$ to $+1$    \\
         $\sigmaf$         & Relative parton fluct. std.\       & 0--2            \\
-        $w$               & Parton sampling radius             & 0.4--1.2 fm     \\
+        $r$               & Parton sampling radius             & 0.4--1.2 fm     \\
         $\X$              & Parton structure parameter         & 0--1            \\
-        $\npartons$       & Number of partons                  & 1--10           \\
+        $m$               & Number of constituents             & 1--10           \\
         $\dmin$           & Nucleon exclusion volume           & 0--4.9 fm$^3$   \\
         $\tau_{fs}$       & Free streaming time                & 0.1--1.5 fm/$c$ \\
         $\eta/s$ min      & Shear viscosity at $T_c$           & 0--0.2          \\
@@ -650,8 +651,8 @@ unified model of p-Pb and Pb-Pb collisions}
       \begin{itemize}
         \small
         \item Recast constituent width $w$ as:\\[1ex]
-          $w = w_\text{min} + \X(r - w_\text{min})$\\[1ex]
-          $v_\text{min} = 0.2$~fm,~ $v_\text{max} = w$\\[1ex]
+          $w = w_\text{min} + \X(w_\text{max} - w_\text{min})$\\[1ex]
+          $w_\text{min} = 0.2$~fm,~ $w_\text{max} = r$\\[1ex]
         \item Parton sampling radius is \emph{not} equivalent to the proton radius
           in the proton c.o.m.\ frame, see\\
           \textcolor{theme}{\scriptsize PRC.94.024919}\\[1ex]
@@ -681,6 +682,9 @@ unified model of p-Pb and Pb-Pb collisions}
       node[above] {\small Posterior}
       node[below] {\scriptsize (samples)}
       ++(1.5, 0);
+    \node[inner sep=1ex, anchor=north, align=center] at (current page.north) {
+      \scriptsize Data: CMS \& ALICE
+    };
   \end{tikzpicture}
 \end{frame}
 
@@ -814,11 +818,35 @@ unified model of p-Pb and Pb-Pb collisions}
 
 \begin{frame}[plain]
   \begin{columns}
-    \begin{column}{.5\textwidth}
-      Right: maximum a posteriori (best fit) predictions from the calibrated emulator; \emph{not a model calculation}.\\[2ex]
-    \end{column}
     \begin{column}{.4\textwidth}
-      \includegraphics[height=.95\textheight]{find_map}
+      \begin{tikzpicture}[remember picture, overlay]
+        \node[anchor=west] at (current page.west) {\includegraphics[height=\textheight]{find_map}};
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{.6\textwidth}
+      \textit{Maximum a posteriori} (best fit) predictions from the calibrated \emph{emulator} (not the model).\\[2ex]
+      \begin{table}
+        \scriptsize
+        \begin{tabular}{lll}
+          Parameter         & Description                        & Value           \\
+          \paddedhline
+          Norm              & Overall normalization              & 20.3            \\
+          $p$               & Entropy deposition parameter       & 0.04            \\
+          $\sigmaf$         & Relative constituent fluct. std.\  & 0.92            \\
+          $r$               & Constituent sampling radius        & 0.86 fm         \\
+          $\X$              & Constituent structure parameter    & 0.32            \\
+          $m$               & Number of constituents             & 6               \\
+          $\dmin$           & Nucleon exclusion volume           & 1.1 fm$^3$      \\
+          $\tau_{fs}$       & Free streaming time                & 0.42 fm/$c$     \\
+          $\eta/s$ min      & Shear viscosity at $T_c$           & 0.11            \\
+          $\eta/s$ slope    & Slope above $T_c$                  & 0.98 GeV$^{-1}$ \\
+          $\eta/s$ crv      & Curvature above $T_c$              & -0.14           \\
+          $\zeta/s$ norm    & Bulk viscosity peak height         & 0.06            \\
+          $\zeta/s$ width   & Bulk viscosity peak width          & 0.017 GeV       \\
+          $\zeta/s$ temp    & Bulk viscosity peak location       & 0.18 MeV        \\
+          $T_\text{switch}$ & Particlization temperature         & 142 MeV         \\
+        \end{tabular}
+      \end{table}
     \end{column}
   \end{columns}
 \end{frame}

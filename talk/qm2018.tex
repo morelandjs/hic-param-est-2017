@@ -156,9 +156,106 @@ unified model of p-Pb and Pb-Pb collisions}
 
 \end{frame}
 
+
+\begin{frame}{Challenge of rigorous model-to-data comparison}
+  \begin{figure}
+    \begin{tikzpicture}
+        \node [anchor=east, left=1cm  of current page.center, yshift=1.5cm]
+          (t1) {\large \color{theme} Parameters};
+        \node [anchor=east, left=1cm  of current page.center, yshift=1cm]
+            (a1) {\small shear viscosity};
+        \node [anchor=east, left=1cm  of current page.center, yshift=.5cm]
+            (a2) {\small bulk viscosity};
+        \node [anchor=east, left=1cm  of current page.center, yshift=0cm]
+            (a3) {\small pre-equilibrium flow};
+        \node [anchor=east, left=1cm  of current page.center, yshift=-.5cm]
+            (a4) {\small nucleon size};
+        \node [anchor=east, left=1cm  of current page.center, yshift=-1cm]
+            (a5) {\small nucleon shape};
+
+        % proton-lead observables
+        \node [anchor=west, right=1cm of current page.center, yshift=2.5cm]
+          (t2) {\large \color{theme} p-Pb observables};
+        \node [anchor=west, right=1cm of current page.center, yshift=2cm]
+            (b1) {\small charged particle yields};
+        \node [anchor=west, right=1cm of current page.center, yshift=1.5cm]
+            (b2) {\small mean $p_T$};
+        \node [anchor=west, right=1cm of current page.center, yshift=1cm]
+            (b3) {\small elliptic flow};
+        \node [anchor=west, right=1cm of current page.center, yshift=.5cm]
+            (b4) {\small triangular flow};
+
+        % lead-lead observables
+        \node [anchor=west, right=1cm of current page.center, yshift=-.5cm]
+          (t3) {\large \color{theme} Pb-Pb observables};
+        \node [anchor=west, right=1cm of current page.center, yshift=-1cm]
+            (c1) {\small charged particle yields};
+        \node [anchor=west, right=1cm of current page.center, yshift=-1.5cm]
+            (c2) {\small mean $p_T$};
+        \node [anchor=west, right=1cm of current page.center, yshift=-2cm]
+            (c3) {\small elliptic flow};
+        \node [anchor=west, right=1cm of current page.center, yshift=-2.5cm]
+            (c4) {\small triangular flow};
+
+        \draw [offblack, line width=0.2pt] (a1.east) -- (b1.west);
+        \draw [offblack, line width=0.2pt] (a1.east) -- (b2.west);
+        \draw [offblack, line width=0.2pt] (a1.east) -- (b3.west);
+        \draw [offblack, line width=0.2pt] (a1.east) -- (b4.west);
+
+        \draw [offblack, line width=0.2pt] (a2.east) -- (b1.west);
+        \draw [offblack, line width=0.2pt] (a2.east) -- (b2.west);
+        \draw [offblack, line width=0.2pt] (a2.east) -- (b3.west);
+        \draw [offblack, line width=0.2pt] (a2.east) -- (b4.west);
+
+        \draw [offblack, line width=0.2pt] (a3.east) -- (b1.west);
+        \draw [offblack, line width=0.2pt] (a3.east) -- (b2.west);
+        \draw [offblack, line width=0.2pt] (a3.east) -- (b3.west);
+        \draw [offblack, line width=0.2pt] (a3.east) -- (b4.west);
+
+        \draw [offblack, line width=0.2pt] (a4.east) -- (b1.west);
+        \draw [offblack, line width=0.2pt] (a4.east) -- (b2.west);
+        \draw [offblack, line width=0.2pt] (a4.east) -- (b3.west);
+        \draw [offblack, line width=0.2pt] (a4.east) -- (b4.west);
+
+        \draw [offblack, line width=0.2pt] (a5.east) -- (b1.west);
+        \draw [offblack, line width=0.2pt] (a5.east) -- (b2.west);
+        \draw [offblack, line width=0.2pt] (a5.east) -- (b3.west);
+        \draw [offblack, line width=0.2pt] (a5.east) -- (b4.west);
+
+        \draw [offblack, line width=0.2pt] (a1.east) -- (c1.west);
+        \draw [offblack, line width=0.2pt] (a1.east) -- (c2.west);
+        \draw [offblack, line width=0.2pt] (a1.east) -- (c3.west);
+        \draw [offblack, line width=0.2pt] (a1.east) -- (c4.west);
+
+        \draw [offblack, line width=0.2pt] (a2.east) -- (c1.west);
+        \draw [offblack, line width=0.2pt] (a2.east) -- (c2.west);
+        \draw [offblack, line width=0.2pt] (a2.east) -- (c3.west);
+        \draw [offblack, line width=0.2pt] (a2.east) -- (c4.west);
+
+        \draw [offblack, line width=0.2pt] (a3.east) -- (c1.west);
+        \draw [offblack, line width=0.2pt] (a3.east) -- (c2.west);
+        \draw [offblack, line width=0.2pt] (a3.east) -- (c3.west);
+        \draw [offblack, line width=0.2pt] (a3.east) -- (c4.west);
+
+        \draw [offblack, line width=0.2pt] (a4.east) -- (c1.west);
+        \draw [offblack, line width=0.2pt] (a4.east) -- (c2.west);
+        \draw [offblack, line width=0.2pt] (a4.east) -- (c3.west);
+        \draw [offblack, line width=0.2pt] (a4.east) -- (c4.west);
+
+        \draw [offblack, line width=0.2pt] (a5.east) -- (c1.west);
+        \draw [offblack, line width=0.2pt] (a5.east) -- (c2.west);
+        \draw [offblack, line width=0.2pt] (a5.east) -- (c3.west);
+        \draw [offblack, line width=0.2pt] (a5.east) -- (c4.west);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    Many correlated input parameters---cannot calibrate by hand!
+  \end{center}
+\end{frame}
+
 \begin{frame}[plain, noframenumbering]
   \begin{center}
-    \Large I. Bayesian parameter estimation of heavy-ion collisions
+    \Large I. Bayesian parameter estimation
   \end{center}
 \end{frame}
 
@@ -650,50 +747,38 @@ unified model of p-Pb and Pb-Pb collisions}
     \node<5>[anchor=north east, inner sep=.8cm, align=center] at (current page.north east) {
       \includegraphics[width=.6\textwidth]{region_shear}
     };
+    \node<5>[xshift=5.7cm, yshift=-2.6cm] {
+      \includegraphics[scale=.065]{magnifying-glass}
+    };
     \node<6>[anchor=north east, inner sep=.8cm, align=center] at (current page.north east) {
       \includegraphics[width=.6\textwidth]{region_bulk}
+    };
+    \node<6>[xshift=7.3cm, yshift=-4.2cm] {
+      \includegraphics[scale=.065]{magnifying-glass}
     };
   \end{tikzpicture}
 \end{frame}
 
-%\begin{frame}{\scshape QGP medium properties}
-%  \begin{figure}
-%    \includegraphics[width=.9\textwidth]{region_shear_bulk}
-%  \end{figure}
-%  \begin{center}
-%    Pb-Pb at 2.76 and 5.02 TeV, better constraint on $\eta/s$ than p-Pb and Pb-Pb at 5.02 TeV
-%  \end{center}
-%\end{frame}
 
-\begin{frame}[plain]
-  \begin{columns}
-    \begin{column}{.5\textwidth}
-      Right: maximum a posteriori (best fit) predictions from the calibrated emulator; \emph{not a model calculation}.\\[2ex]
-      \begin{tabular}{ll}
-        norm           & 20.7 \\
-        $p$            & 0.0314 \\
-        $\sigma_\text{fluct}$  & 0.835 \\
-        $r$      & 0.903 \\
-        $n$ partons  & 6.48 \\
-        $\chi$  & 0.288 \\
-        $d_\text{min}^3$          & 1.11 \\
-        $\tau$ fs         & 0.595 \\
-        $\eta/s$ min       & 0.122 \\
-        $\eta/s$ slope     & 0.742 \\
-        $\eta/s$ crv       & -0.203 \\
-        $\zeta/s$ max      & 0.0510 \\
-        $\zeta/s$ width    & 0.0275 \\
-        $\zeta/s$ $T_0$       & 0.185 \\
-        $T_\text{sw}$        & 0.143
-      \end{tabular}
-    \end{column}
-    \begin{column}{.4\textwidth}
-      \includegraphics[height=.95\textheight]{find_map}
-    \end{column}
-  \end{columns}
+\begin{frame}{\scshape Concluding remarks}
+  \vfill
+  \begin{enumerate}
+    \item Calibrated model simultaneously describes p-Pb and Pb-Pb bulk observables\\[.5ex]
+    \item Nucleon substructure necessary to describe p-Pb and Pb-Pb flows (using hydro)\\[.5ex]
+    \item p-Pb observables constrain the constituent width and sampling radius, but not the constituent number\\[.5ex]
+    \item Varying the beam energy of A-A collisions provides better constraint on temperature dependence of the viscosity than varying system size
+  \end{enumerate}
+  \begin{flushleft}
+    To do: run and analyze events using \textit{maximum a posteriori} parameters\\[2ex]
+    \textcolor{theme}{\trento\ with nucleon substructure:}\\
+    \url{github.com/morelandjs/trento-partons}\\[1ex]
+    \textcolor{theme}{Reproduce my results:}\\
+    \url{github.com/morelandjs/hic-param-est-qm18}
+  \end{flushleft}
 \end{frame}
 
 \appendix
+
 
 \begin{frame}[plain, noframenumbering]
   \begin{center}
@@ -701,20 +786,15 @@ unified model of p-Pb and Pb-Pb collisions}
   \end{center}
 \end{frame}
 
+
 \begin{frame}{\scshape Emulator validation}
   \begin{columns}
     \begin{column}{.35\textwidth}
-      {\scshape Preprocessing}
-      \begin{enumerate}
-        \item subtract mean and divide out variance
-        \item project onto principle component basis
-      \end{enumerate}
-      \medskip
-      {\scshape k-fold cross validation}
-      \begin{itemize}
-        \item Subdivide design into $k$ partitions. Choose one for
-          validation and use the rest for training. Repeat for all partitions.
-      \end{itemize}
+      \textcolor{theme}{\scshape k-fold cross validation}\\[.5ex]
+      Subdivide design into $k$ partitions. Choose one for validation and use the
+      rest for training. Repeat for all partitions.\\[2ex]
+      Residuals should sample a unit normal distribution\\
+      (far right).
     \end{column}
     \begin{column}{.65\textwidth}
       \includegraphics[width=\textwidth]{validation_example}
@@ -729,6 +809,18 @@ unified model of p-Pb and Pb-Pb collisions}
       \item Model-data residuals should have zero mean and unit variance.
       \item Root-mean square error expressed as percentage of overall design variance.
     \end{itemize}
+\end{frame}
+
+
+\begin{frame}[plain]
+  \begin{columns}
+    \begin{column}{.5\textwidth}
+      Right: maximum a posteriori (best fit) predictions from the calibrated emulator; \emph{not a model calculation}.\\[2ex]
+    \end{column}
+    \begin{column}{.4\textwidth}
+      \includegraphics[height=.95\textheight]{find_map}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \usebackgroundtemplate{}

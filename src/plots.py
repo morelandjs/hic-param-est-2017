@@ -258,8 +258,11 @@ def obs_color_hsluv(obs, subobs):
     Use obs_color() to obtain an RGB color.
 
     """
-    if obs in {'dNch_deta', 'pT_fluct', 'mean_pT'}:
+    if obs in {'dNch_deta', 'pT_fluct'}:
         return 250, 90, 55
+
+    if obs == 'mean_pT':
+        return 230, 90, 65
 
     if obs == 'dET_deta':
         return 10, 65, 55
@@ -274,31 +277,9 @@ def obs_color_hsluv(obs, subobs):
 
     if obs == 'vnk':
         return {
-            (2, 2): (230, 90, 65),
-            (2, 4): (262, 80, 63),
+            (2, 2): (250, 90, 65),
             (3, 2): (150, 90, 67),
-            (4, 2): (310, 70, 50),
-        }[subobs]
-
-    raise ValueError('unknown observable: {} {}'.format(obs, subobs))
-
-
-def obs_color_tableau(obs, subobs):
-    """
-    Observable tableau colors
-
-    """
-    if obs in {'dNch_deta', 'pT_fluct'}:
-        return colors['blue']
-
-    if obs == 'mean_pT':
-        return colors['purple']
-
-    if obs == 'vnk':
-        return {
-            (2, 2): colors['orange'],
-            (3, 2): colors['red'],
-            (4, 2): colors['purple'],
+            (4, 2): (20, 90, 62),
         }[subobs]
 
     raise ValueError('unknown observable: {} {}'.format(obs, subobs))
@@ -309,7 +290,6 @@ def obs_color(obs, subobs):
     Return a nice color for the given observable.
 
     """
-    #return obs_color_tableau(obs, subobs)
     return hsluv.hsluv_to_rgb(obs_color_hsluv(obs, subobs))
 
 
@@ -1580,7 +1560,7 @@ def validation_data(system, n_splits=20):
     """
     design = Design(system)
     kf = KFold(n_splits=n_splits)
-    npc = {'pPb5020': 7, 'PbPb5020': 9}[system]
+    npc = {'pPb5020': 7, 'PbPb5020': 8}[system]
 
     mean_folds = []
     cov_folds = []
@@ -1995,6 +1975,8 @@ def _diag_emu(system=default_system, pcs=None, params=None, label_all=True):
                     lw=0, color=color, alpha=.3, zorder=-20
                 )
 
+            if param == 'parton_number':
+                xlim = (0, 10)
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
 

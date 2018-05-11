@@ -88,7 +88,6 @@
 \newcommand{\sqrts}{\sqrt{s_{NN}}}
 \newcommand{\sigmaf}{\sigma_\text{fluct}}
 \newcommand{\X}{\chi_\text{struct}}
-\newcommand{\npartons}{n_\text{partons}}
 \newcommand{\dmin}{d_\text{min}^3}
 \newcommand{\conference}{\scshape Quark Matter \enskip\textbar\enskip Venice, Italy}
 \newcommand{\paddedhline}{\noalign{\smallskip}\hline\noalign{\smallskip}}
@@ -134,18 +133,16 @@ unified model of p-Pb and Pb-Pb collisions}
 \begin{frame}{\scshape Collectivity in small systems, is it flow?}
   \smallskip
   \begin{columns}[T]
-    \begin{column}{.62\textwidth}
-      \bigskip
-      Important questions:\\
-      \begin{itemize}
-        \item Is hydro applicable to small collision systems?
-        \item If so, can small system collectivity be described using current hydro models?
-      \end{itemize}
-      \smallskip
-      First question precludes the second, but also more difficult to answer.\\[1ex]
-      Let's tackle the second question \textit{assuming} hydrodynamic models make
-      sense down to length scales $\Delta x=.2$~fm.\\[1ex]
-      Under this assumption, does a unified hydrodynamic description of p+A and A+A data exist?
+    \begin{column}{.7\textwidth}
+      \medskip \small
+      \textcolor{theme}{\scshape Narrative:}\\[.5ex]
+      Multiparticle correlations in A-A collisions are explained by flow.\\[1ex]
+      \textcolor{theme}{\scshape Justification:}\\[.5ex]
+      Quantitative agreement of hydrodynamic simulations remains strongest evidence for flow in A-A collisions. Agreement is global, self-consistent and highly non-trivial.\\[1ex]
+      \textcolor{theme}{\scshape Natural questions:}\\[.5ex]
+      Can the same framework simultaneously describe p-A collisions without spoiling its description of A-A collisions? Does the framework continue to make sense?\\[1ex]
+      \textcolor{theme}{\scshape This work:}\\[.5ex]
+      Calibrate a successful hybrid model---based on viscous hydrodynamics and Boltzmann transport---to simultaneously describe p-Pb and Pb-Pb data. Does such a description exist?
     \end{column}
     \begin{column}{.3\textwidth}
       \centering
@@ -157,7 +154,7 @@ unified model of p-Pb and Pb-Pb collisions}
 \end{frame}
 
 
-\begin{frame}{Challenge of rigorous model-to-data comparison}
+\begin{frame}{\scshape Challenge of rigorous model-to-data comparison}
   \begin{figure}
     \begin{tikzpicture}
         \node [anchor=east, left=1cm  of current page.center, yshift=1.5cm]
@@ -172,6 +169,8 @@ unified model of p-Pb and Pb-Pb collisions}
             (a4) {\small nucleon size};
         \node [anchor=east, left=1cm  of current page.center, yshift=-1cm]
             (a5) {\small nucleon shape};
+        \node [anchor=east, left=1cm  of current page.center, yshift=-1.5cm]
+            (a6) {\small and more...};
 
         % proton-lead observables
         \node [anchor=west, right=1cm of current page.center, yshift=2.5cm]
@@ -484,9 +483,8 @@ unified model of p-Pb and Pb-Pb collisions}
       \textcolor{theme}{Free parameters:}\\[1ex]
       \begin{itemize}
         \small
-        \item Radius of Gaussian distribution used to sample
-          constituent positions
-        \item Gaussian constituent width
+        \item Sampling radius of constituent positions
+        \item Constituent Gaussian width
         \item Number of constituents in each nucleon
       \end{itemize}
       \bigskip
@@ -630,10 +628,10 @@ unified model of p-Pb and Pb-Pb collisions}
         \paddedhline
         Norm              & Overall normalization              & 12--28          \\
         $p$               & Entropy deposition parameter       & $-1$ to $+1$    \\
-        $\sigmaf$         & Relative parton fluct. std.\       & 0--2            \\
-        $r$               & Parton sampling radius             & 0.4--1.2 fm     \\
-        $\X$              & Parton structure parameter         & 0--1            \\
-        $m$               & Number of constituents             & 1--10           \\
+        $\sigmaf$         & Relative constituent fluct. std.\  & 0--2            \\
+        $r$               & Constituent sampling radius        & 0.4--1.2 fm     \\
+        $\X$              & Constituent structure parameter    & 0--1            \\
+        $m$               & Number of constituents             & 1--9            \\
         $\dmin$           & Nucleon exclusion volume           & 0--4.9 fm$^3$   \\
         $\tau_{fs}$       & Free streaming time                & 0.1--1.5 fm/$c$ \\
         $\eta/s$ min      & Shear viscosity at $T_c$           & 0--0.2          \\
@@ -653,9 +651,8 @@ unified model of p-Pb and Pb-Pb collisions}
         \item Recast constituent width $w$ as:\\[1ex]
           $w = w_\text{min} + \X(w_\text{max} - w_\text{min})$\\[1ex]
           $w_\text{min} = 0.2$~fm,~ $w_\text{max} = r$\\[1ex]
-        \item Parton sampling radius is \emph{not} equivalent to the proton radius
-          in the proton c.o.m.\ frame, see\\
-          \textcolor{theme}{\scriptsize PRC.94.024919}\\[1ex]
+        \item Constituent sampling radius is \emph{not} equivalent to the proton radius
+          in the proton c.o.m.\ frame, see~ \textcolor{theme}{\scriptsize PRC.94.024919}\\[1ex]
         \item Other parameters same as combined Pb+Pb analysis at 2.76 and 5.02 TeV
       \end{itemize}
     \end{column}

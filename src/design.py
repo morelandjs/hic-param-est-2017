@@ -173,6 +173,12 @@ class Design:
 
         keep = [n not in bad_points for n in range(npoints)]
         self.array = self.array[keep]
+
+        # convert constituent number to an integer and correct range
+        index = [i for i, k in enumerate(self.keys) if k == 'parton_number'][0]
+        self.array[:, index] = np.floor(self.array[:, index])
+        self.range[index] = (1, 9)
+
         self.points = list(itertools.compress(self.points, keep))
         logging.debug(
             'removed outlier design points: {}'.format(bad_points)

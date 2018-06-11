@@ -388,7 +388,7 @@ def _observables(posterior=False):
 
     fig, axes = plt.subplots(
         nrows=len(plots), ncols=len(systems),
-        figsize=figsize(.8, aspect=1.25),
+        figsize=figsize(.7, aspect=1.15),
         gridspec_kw=dict(
             height_ratios=[p.get('height_ratio', 1) for p in plots]
         )
@@ -416,7 +416,7 @@ def _observables(posterior=False):
                 Y = Y*scale
 
             for y in Y:
-                ax.plot(x, y, color=color, alpha=.15, lw=.3)
+                ax.plot(x, y, color=color, alpha=.08, lw=.3)
 
             try:
                 dset = expt.data[system][obs][subobs]
@@ -473,11 +473,11 @@ def _observables(posterior=False):
             ax.set_ylabel(plot['ylabel'])
 
         if ax.is_last_col():
-            ax.text(
-                1.02, .5, plot['title'],
-                transform=ax.transAxes, ha='left', va='center',
-                size=plt.rcParams['axes.labelsize'], rotation=-90
-            )
+            #ax.text(
+            #    1.02, .5, plot['title'],
+            #    transform=ax.transAxes, ha='left', va='center',
+            #    size=plt.rcParams['axes.labelsize'], rotation=-90
+            #)
             ax.set_yticklabels([])
 
     set_tight(fig, rect=[0, 0, .97, 1])

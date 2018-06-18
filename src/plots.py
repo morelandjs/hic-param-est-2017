@@ -388,7 +388,7 @@ def _observables(posterior=False):
 
     fig, axes = plt.subplots(
         nrows=len(plots), ncols=len(systems),
-        figsize=figsize(.7, aspect=1.15),
+        figsize=figsize(1.1, aspect=1.25),
         gridspec_kw=dict(
             height_ratios=[p.get('height_ratio', 1) for p in plots]
         )
@@ -662,15 +662,7 @@ def find_map():
     chain = mcmc.Chain()
 
     fixed_params = {
-    #    'trento_p': 0.,
-    #    'etas_min': .08,
-    #    'etas_slope': 1.1285,
-    #    'etas_crv': -0.5365,
-    #    'etas_hrg': .3,
-    #    'zetas_max': 0.0536,
-    #    'zetas_width': 0.0194,
-    #    'zetas_t0': 0.1824,
-    #    'Tswitch': 0.1515,
+        'Tswitch': 0.151,
     }
 
     opt_params = [k for k in chain.keys if k not in fixed_params]
@@ -1152,7 +1144,7 @@ def region_bulk():
     set_tight(fig)
 
 
-#@plot
+@plot
 def region_shear_bulk(cmap=plt.cm.Blues):
     """
     Visual estimates (posterior median and credible region) of the
@@ -2339,14 +2331,14 @@ def trim_design_points():
         Flag 'bad" design points with extreme observable values
 
         """
-        if obs == 'dNch_deta':
+        if any(np.isnan(y)):
+            return True
+        elif obs == 'dNch_deta':
             return any(y < 1)
-        elif obs == 'mean_pT':
-            return any(y < .3)
         elif obs == 'vnk':
             return any(y < 0.002)
         else:
-            return any(np.isnan(y))
+            return False
 
     bad_points = set()
 

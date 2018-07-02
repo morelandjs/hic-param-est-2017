@@ -1,0 +1,295 @@
+#!/usr/bin/env python3
+
+from collections import OrderedDict
+from itertools import chain, product
+import logging
+import os
+from pathlib import Path
+import warnings
+
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib import lines
+from matplotlib import patches
+from matplotlib import ticker
+from matplotlib import cm
+from matplotlib.colors import ListedColormap
+
+
+# golden ratio
+aspect = 1/1.618
+
+# font sizes
+fontsize = dict(
+    large=11,
+    normal=10,
+    small=9,
+    tiny=8,
+)
+
+# new tableau colors
+# https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
+colors = OrderedDict([
+    ('blue', '#4e79a7'),
+    ('orange', '#f28e2b'),
+    ('green', '#59a14f'),
+    ('red', '#e15759'),
+    ('cyan', '#76b7b2'),
+    ('purple', '#b07aa1'),
+    ('brown', '#9c755f'),
+    ('yellow', '#edc948'),
+    ('pink', '#ff9da7'),
+    ('gray', '#bab0ac')
+])
+
+offblack = '.15'
+
+plt.rcdefaults()
+plt.rcParams.update({
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['Lato'],
+    'mathtext.fontset': 'custom',
+    'mathtext.default': 'it',
+    'mathtext.rm': 'sans',
+    'mathtext.cal': 'sans',
+    'font.size': fontsize['normal'],
+    'legend.fontsize': fontsize['normal'],
+    'axes.labelsize': fontsize['normal'],
+    'axes.titlesize': fontsize['large'],
+    'xtick.labelsize': fontsize['small'],
+    'ytick.labelsize': fontsize['small'],
+    'font.weight': 400,
+    'axes.labelweight': 400,
+    'axes.titleweight': 400,
+    'axes.prop_cycle': plt.cycler('color', list(colors.values())),
+    'lines.linewidth': .8,
+    'lines.markersize': 3,
+    'lines.markeredgewidth': 0,
+    'patch.linewidth': .8,
+    'axes.linewidth': .6,
+    'xtick.major.width': .6,
+    'ytick.major.width': .6,
+    'xtick.minor.width': .4,
+    'ytick.minor.width': .4,
+    'xtick.major.size': 3.,
+    'ytick.major.size': 3.,
+    'xtick.minor.size': 2.,
+    'ytick.minor.size': 2.,
+    'xtick.major.pad': 3.5,
+    'ytick.major.pad': 3.5,
+    'axes.labelpad': 4.,
+    'axes.formatter.limits': (-5, 5),
+    'axes.spines.top': False,
+    'axes.spines.right': False,
+    'text.color': offblack,
+    'axes.edgecolor': offblack,
+    'axes.labelcolor': offblack,
+    'xtick.color': offblack,
+    'ytick.color': offblack,
+    'legend.frameon': False,
+    'image.cmap': 'Blues',
+    'image.interpolation': 'none',
+})
+
+
+plotdir = Path('fig')
+plotdir.mkdir(exist_ok=True)
+
+plot_functions = {}
+
+np.random.seed(6)
+
+
+def plot(f):
+    """
+    Plot function decorator.  Calls the function, does several generic tasks,
+    and saves the figure as the function name.
+
+    """
+    def wrapper(*args, **kwargs):
+        logging.info('generating plot: %s', f.__name__)
+        f(*args, **kwargs)
+
+        fig = plt.gcf()
+
+        plotfile = plotdir / '{}.pdf'.format(f.__name__)
+        fig.savefig(str(plotfile))
+        logging.info('wrote %s', plotfile)
+        plt.close(fig)
+
+    plot_functions[f.__name__] = wrapper
+
+    return wrapper
+
+
+def figsize(relwidth=1, aspect=.618, refwidth=6):
+    """
+    Return figure dimensions from a relative width (to a reference width) and
+    aspect ratio (default: 1/golden ratio).
+
+    """
+    width = relwidth * refwidth
+    return width, width*aspect
+
+
+def set_tight(fig=None, **kwargs):
+    """
+    Set tight_layout with a better default pad.
+
+    """
+    if fig is None:
+        fig = plt.gcf()
+
+    kwargs.setdefault('pad', .1)
+    fig.set_tight_layout(kwargs)
+
+
+def cmap_to_alpha(cmap=plt.cm.inferno, fraction=.2):
+    """
+    Fade the bottom of a colormap to white.
+
+    Currently only works with ListedColormap objects, of which the new cmaps
+    (inferno, magma, plasma, viridis) are examples.
+
+    """
+    colors = cmap.colors.copy()
+    n = int(fraction*len(colors))
+
+    for i, rgb in enumerate(colors[:n]):
+        colors[i] = rgb + [i/n]
+
+    return type(cmap)(colors, cmap.name + '_mod')
+
+
+@plot
+def coupling():
+    """
+    Cartoon showing how free streaming approximated the time dependence of the
+    fluid coupling as a step function
+
+    """
+    plt.figure(figsize=figsize(.45, aspect=.7))
+
+    tau = np.linspace(0, 1, 100)
+
+    coupling = .3 + .6 / (1 + 10**(-(tau - .5)/.2))
+    plt.plot(tau, coupling, color='black')
+    plt.annotate('free-streaming', xy=(.25, .1), xycoords='data',
+                 ha='center', va='center')
+
+    coupling = np.heaviside(tau - .5, .5)
+    plt.plot(tau, coupling, color='black')
+    plt.annotate('hydrodynamics', xy=(.75, 1.1), xycoords='data',
+                 ha='center', va='center')
+
+    plt.annotate('nature', xy=(.15, 0.45), xycoords='data',
+                 ha='center', va='center')
+
+    plt.xticks([0, .5, 1], ['0', r'$\tau_{fs}$', r'${\sim} 1$'])
+    plt.xlabel('Proper time [fm/$c$]', labelpad=0)
+
+    plt.yticks([0, 1.4], ['0', 'inf'])
+    plt.ylim(-.1, 1.5)
+    plt.ylabel('Coupling strength')
+
+    plt.legend(loc=2, borderpad=0, handlelength=1.6, labelspacing=.2)
+
+    set_tight()
+
+
+@plot
+def thickness():
+    """
+    Load and plot trento thickness function.
+
+    """
+    fig, axes = plt.subplots(ncols=2, figsize=figsize(1, .5), frameon=False)
+    filenames = ['data/thick_lead.hdf', 'data/thick_lead_sub.hdf']
+
+    for ax, filename in zip(axes, filenames):
+        ax.set_aspect('equal')
+        ax.set_axis_off()
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+
+        with h5py.File(filename, 'r') as f:
+            for thickness in f.values():
+                thickness = np.array(thickness)
+
+                event_center = np.array([
+                    np.average(indices, weights=thickness)
+                    for indices in np.indices(thickness.shape)
+                ])
+
+                grid_center = .5*np.array(thickness.shape)
+                shift = np.round(grid_center - event_center).astype(int)
+
+                ax.imshow(thickness, cmap=cmap_to_alpha(),
+                          extent=(-10, 10, -10, 10))
+
+                ax.set_xlim(-10, 10)
+                ax.set_ylim(-10, 10)
+
+    set_tight(fig)
+
+
+if __name__ == '__main__':
+    import argparse
+    from matplotlib.mathtext import MathTextWarning
+
+    logging.basicConfig(
+        #stream=sys.stdout,
+        format='[%(levelname)s][%(module)s] %(message)s',
+        level=os.getenv('LOGLEVEL', 'info').upper()
+    )
+
+    warnings.filterwarnings(
+        'ignore',
+        category=MathTextWarning,
+        message='Substituting with a symbol from Computer Modern.'
+    )
+    warnings.filterwarnings(
+        'ignore',
+        category=UserWarning,
+        message=r"'[\w\.]+' can not be subsetted into a Type 3 font."
+    )
+
+    choices = list(plot_functions)
+
+    def arg_to_plot(arg):
+        arg = Path(arg).stem
+        if arg not in choices:
+            raise argparse.ArgumentTypeError(arg)
+        return arg
+
+    parser = argparse.ArgumentParser(description='generate plots')
+    parser.add_argument(
+        '--paper', action='store_true',
+        help='use paper style: cm serif font, true black text + axes'
+    )
+    parser.add_argument(
+        'plots', nargs='*', type=arg_to_plot, metavar='PLOT',
+        help='{} (default: all)'.format(', '.join(choices).join('{}'))
+    )
+    args = parser.parse_args()
+
+    if args.paper:
+        plt.rcParams.update({
+            'font.family': 'serif',
+            'font.serif': ['CMU Serif'],
+            'mathtext.fontset': 'cm',
+            'text.color': 'black',
+            'axes.edgecolor': 'black',
+            'axes.labelcolor': 'black',
+            'xtick.color': 'black',
+            'ytick.color': 'black',
+        })
+
+    if args.plots:
+        for p in args.plots:
+            plot_functions[p]()
+    else:
+        for f in plot_functions.values():
+            f()

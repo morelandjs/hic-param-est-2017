@@ -20,7 +20,7 @@
 \usepackage{tikz}
 
 \usepackage{graphicx}
-\graphicspath{{../plots/}}
+\graphicspath{{../plots/}{/fig/}}
 
 \newcommand{\trento}{T\raisebox{-0.5ex}{R}ENTo}
 \newcommand{\avg}[1]{\langle #1 \rangle}
@@ -28,10 +28,12 @@
 \newcommand{\npart}{N_\text{part}}
 \newcommand{\sqrts}{\sqrt{s_{NN}}}
 \newcommand{\T}{\tilde{T}}
+\newcommand{\x}{\mathbf{x}}
 \newcommand{\vnk}[2]{v_#1\{#2\}}
 \newcommand{\paddedhline}{\noalign{\smallskip}\hline\noalign{\smallskip}}
 \newcommand{\order}[1]{$\mathcal O(10^{#1})$}
 \newcommand{\note}{\textcolor{theblue}{[?]}}
+\newcommand{\smaller}[1]{{\small #1}}
 
 % hyperref throws warning when a line break is used in the title
 % this removes the warning by redefining the line break in a pdf string
@@ -74,139 +76,310 @@
 \date{\today}
 
 \begin{abstract}
-  We posit a unified hydrodynamic and microscopic description of the quark-gluon plasma (QGP) produced in ultrarelativistic p-Pb and Pb-Pb nuclear collisions at $\sqrts=5.02$~TeV and evaluate our assertion using Bayesian inference. Specifically, we model the dynamics of both collision systems using initial conditions with parametric nucleon substructure, a pre-equilibrium free-streaming stage, event-by-event viscous hydrodynamics, and a microscopic hadronic afterburner.
+  We posit a unified hydrodynamic and microscopic description of the quark-gluon plasma (QGP) produced in ultrarelativistic p-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV and evaluate our assertion using Bayesian inference. Specifically, we model the dynamics of both collision systems using initial conditions with parametric nucleon substructure, a pre-equilibrium free-streaming stage, event-by-event viscous hydrodynamics, and a microscopic hadronic afterburner.
 Free parameters of the model which describe the initial state and QGP medium are then simultaneously calibrated to fit charged particle yields, mean $p_T$ and flow cumulants.
 We argue that the global agreement of the calibrated model with the experimental data strongly supports the existence of hydrodynamic flow in small collision systems at ultrarelativistic energies, and that this flow necessarily develops at length scales smaller than a proton.
-Posterior estimates for the model's input parameters are obtained, and new insights into the temperature dependence of the QGP transport coefficients and event-by-event structure of the proton discussed.
+Posterior estimates for the model's input parameters are obtained, and new insights into the temperature dependence of the QGP transport coefficients and event-by-event structure of the proton are discussed.
 \end{abstract}
 
 \maketitle
 
 \section{Introduction}
 
-  Ultrarelativistic nuclear collisions between one light-ion \mbox{(e.g.\ p, d, or ${}^3$He)} and one heavy-ion \mbox{(e.g.\ Au or Pb)} generate dense, compact sources of nuclear matter which produce long-range multiparticle correlations that are strikingly similar to the correlations observed in heavy-ion collisions, signals which are most commonly cited as evidence for hydrodynamic flow \note.
-This observation suggests that hydrodynamic behavior could be manifest in small droplets of quark-gluon-plasma (QGP), and that flow might develop at length scales smaller than a single proton \note.
+Ultrarelativistic nuclear collisions between one light-ion and one heavy-ion, e.g.\ $^3$He-Au and p-Pb collisions, generate dense, compact sources of nuclear matter which produce long-range multiparticle correlations that are strikingly similar to the correlations observed in heavy-ion collisions where collectivity is commonly explained by the existence of hydrodynamic flow \cite{CMS:2012qk, Abelev:2012ola, Aad:2012gla, Adare:2015ctn}.
+This observation suggests that hydrodynamic behavior could be manifest in small droplets of quark-gluon-plasma (QGP), and that flow might develop at length scales smaller than a single proton.
 
-  Hydrodynamic models of ultrarelativistic nuclear collisions are complicated by a number of theoretical unknowns, including the detailed geometry of the QGP initial conditions, the strength and duration of pre-equilibrium dynamics, the temperature dependence of QGP transport coefficients, and the boundaries of hydrodynamic applicability \note.
-In general, these theoretical uncertainties tend to grow with decreasing system size, where emergent physics at partonic length scales becomes important to describe bulk properties of the produced system.
+Hydrodynamic models of ultrarelativistic nuclear collisions are complicated by a number of theoretical unknowns, including the detailed geometry of the QGP initial conditions, the strength and duration of pre-equilibrium dynamics, the temperature dependence of QGP transport coefficients, and the boundaries of hydrodynamic applicability \cite{Niemi:2014lha, deSouza:2015ena, Ollitrault:2012cm, Song:2012ua}.
+In general, these theoretical uncertainties tend to grow with decreasing system size, where emergent physics at sub-fermi length scales becomes important to describe bulk properties of the produced system.
 
-  One method for reducing theoretical uncertainties is to test model calculations by varying the species of colliding nuclei at a single beam energy \note.
+One method for reducing theoretical uncertainties is to test model calculations by varying the species of colliding nuclei at a single beam energy \cite{Adare:2015bua, Schenke:2014tga, Aidala:2018mcw, Adare:2017wlc, Adamczyk:2015obl, Shen:2016zpp, Aidala:2017ajz, Adare:2006ti}.
 Since initial condition and hydrodynamic models generally factorize the structure of the colliding nuclei from the subsequent time dynamics of the collision, a single theory framework can be simultaneously tested and compared to measurements from multiple collision systems using a self consistent set of model parameters where only the nuclear structure in the model is permitted to vary.
 
-Typically, the macroscopic structure of heavy nuclei, characterized e.g.\ by an atomic mass and set of Woods-Saxon parameters, is regarded as a known input to hydrodynamic models and negligible source of uncertainty when calibrating to data.
-Collisions involving protons and light-ions, meanwhile, are sensitive to geometry of the proton, such as the magnitude of event-by-event shape fluctuations, which is less well understood theoretically and experimentally.
+Typically, the macroscopic structure of heavy nuclei, characterized e.g.\ by an atomic mass and set of Woods-Saxon coefficients \cite{MOLLER1995185, DEVRIES1987495}, is regarded as a known input to hydrodynamic models which contributes negligible uncertainty to simulation predictions, outweighed by large uncertainties in modeling initial energy deposition and off-equilibrium dynamics \cite{Niemi:2014lha, Song:2011hk, Retinskaya:2013gca, Liu:2015nwa, Kurkela:2016vts}.
+The geometry of light ions, meanwhile, is naturally more sensitive to the detailed size and shape of individual protons and neutrons inside the nucleus, which may fluctuate event-by-event and differ signficantly from the round blobs typically used to approximate nucleons in heavy-ion collisions \cite{Schenke:2014zha, Welsh:2016siu, Moreland:2017kdx, Schenke:2014gaa, Schlichting:2014ipa}.
+These nucleon substructure properties are difficult to measure and calculate from first principles and hence contribute significant uncertainty to model predictions of small systems.
 
+One approach to investigate the effect of nucleon substructure on hydrodynamic simulations is to replace round protons with composite protons, described by a few salient structure parameters such the number of constituents and each constituent's width, in order to study the effect of each structure parameter on simulated observables \cite{Adler:2013aqf, Mitchell:2016jio, Welsh:2016siu}.
+Such sensitivity studies are useful for identifying cause and effect relationships between model inputs and outputs, but lack the ability to constrain nucleon substructure parameters in any kind of global or systematic fashion.
 
-properties of the proton \note, such as spatial inhomogeneities inside the proton which are not well constrained by nuclear structure measurements.
+An alternative approach to constrain nucleon substructure parameters, is to leverage information from independent experimental measurements which are particularly sensitive to the average size, shape and fluctuations of the proton.
+For instance, measurements by the TOTEM collaboration at $\sqrt{s}=7$~TeV found an unexpected dip in the inelasticity density of $p$-$p$ collisions at nonzero impact parameter \cite{Antchev:2011zz}.
+It was later realized that this depression, or so-called hollowness effect in the $p$-$p$ inelastic collision profile \cite{Arriola2016}, can be explained by the existence of correlated domains inside the proton, and that aspects of these domains, such as their size and correlation strength, may be constrained by comparing model predictions to inelastic $p$-$p$ measurements \cite{Albacete:2016gxu, Albacete:2016pmp}.
 
-One approach to investigate the effect of nucleon substructure on hydrodynamic models is to fix or hand tune initial condition and QGP medium parameters, while varying the shape and size of hot spots inside the proton to measure the effect on bulk observables.
+Independently, studies of coherent and incoherent $J/\psi$ production based on a color dipole picture of vector meson production were used to simultaneously constrain both the average color charge density of the proton as well as its event-by-event fluctuations in a saturation based framework \cite{Mantysaari:2016ykx, Aaron:2009aa, Abramowicz:2015mha}.
+Meanwhile, initial condition studies using the IP-Glasma model of color-glass condensate effective field theory demonstrated that these color charge fluctuations leave a lasting imprint on the \mbox{small-x} gluon distribution of the proton and the initial geometry of QGP energy deposition \cite{Schlichting:2014ipa}. Recent work now shows that IP-Glasma initial conditions with color charge fluctuations tuned to fit coherent and incoherent $J/\psi$ diffraction measured by the H1 and Zeus experiments at HERA \cite{Aaron:2009aa, Abramowicz:2015mha} well reproduces the collective flow observables in small and large collision systems without additional fine tuning of the nucleon substructure parameters \note.
 
-These uncertainties systematically bias the predictions of hydrodynamic models which assert a single theoretical model
+More comprehensive efforts to constrain nucleon substructure properties are complicated by the typically large number of free parameters already used in hydrodynamic transport models.
+Parameters generally affect multiple observables at once, and intercorrelate in complex ways which make it impossible to tune the parameters by hand.
+Evaluating even a single set of parameter values is a computationally intensive process, which generally involves thousands of simulated hydrodynamic events and hundreds of processor hours.
+
+In this work, we take a somewhat different approach to the aforementioned studies and investigate the extent to which nucleon substructure properties can be inferred from a global analysis of p-Pb and Pb-Pb bulk observables at $\sqrts=5.02$~TeV.
+Theoretical ingredients of our model which are uncertain, such as the size and shape of the nucleon, the temperature dependence of the QGP transport coefficients, and the duration of pre-equilibrium dynamics, are described by free parameters with probabilistic values that reflect their inherent uncertainty.
+
+TODO finish introduction.
 
 \section{Nuclear collision model}
 
+We employ a multi-stage hybrid transport model that uses relativistic viscous hydrodynamics to describe the QGP medium and microscopic Boltzmann transport to simulate the dynamics of the system after hadronization \note.
+The hydrodynamic initial conditions are provided by a modified version of the \trento\ model \cite{Moreland:2014oya} with additional parameters to vary the size and shape of the nucleon.
+Each initial condition profile is free streamed to the hydrodynamic starting time and matched onto the hydrodynamic energy-momentum tensor using the Landau matching procedure \note.
+All components of the present model, with the exception of the nucleon substructure implementation, are documented in previous studies \note. We review them here for clarity.
 
-\subsection{Initial conditions}
+\subsection{Initial state}
 
-  We model the QGP initial conditions in this work using a simple parametric form for initial entropy deposition employed by the \trento\ model \note.
-The model operates in the ultrarelativistic limit with a Lorentz factor $\gamma \gg 1$ such that each nucleus appears as a thin sheet of nuclear density in the laboratory frame.
-The colliding nuclei are then described by their nuclear thickness functions
-\begin{equation}
-  T_{A,B}(\mathbf{x}) = \int dz\, \rho_{A,B}(\mathbf{x}, z),
-\end{equation}
-where $\mathbf{x}$ is a vector in the transverse plane, $z$ lies along the beam axis, and $\rho$ is the density of each nucleus in its local rest frame.
-Individual collisions between the nuclei occur at a random impact parameter offset $b$, and carve out a subset of participant matter $\rho_{A,B}^\text{part}$ which contributes to inelastic processes in the collision.
-The resulting \emph{participant} thickness functions are defined as
-\begin{equation}
-  \T_{A,B}(\mathbf{x}) = \int dz\, \rho^\text{part}_{A,B}(\mathbf{x} \pm \mathbf{b}/2, z).
-\end{equation}
-where $\rho^\text{part}_{A,B}$ is determined using a Monte Carlo Glauber model described later in this section.
+We model the QGP initial state in $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV using a simple parametric form for boost-invariant entropy deposition employed by the \trento\ model \cite{Moreland:2014oya}.
+Generally speaking, the initial three-dimensional distribution of matter produced in relativistic nuclear collisions is \emph{not} boost-invariant; longitudinal entropy deposition fluctuates both locally point-to-point in the transverse plane as well as globally event-by-event due to asymmetries in the sampled density of participant matter \note.
+Nevertheless, boost-invariance has been shown to be a good approximation for both large and small collision systems when hydrodynamic observables are calculated from particles that are detected close to midrapidity \note.
 
+The \trento\ model operates in the ultrarelativistic limit with a Lorentz factor $\gamma \gg 1$ such that each nucleus appears as a thin sheet of nuclear density in the laboratory frame.
 The sheets of colliding nuclear density penetrate and pass through each other in time $\Delta t = D_\text{nucl} / \sqrt{\gamma^2 - 1}$ in the laboratory frame, where $D_\text{nucl}$ is the diameter of the nucleus in its rest frame and $\gamma$ is the usual Lorentz factor of the accelerated ions.
-The resulting nuclear overlap time $\Delta t =$ \order{10}~fm/$c$ at top RHIC and LHC energies and hence is sufficiently short to treat all interactions local in the transverse plane.
+The resulting nuclear overlap time $\Delta t \lesssim 0.1$~fm/$c$ at top RHIC and LHC energies is thus sufficiently short to neglect initial transverse dynamics which occur while the nuclei pass through each other.
+We therefore assume that the collision produces all secondary particles at uniform proper time $\tau = 0^+$~fm/$c$, and that it deposits entropy (energy) at midrapidity which is a function of the locally varying beam integrated density of each nucleus.
 
-
-$t\ll 1$~fm/$c$ in the laboratory frame, and leave little time for spatially separated matter
-The collision deposits entropy at midrapidity, 
+Consider the collision of two protons $A$, $B$ with three-dimensional densities $\rho_{A,B}$ in their local rest frames.
+The proton-proton overlap function
 \begin{equation}
-  dS/d\eta \propto f(\T_A, \T_B)
+  \label{Tpp}
+  T_{pp}(b) \equiv \int dx\, dy \int dz\, \rho_A(\x) \int dz\, \rho_B(\x + \mathbf{b}),
 \end{equation}
+describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$ where coordinates $(x, y)$ lie in the transverse plane and $z$ is parallel to the beam axis.
+Here we assume that each proton is comprised of smaller constituents---e.g.\ valence quarks, sea quarks, and small-x gluons---which may collide to produce secondary particles and contribute to the observed inelastic proton-proton cross section.
+
+Within a picture of independent pairwise collisions between the constituents, a Glauber model model may be used to calculate the probability $P_\mathrm{coll}$ that the two protons collide inelastically at impact parameter $b$. In the limit when the number of constituents $M \gg 1$, it yields the particularly simple form
+\begin{equation}
+  \label{Pcoll}
+  P_\mathrm{coll} = 1 - \exp[-\sigma_\mathrm{eff}\, T_{pp}(b)], \\
+\end{equation}
+where $\sigma_\mathrm{eff}$ is an effective cross section for pairwise inelastic collisions between the constituents, and $\sigma_{pp}^\mathrm{inel}$ is the total inelastic proton-proton cross section:
+\begin{equation}
+  \label{sigma_nn}
+  \sigma_{pp}^\mathrm{inel} = \int 2 \pi b\, db\, P_\mathrm{coll}(b).
+\end{equation}
+The proton densities $\rho_{A,B}$ in Eqn.~\eqref{Tpp} are commonly modeled using a spherically symmetric distribution \note.
+For instance, the original implementation of the \trento\ model uses Gaussian protons, largely because it yields a simple analytic solution to Eqn.~\eqref{Pcoll}.
+Needless to say, such approximations are admittedly crude and may have a significant effect on the dynamics of small collision systems where the proton size is comparable to the size of the produced QGP medium.
+
+Several previous studies have investigated the effects of deformed or ``lumpy'' protons \note.
+One common implementation is a superposition of three valence quarks, typically described by Gaussian or exponential form factors.
+The corresponding proton density $\rho(\mathbf{x})$ is then assumed to be that of predominantly small-x gluons, seeded by the distribution of color charge in each of the three valence quarks \note.
+
+\begin{figure}
+  \begin{tikzpicture}
+    % spherical proton
+    \draw[dashed, xshift=-2.5cm] (0,0) circle (1cm);
+    % three partons
+    \draw[dashed] (0,0) circle (1cm);
+    \foreach \theta in {0, 120, 240}{
+      \draw ({\theta}:.5) circle (.4cm);
+    }
+    % ten partons
+    \draw[dashed, xshift=2.5cm] (0,0) circle (1cm);
+    \foreach \theta/\radius in {
+      0/0.6, 40/0.5, 90/0.6, 130/0.5, 180/0.6, 220/0.6,
+      260/0.5, 320/0.6, 300/0.2
+    }{
+      \draw[xshift=2.5cm] ({\theta}:\radius) circle (.3cm);
+    }
+  \end{tikzpicture}
+  \caption{\label{fig:substructure} Schematic of plausible proton shapes.
+  The sketch on the left shows a spherically symmetric proton (dashed line), while the middle and right illustrations depict a fluctuating proton with three and nine constituents respectively (solid lines).
+  }
+\end{figure}
+
+In this work, we pursue a less restrictive and more parametric description of the proton where the number of substructure degrees of freedom are uncertain as depicted in Fig.~\ref{fig:substructure}.
+We model each nucleon's density $\rho_{A,B}$ as a sum of $M$ independent constituents
+\begin{equation}
+  \label{rho}
+  \rho_{A, B}(\x) = \frac{1}{M} \sum\limits_{i=1}^M \rho_c(\mathbf{x} - \mathbf{x_i}),
+\end{equation}
+where each constituent density $\rho_c$ is described by a Gaussian distribution of width $w$
+\begin{equation}
+  \rho_c(\mathbf{x}) = \frac{1}{(2\pi w^2)^{3/2}} \exp\left(-\frac{\x^2}{2 w^2}\right),
+\end{equation}
+and each constituent's position $\mathbf{x_i}$ in Eqn.~\eqref{rho} is sampled from a Gaussian radial distribution of width $r$.
+In the limit $M\to \infty$, the composite proton's root mean square radius is simply the convolution of its sampling radius and constituent width, which add together in quadrature
+\begin{equation}
+  \lim_{M\to\infty} \mathrm{RMS}\{\rho(\mathbf{x})\} = \sqrt{r^2 + w^2}.
+\end{equation}
+We therefore choose to reparametrize the sampling radius $r$ in terms of the variable $\sigma = \sqrt{r^2 - w^2}$ which approximates the proton's root mean square radius when the number of sampled constituents is large.
+
+The two protons $A$, $B$ are assigned a random impact parameter, and Eqn.~\eqref{Pcoll} is used to sample their inelastic collision probability $P_\mathrm{coll}(b)$.
+Note that this proton-proton inelastic collision probability has no direct knowledge of the individual constituent degrees of freedom; it is only \emph{indirectly} sensitive through the geometry of $\rho_{A, B}$ which depends on each of the constituent positions.
+This is an important distinction between the present model and a similar nucleon substructure implementation known as the participant or ``wounded'' quark model which allows for a subset of quarks (constituents) to participate inside a single nucleon \note.
+The proton, unlike the nucleus, cannot produce semi-stable spectator fragments in a high-energy collision.
+Any spectator quarks produced by a wounded quark model would be colored objects that necessarily contribute to secondary particle production as they fragment and recombine to form color-neutral hadrons.
+We correspondingly require that the nucleons in Eqn.~\eqref{rho} participate as singular objects, such that all spectator matter discarded by the simulation is appropriately color-neutral and inert.
+
+Assuming our two protons collide at the sampled impact parameter $\mathbf{b}$, we assign each a \emph{fluctuated} thickness
+\begin{equation}
+  \label{fluctuated_thick}
+  \T_{A, B}(\x) \equiv \int dz\, \frac{1}{M} \sum\limits_{i=1}^M \gamma_i\, \rho_c \,(\mathbf{x} - \mathbf{x_i} \pm \mathbf{b}/2),
+\end{equation}
+equal to the beam-integrated proton density in Eqn.~\eqref{rho}, with each constituent shifted by the appropriate impact parameter offset, and multiplied by a gamma random variable with unit mean and variance $1/k$.
+These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their exact physical origin is unknown.
+
+Within the eikonal approximation, the initial entropy deposited at midrapidity at proper time $\tau=0^+$~fm/$c$ can be represented by some mapping ${f(\T_A, \T_B) \mapsto dS/dy}$.
+A natural first guess for the function $f$ is an arithmetic mean $f \propto (\T_A + \T_B)/2$, equal to a wounded nucleon model up to meaningless factor of two in the overall normalization.
+The wounded nucleon model was in fact the first such mapping used as a proxy for initial particle production and entropy deposition in relativistic heavy-ion collisions \note.
+It was quickly realized, however, that the wounded nucleon model predicts the wrong scaling for charged particle production as a function of collision centrality and hence the wrong scaling for initial entropy deposition as a function of participant thickness $\T_{A,B}$ \note.
+
+A simple remedy is to replace the arithmetic mean in the wounded nucleon model with a more flexible parametrization
+\begin{equation}
+  \label{gmean}
+  \frac{dS}{dy}\bigg\vert_{y=0} \propto \left( \frac{\T_A^p + \T_B^p}{2} \right)^{1/p},
+\end{equation}
+based on a family of functions known as the generalized mean(s).
+This parametrization introduces a dimensionless parameter $p$ which varies the scaling behavior of initial entropy deposition at midrapidity.
+For certain discrete values of $p$, it reduces to well known functional forms such as the arithmetic, geometric and harmonic means:
+\begin{equation}
+  \newlength{\extraspace}
+  \setlength{\extraspace}{0.5ex}
+  \frac{dS}{dy}\bigg\vert_{y=0} \propto
+  \begin{cases}
+    \max(T_A, T_B) & p \rightarrow +\infty, \\[\extraspace]
+    (T_A + T_B)/2 & p = +1, \hfill \text{ (arithmetic)} \\[\extraspace]
+    \sqrt{T_A T_B} & p = 0, \hfill \text{ (geometric)} \\[\extraspace]
+    2\, T_A T_B/(T_A + T_B) & p = -1, \hfill \text{ (harmonic)} \\[\extraspace]
+    \min(T_A, T_B) & p \rightarrow -\infty.
+  \end{cases}
+\end{equation}
+Conveniently, it has been shown that the generalized mean ansatz is able to mimic the scaling behavior of certain saturation based initial condition models \note, and hence it should serve as a reasonable parametric form for exploring QGP entropy deposition, assuming imperfect knowledge of saturation effects in nature.
+Of course the model is \emph{not} a substitute for first principle saturation calculations, and may fail to reproduce nuanced features of \emph{ab initio} saturation theory calculations, such as the existence of short-range gluon field fluctuations \note.
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \node {\includegraphics[width=\columnwidth]{fig/thickness}};
+    \draw [<->] (0, -1)--(0, 1);
+    \node (0, 1) {${\sim}20$ fm};
+  \end{tikzpicture}
+  \caption{\label{fig:substructure} Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus.
+    The nucleus on the left has Gaussian nucleons of width $0.88$~fm, while the nucleus on the right has composite nucleons, each containing six Gaussian constituents of width $0.41$~fm.}
+\end{figure}
+
+Equation~\eqref{gmean} is a purely local function of nuclear density in the transverse plane and should (in principle) be equally valid for any pair of colliding nuclei at sufficiently high beam energy.
+The model readily generalizes from individual proton-proton collisions to arbitrary nucleus-nucleus collisions by summing the participant thicknesses $\T_{A,B}$ over all nucleons which participate in one or more inelastic collisions.
+The only modeling difference between $p$-$p$ collisions and Pb-Pb collisions is the number and the position of the nucleons.
+
+When applying the model to heavy-ions, we sample nucleon positions from a Woods-Saxon density distribution subject to a minimum distance criteria $|\mathbf{x_i} - \mathbf{x_j}| > d_\mathrm{min}$ between all pairs of nucleons $i$, $j$.
+The minimum distance algorithm, first described in Ref.~\note, uses a simple trick to resample the nucleon positions without modifying the target Woods-Saxon distribution.
+We first presample the radii of all nucleons in a given nucleus and sort them in ascending order.
+We then sample the solid angles of each nucleon one-by-one, starting with the nucleon closest to the center of the nucleus and working our way outwards.
+If a sampled nucleon position is too close to any of its previously placed neighbors, its solid angle is resampled until the minimum distance criteria is satisfied.
+Similar methods could be used to model correlations between individual constituents inside each nucleon, although the numerical implementation would be somewhat tedious.
 
 \subsection{Pre-equilibrium dynamics}
 
+\begin{figure}[b]
+  \includegraphics{fig/coupling}
+  \caption{\label{fig:freestream} Cartoon of the free-streaming approximation for hydrodynamic initialization. The initial state is free-streamed for proper time $\tau_{fs}$ (zero-coupling) before it is matched to hydrodynamics (strong-coupling). This piecewise evolution approximates the more realistic scenario expected in nature where the medium's coupling strength smoothly changes as a function of time.}
+\end{figure}
+
+There are of course two limiting cases for the strength of interactions inside the QGP medium immediately at the collision: infinitely weak coupling where the secondary partons free-stream without interacting, and infinitely strong coupling where the fluid's inter-particle mean free path effectively vanishes.
+Realistically, one expects the initial parton interactions to lie somewhere between these two extremes.
+We therefore choose to model the initial off-equilibrium dynamics of the produced QGP medium using a simple step-function approximation, depicted in Fig.~\ref{fig:freestream}, which free-streams the initial state for proper time $\tau_{fs}$ (zero coupling) before instantaneously switching to viscous hydrodynamics (strong coupling) \note.
+The free parameter $\tau_{fs}$ allows us to parametrically vary the \emph{time averaged} coupling strength in the approximate window $0 < \tau_{fs} \lesssim1$~fm/$c$.
+
+The parametric entropy deposition ansatz in Eqn.~\eqref{gmean} does not provide any information about the initial masses or momenta of particles produced in the collision.
+In general, these details will affect the dynamics predicted by the collisionless Boltzmann equation
+\begin{equation}
+  \label{freestream}
+  p^\mu \partial_\mu f(x, p) = 0,
+\end{equation}
+through its dependence on the underlying distribution function $f(x, p)$, and hence are necessary inputs for any free-streaming implementation.
+Equation~\eqref{freestream}, however, simplifies for massless partons with momentum distributions that are locally isotropic.
+Under this assumption, it was shown in Refs.~\cite{Broniowski:2008qk, Liu:2015nwa} that the energy-momentum tensor $T^{\mu\nu}$ of partons at midrapidity and time $\tau$ only depends on its spatial distribution at some earlier time $\tau_0$, but not its $p_\perp$-distribution (which could depend on $\mathbf{x}$).
+
+We thus follow the procedure of the authors and reinterpret our initial transverse entropy density at midrapidity $s(\mathbf{x_\perp}, \tau_0)\vert_{\eta=0}$ as a transverse density of noninteracting massless partons $n(\mathbf{x}, \tau_0)\vert_{\eta=0}$.
+The free-streamed energy-momentum tensor $T^{\mu\nu}(x, y, \eta, \tau)$ at transverse coordinate $(x, y)$, midrapidity $\eta=0$, and proper time $\tau > \tau_0$ is then given by
+\begin{multline}
+  \label{energy-momentum}
+  T^{\mu\nu}(x, y, 0, \tau) = \frac{1}{\tau} \int_{0}^{2\pi} d\phi\, n(x - \Delta \tau \cos \phi, y - \Delta \tau \sin \phi) \\ \times
+  \begin{bmatrix}
+    1 & \cos\phi & \sin\phi  & 0\\
+    \cos\phi & \cos^2\phi & \cos\phi\sin\phi & 0 \\
+    \sin\phi & \sin\phi \cos\phi & \sin^2\phi & 0\\
+    0 & 0 & 0 & 0
+  \end{bmatrix},
+\end{multline}
+where $\Delta\tau$ is the free-streaming time $\Delta\tau = \tau - \tau_0$.
+The solution \eqref{energy-momentum} is decomposed in hydrodynamic form
+\begin{equation}
+  \label{hydro-eqn}
+  T^{\mu\nu} = e u^\mu u^\nu - (P + \Pi) \Delta^{\mu\nu} + \pi^{\mu\nu}
+\end{equation}
+where $e$ and $P$ are the energy density and pressure in the local fluid rest frame, $u^\mu$ is the local fluid velocity, ${\Delta^{\mu\nu} \equiv g^{\mu\nu} - u^\mu u^\nu}$, and $\Pi$ and $\pi^{\mu\nu}$ are the bulk pressure and shear stress tensor respectively.
+We then solve for the energy density $e$ and fluid velocity $u^\mu$ using the Landau matching condition which defines the fluid rest frame velocity as the time-like eigenvector of $T^{\mu\nu}$ with energy density $e$ as its eigenvalue,
+\begin{equation}
+  T^{\mu\nu} u_\nu = e u^\mu.
+\end{equation}
+The initial bulk and shear corrections are finally solved for by subtracting the ideal pressure from the total pressure to find $\Pi$, then solving for $\pi^{\mu\nu}$ using Eqn.~\eqref{hydro-eqn}
+\begin{align}
+  \Pi &= -\frac{1}{3} \mathrm{Tr}(\Delta_{\mu\nu} T^{\mu\nu}) - P,\\
+  \pi^{\mu\nu} &= T^{\mu\nu} - e u^\mu u^\nu + (P + \Pi) \Delta^{\mu\nu}.
+\end{align}
+
+This procedure provides initial values for $T^{\mu\nu}$, $u^\mu$, $\Pi$ and $\pi^{\mu\nu}$ which conserve energy and are consistent with the underlying hydrodynamic equation of state.
+We therefore expect it to provide a more realistic description of the initial stages of the collision as compared to a previous study using the \trento\ initial condition model which set $\Pi$, $\pi^{\mu\nu}$ and $u^\mu$ initially to zero \cite{Bernhard:2016tnd}.
 
 \subsection{Hydrodynamics and Boltzmann transport}
 
+After free-streaming for proper time $\tau_{fs}$, we transition to viscous hydrodynamics which solves the conservation equations
+\begin{equation}
+  \label{eq:continuity}
+  \partial_\mu T^{\mu\nu} = 0
+\end{equation}
+for the hydrodynamic energy-momentum tensor $T^{\mu\nu}$ expressed in Eqn.~\eqref{hydro-eqn} using a set of second-order Israel-Stewart equations formulated in the 14-moment approximation \note.
+This produces a pair of relaxation-type equations
+\begin{subequations}
+  \label{eq:relaxation}
+  \begin{align}
+    \tau_\Pi \Pi + \dot{\Pi} &=
+      - \zeta \theta - \delta_{\Pi\Pi} \Pi\theta
+      + \lambda_{\Pi\pi} \pi^{\mu\nu} \sigma_{\mu\nu}, \\[1ex]
+    \tau_\pi \dot{\pi}^{\langle \mu\nu \rangle} + \pi^{\mu\nu} &=
+      2\eta\sigma^{\mu\nu} - \delta_{\pi\pi} \pi^{\mu\nu} \theta
+      + \phi_7 \pi_\alpha^{\langle \mu} \pi^{\nu \rangle \alpha} \nonumber \\
+      &\qquad {} - \tau_{\pi\pi} \pi_\alpha^{\langle \mu}\sigma^{\nu \rangle \alpha}
+      + \lambda_{\pi\Pi} \Pi \sigma^{\mu\nu},
+  \end{align}
+\end{subequations}
+for the bulk pressure $\Pi$ and shear-stress $\pi^{\mu\nu}$.
+We model the shear viscosity $\eta$ and bulk viscosity $\zeta$ as free parameters in our study and fix the remaining transport coefficients $\{\tau_\Pi, \delta_{\Pi\Pi}, \lambda_{\Pi\pi}, \tau_\pi, \delta_{\pi\pi}, \phi_7, \tau_{\pi\pi}, \lambda_{\pi\Pi}\}$ using analytic results derived in the limit of small but finite masses \note.
 
-%To first approximation---as with nearly every object in physics---it is convenient to approximate the nucleons in heavy-ion initial condition models as a spherically symmetric particles of finite spatial extent.
-%Commonly, a Gaussian is used
-%\begin{figure}
-%  \begin{tikzpicture}
-%    % spherical proton
-%    \draw[dashed, xshift=-2cm] (0,0) circle (.8cm);
-%    % three partons
-%    \draw[dashed] (0,0) circle (.8cm);
-%    \foreach \theta in {0, 120, 240}{
-%      \draw ({\theta}:.39) circle (.4cm);
-%    }
-%    % ten partons
-%    \draw[dashed, xshift=2cm] (0,0) circle (.8cm);
-%    \foreach \theta/\radius in {
-%      36/0.4, 72/0.5, 108/0.5, 140/0.3, 172/0.1,
-%      190/0.5, 240/0.3, 272/0.5, 308/0.4, 360/0.5
-%    }{
-%      \draw[xshift=2cm] ({\theta}:\radius) circle (.2cm);
-%    }
-%  \end{tikzpicture}
-%  \caption{\label{proton_shapes} Schematic of plausible proton shapes.
-%  The sketch on the left shows a spherically symmetric proton (dashed line), while the middle and right illustrations depict a fluctuating proton with three and ten partons respectively (solid lines).
-%  }
-%\end{figure}
+The hydrodynamic equations of motion are closed using an equation of state (EoS) to relate the energy density $e$ and pressure $P$ of the produced medium.
+We use a parametrization for $P(e)$ that matches continuum-extrapolated lattice calculations for (2+1)-flavor QCD by the HotQCD collaboration \note\ to a hadron resonance gas EoS in the temperature interval $165 \le T \le 200$~MeV.
+
+Latest results for the HotQCD trace anomaly calculated using a HISQ/tree fermion action are in good agreement with previous calculations by the Wuppertal-Budapest group using a stout fermion action \note.
+
+Subsequent lattice calculations for (2+1+1)-flavors to investigate the effect of thermalized charm quarks, although studies indicate that the effect on hydrodynamic observables should be relatively small.
+%We implement the hydrodynamic equations using the well-tested \texttt{VISH2+1} viscous hydrodynamics code \note, which solves equations .
+
+\bigskip
 
 \section{Parameter estimation}
 
+
 \subsection{Computer experiment design}
+
+We parametrize the temperature dependence of the specific shear viscosity $\eta/s$ using a modified linear ansatz
+\begin{equation}
+  (\eta/s)(T) = (\eta/s)_\mathrm{min} + (\eta/s)_\mathrm{slope}\cdot(T - T_c)\cdot(T/T_c)^{(\eta/s)_\mathrm{crv}}
+\end{equation}
+where $\eta/s$ min, slope and curvature are tunable parameters and $T_c=0.154$~GeV is the pseudocritical transition temperature of the HotQCD EoS.
+For the specific bulk viscosity $\zeta/s$, we use an unnormalized Cauchy distribution
+\begin{equation}
+  (\zeta/s)(T) = \frac{(\zeta/s)_\mathrm{max}}{1 + \left(\dfrac{T - (\zeta/s)_{T_0}}{(\zeta/s)_\mathrm{width}}\right)^2}.
+\end{equation}
+described by tunable maximum, width, and location ($T_0$) parameters.
 
 \subsection{Gaussian process emulators}
 
 \subsection{Bayesian calibration}
 
-%\fig{observables_design}{Caption}
-
 \section{Results}
 
 \subsection{Initial condition properties}
-
-%\begin{figure}
-%  \begin{tikzpicture}
-%    \foreach \x in {0pt, 10pt, 20pt}{\draw (\x, 0) ellipse (5pt and 20pt);}
-%    \foreach \x in {0pt, 10pt, 20pt, 30pt}{\draw (\x+100pt, 0) ellipse (5pt and 20pt);}
-%  \end{tikzpicture}
-%  \caption{\label{fig:collision} This is the figure caption}
-%\end{figure}
-%Consider a relativistic collision between a columnated stack of $n_1$ projectile nucleons and $n_2$ target nucleons as depicted in Fig.~\ref{fig:collision}.
-%Moreover, assume that each nucleon has mass $m$ and moves with velocity $\pm u$ along the beam axis $\hat{z}$.
-%The four-momentum of each colliding nucleon stack is given by
-%\begin{align}
-%  p_1 &= n_1 \gamma m\, (1, 0, 0, u),\\
-%  p_2 &= n_2 \gamma m\, (1, 0, 0, -u),
-%\end{align}
-%where $\gamma = 1/\sqrt{1 - u^2}$ is the usual Lorentz factor.
-%
-%At relativistic energies $\gamma \gg 1$, each stack of nucleons is significantly Lorentz contracted in the lab frame and appears compressed along its direction of motion.
-%The nucleons are thus observed to penetrate and pass through each other in the lab frame in time
-%\begin{equation}
-%  \Delta t = L / \sqrt{\gamma^2 - 1},
-%\end{equation}
-%where $L\sim1$--10~fm is the length of the columnated stack of nucleons in its local rest frame.
-%
-%Collisions at top RHIC and LHC energies have interpenetration times \mbox{$\Delta t < .1$~fm/$c$} and hence transpire before meaningful dynamics develop in the transverse plane.
-%For this reason, it is convenient to say that initial energy deposition occurs instantaneously at time $\Delta t = 0^+$, the moment the two nuclei collide.
-%The initial energy (or entropy) deposited into the transverse plane is then modeled in terms of two beam-integrated nuclear thickness functions
-%\begin{equation}
-%  T_{A,B}(x, y) = \int dz \rho(x, y, z),
-%\end{equation}
-%where $\rho$ is the density profile of the nucleus in its local rest frame.
 
 \subsection{QGP medium properties}
 
@@ -218,7 +391,6 @@ The collision deposits entropy at midrapidity,
   The authors thank ...
 \end{acknowledgments}
 
-Citations I don't want to forget \cite{Shen:2016mmv}
 \bibliography{trento-substructure}
 
 \end{document}

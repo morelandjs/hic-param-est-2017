@@ -102,8 +102,8 @@ def symmetric_cumulant(events, m, n, normalize=False):
     Compute the symmetric cumulant SC(m, n).
 
     """
-    N = np.asarray(events['alice_flow']['N'], dtype=float)
-    Q = dict(enumerate(events['alice_flow']['Qn'].T, start=1))
+    N = np.asarray(events['flow']['alice']['N'], dtype=float)
+    Q = dict(enumerate(events['flow']['alice']['Qn'].T, start=1))
 
     cm2n2 = (
         csq(Q[m]) * csq(Q[n])
@@ -328,17 +328,63 @@ def _data(system, dataset='main'):
     )
 
     data = expt.data[system]
+    species = ['pion', 'kaon', 'proton']
 
-    # Add dummy expt data for PbPb5020 mean pT so that
-    # the model predictions are still calculated.
-    if system.startswith('PbPb'):
-        bins = np.linspace(0, 80, 9)
-        cent = [(a, b) for a, b in zip(bins[:-1], bins[1:])]
-        mean_pT = dict(
-            cent=cent,
-            x=np.array([(a + b)/2 for a, b in cent]),
-        )
-        data = dict({'mean_pT': {None: mean_pT}}, **data)
+    # training data is only missing for Pb-Pb charged particle mean pT
+    if dataset == 'main' and system == 'PbPb5020':
+        edges = np.linspace(0, 70, 15)
+        cent = [(a, b) for a, b in zip(edges[:-1], edges[1:])]
+        x = [(a + b)/2 for a, b in cent]
+        empty = dict(cent=cent, x=x)
+        data = dict({'mean_pT': {None: empty}}, **data)
+
+    # calculate additional observables for the maximum a posteriori parameters
+    if dataset == 'map':
+
+        # p-Pb map observables
+        if system == 'pPb5020':
+
+            # yields
+            cent, x = [data['dNch_deta'][None][k] for k in ('cent', 'x')]
+            empty = dict(cent=cent, x=x)
+            data = dict({'dET_deta': {None: empty}}, **data)
+            data = dict({'iden_dN_dy': {s: empty for s in species}}, **data)
+
+            # mean pT
+            mult, x = [data['mean_pT'][None][k] for k in ('mult', 'x')]
+            empty = dict(mult=mult, x=x)
+            data = dict({'iden_mean_pT': {s: empty for s in species}}, **data)
+            data = dict({'pT_fluct': {None: empty}}, **data)
+
+            # symmetric cumulants
+            mult, x = [data['vnk'][(2, 2)][k] for k in ('mult', 'x')]
+            empty = dict(mult=mult, x=x)
+            for obs in ['sc', 'sc_normed', 'sc_central', 'sc_normed_central']:
+                data = dict({obs: {(3, 2): empty, (4, 2): empty}}, **data)
+
+        # Pb-Pb map observables
+        if system == 'PbPb5020':
+
+            # yields
+            cent, x = [data['dNch_deta'][None][k] for k in ('cent', 'x')]
+            empty = dict(cent=cent, x=x)
+            data = dict({'dET_deta': {None: empty}}, **data)
+            data = dict({'iden_dN_dy': {s: empty for s in species}}, **data)
+
+            # mean pT
+            edges = np.linspace(0, 70, 15)
+            cent = [(a, b) for a, b in zip(edges[:-1], edges[1:])]
+            x = [(a + b)/2 for a, b in cent]
+            empty = dict(cent=cent, x=x)
+            data = dict({'mean_pT': {None: empty}}, **data)
+            data = dict({'iden_mean_pT': {s: empty for s in species}}, **data)
+            data = dict({'pT_fluct': {None: empty}}, **data)
+
+            # symmetric cumulants
+            cent, x = [data['vnk'][(2, 2)][k] for k in ('cent', 'x')]
+            empty = dict(cent=cent, x=x)
+            for obs in ['sc', 'sc_normed', 'sc_central', 'sc_normed_central']:
+                data = dict({obs: {(3, 2): empty, (4, 2): empty}}, **data)
 
     data = ModelData(system, *files).observables_like(data)
 
@@ -356,6 +402,6 @@ map_data = lazydict(_data, 'map')
 if __name__ == '__main__':
     from pprint import pprint
     for s in systems:
-        print(s)
         d = data[s]
+        print(s)
         pprint(d)

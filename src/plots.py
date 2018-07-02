@@ -267,7 +267,7 @@ def obs_color_hsluv(obs, subobs):
     if obs == 'dET_deta':
         return 10, 65, 55
 
-    if obs in {'iden_dN_dy'}:
+    if obs in {'iden_dN_dy', 'iden_mean_pT'}:
         return dict(
             charged=(250, 90, 55),
             pion=(210, 85, 70),
@@ -280,6 +280,7 @@ def obs_color_hsluv(obs, subobs):
             (2, 2): (250, 90, 65),
             (3, 2): (150, 90, 67),
             (4, 2): (20, 90, 62),
+            (2, 4): (310, 70, 50),
         }[subobs]
 
     raise ValueError('unknown observable: {} {}'.format(obs, subobs))
@@ -321,19 +322,6 @@ def obs_label(obs, subobs, differentials=False, full_cumulants=False):
             (r'\{' + str(k) + r'\}') if full_cumulants else ''
         )
 
-def xlabel(system, obs):
-    """
-    x-axis labels for p-Pb and Pb-Pb systems
-
-    """
-    pPb5020 = dict(
-        dNch_deta='Centrality %',
-        mean_pT=r'$n_\mathrm{ch} / \langle n_\mathrm{ch} \rangle$',
-        vnk=r'$n_\mathrm{trk}^\mathrm{offline} / \langle n_\mathrm{trk}^\mathrm{offline}\rangle$'
-    )
-
-    return 'Centrality %' if system == 'PbPb5020' else pPb5020[obs]
-
 
 def _observables_plots():
     """
@@ -348,28 +336,55 @@ def _observables_plots():
     return [
         dict(
             title='Yields',
-            ylabel=(r'$dN_\mathrm{ch}/d\eta$'),
-            ylim=(1, 5000),
-            ylim_tight=(10, 4000),
+            xlabel=dict(
+                pPb5020='Centrality %',
+                PbPb5020='Centrality %',
+            ),
+            ylabel=(
+                r'$dN_\mathrm{ch}/d\eta,\ dN/dy,\ dE_T/d\eta\ [\mathrm{GeV}]$'
+            ),
+            xlim=dict(
+                pPb5020=(0, 60),
+                PbPb5020=(0, 75),
+            ),
+            ylim=(2e1, 2e5),
             yscale='log',
+            height_ratio=1.5,
             subplots=[
-                ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$')),
+                ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$ x25', scale=25)),
+                ('dET_deta', None, dict(label=r'$E_T$ x5', scale=5)),
+                *id_parts_plots('iden_dN_dy')
             ]
         ),
         dict(
             title='Mean $p_T$',
+            xlabel=dict(
+                pPb5020=r'$n_\mathrm{ch} / \langle n_\mathrm{ch} \rangle$',
+                PbPb5020='Centrality %'
+            ),
             ylabel=r'$\langle p_T \rangle$ [GeV]',
+            xlim=dict(
+                pPb5020=(1, 6),
+                PbPb5020=(0, 75),
+            ),
             ylim=(0, 1.5),
-            ylim_tight=(0, 1.1),
             subplots=[
-                ('mean_pT', None, dict(label=r'$\mathrm{mean}\ p_T$')),
+                ('mean_pT', None, dict(label='ch')),
+                *id_parts_plots('iden_mean_pT')
             ]
         ),
         dict(
             title='Flow cumulants',
+            xlabel=dict(
+                pPb5020=r'$n_\mathrm{trk}^\mathrm{offline} / \langle n_\mathrm{trk}^\mathrm{offline}\rangle$',
+                PbPb5020='Centrality %',
+            ),
             ylabel=r'$v_n\{2\}$',
-            ylim=(0, .2),
-            ylim_tight=(0, .12),
+            xlim=dict(
+                pPb5020=(1, 6),
+                PbPb5020=(0, 75),
+            ),
+            ylim=(0, .15),
             subplots=[
                 ('vnk', (n, 2), dict(label='$v_{}$'.format(n)))
                 for n in [2, 3, 4]
@@ -379,6 +394,7 @@ def _observables_plots():
 
 
 def _observables(posterior=False):
+
     """
     Model observables at all design points or drawn from the posterior with
     experimental data points.
@@ -389,9 +405,6 @@ def _observables(posterior=False):
     fig, axes = plt.subplots(
         nrows=len(plots), ncols=len(systems),
         figsize=figsize(1.1, aspect=1.25),
-        gridspec_kw=dict(
-            height_ratios=[p.get('height_ratio', 1) for p in plots]
-        )
     )
 
     if posterior:
@@ -403,12 +416,10 @@ def _observables(posterior=False):
             scale = opts.get('scale')
 
             try:
-                x = model.data[system][obs][subobs]['x']
-                Y = (
-                    samples[system][obs][subobs]
-                    if posterior else
-                    model.data[system][obs][subobs]['Y']
-                )
+                model_data = model.data[system][obs][subobs]
+                x = model_data['x']
+                Y = (samples[system][obs][subobs]
+                     if posterior else model_data['Y'])
             except KeyError:
                 continue
 
@@ -436,24 +447,31 @@ def _observables(posterior=False):
 
                 ax.errorbar(
                     x, y, yerr=yerr, fmt='o',
-                    capsize=0, color='.25', zorder=1000
+                    capsize=0, mfc='.25', mec='.25', mew=.2, zorder=1000
                 )
+
+                if plot['title'] == 'Flow cumulants':
+                    offset = (3 if 'cent' in model_data else .18)
+                    ax.text(
+                        x[-1] + offset, y[-1], opts['label'],
+                        color=darken(color), ha='left', va='center'
+                    )
 
             if system == 'pPb5020':
                 if obs == 'dNch_deta':
                     ax.set_xlim(0, 55)
                     ax.set_xlabel('Centrality %')
                 elif obs == 'mean_pT':
-                    ax.set_xlim(1, 6)
+                    ax.set_xlim(1, 6.2)
                     ax.set_xlabel(r'$n_\mathrm{ch}\,/\langle n_\mathrm{ch} \rangle$')
                 elif obs == 'vnk':
-                    ax.set_xlim(1, 6)
+                    ax.set_xlim(1, 6.2)
                     ax.set_xlabel('/'.join([
                         r'$n^\mathrm{offline}_\mathrm{trk}$',
                         r'$\langle n^\mathrm{offline}_\mathrm{trk} \rangle$',
                     ]))
             else:
-                ax.set_xlim(0, 80)
+                ax.set_xlim(0, 75)
                 ax.set_xlabel('Centrality %')
 
         if plot.get('yscale') == 'log':
@@ -467,17 +485,20 @@ def _observables(posterior=False):
         ax.set_ylim(plot['ylim'])
 
         if ax.is_first_row():
-            ax.set_title(format_system(system), y=.9)
+            ax.set_title(format_system(system))
 
         if ax.is_first_col():
-            ax.set_ylabel(plot['ylabel'])
+            ax.set_ylabel(
+                r'$dN_\mathrm{ch}/d\eta$'
+                if plot['title'] == 'Yields' else plot['ylabel']
+            )
 
         if ax.is_last_col():
-            #ax.text(
-            #    1.02, .5, plot['title'],
-            #    transform=ax.transAxes, ha='left', va='center',
-            #    size=plt.rcParams['axes.labelsize'], rotation=-90
-            #)
+            ax.text(
+                1.02, .5, plot['title'],
+                transform=ax.transAxes, ha='left', va='center',
+                size=plt.rcParams['axes.labelsize'], rotation=-90
+            )
             ax.set_yticklabels([])
 
     set_tight(fig, rect=[0, 0, .97, 1])
@@ -493,163 +514,140 @@ def observables_posterior():
     _observables(posterior=True)
 
 
-#@plot
+@plot
 def observables_map():
     """
     Model observables and ratio to experiment at the maximum a posteriori
     (MAP) estimate.
 
     """
+    systems = ['pPb5020', 'PbPb5020']
     plots = _observables_plots()
 
     ylim = {
-        'Yields': (2, 1e5),
-        'Flow cumulants': (0, .15),
+        'Yields': (1e-1, 1e5),
         'Mean $p_T$': (0, 1.7),
-        'Mean $p_T$ fluctuations': (0, .045),
+        'Flow cumulants': (0, .12),
     }
 
-    for n, p in enumerate(plots):
+    for p in plots:
         p['ylim'] = ylim[p['title']]
-        if p['title'] == 'Flow cumulants':
-            move_index = n
-            p.update(
-                ylabel=r'$v_n\{k\}$',
-                subplots=[
-                    ('vnk', nk, dict(label='$v_{}\{{{}\}}$'.format(*nk)))
-                    for nk in [(2, 2), (2, 4), (3, 2), (4, 2)]
-                ],
-                legend=True
-            )
 
-    plots.insert(1, plots.pop(move_index))
+    fig = plt.figure(figsize=figsize(1, 1.5))
 
-    ncols = int(len(plots)/2)
-
-    fig, axes = plt.subplots(
-        nrows=4, ncols=ncols,
-        figsize=figsize(1.1, aspect=2/ncols),
-        gridspec_kw=dict(
-            height_ratios=list(itertools.chain.from_iterable(
-                (p.get('height_ratio', 1), .4) for p in plots[::ncols]
-            ))
+    yields, mean_pT, flows = [
+        gridspec.GridSpecFromSubplotSpec(
+            2, 2, gs, height_ratios=[5, 1] if n == 0 else [3, 1],
+            hspace=0.1, wspace=.1
+        ) for n, gs in enumerate(
+            gridspec.GridSpec(3, 1, height_ratios=[6, 4, 4])
         )
-    )
+    ]
 
-    labels = {}
-    handles = dict(expt={}, model={})
+    gridspecs = [yields, mean_pT, flows]
+    rows = zip(plots, gridspecs)
 
-    for plot, ax, ratio_ax in zip(plots, axes[::2].flat, axes[1::2].flat):
-        for system, (obs, subobs, opts) in itertools.product(
-                systems, plot['subplots']
-        ):
-            color = obs_color(obs, subobs)
-            scale = opts.get('scale')
+    for nrow, (plot, gs) in enumerate(rows):
+        axes = [fig.add_subplot(ax) for ax in gs]
+        cols = zip(systems, axes[:2], axes[2:])
 
-            linestyle, fill_markers = {
-                'PbPb2760': ('solid', True),
-                'PbPb5020': ('dashed', False),
-            }[system]
+        for ncol, (system, ax, ratio_ax) in enumerate(cols):
+            for obs, subobs, opts in plot['subplots']:
+                color = obs_color(obs, subobs)
+                scale = opts.get('scale')
 
-            x = model.map_data[system][obs][subobs]['x']
-            y = model.map_data[system][obs][subobs]['Y']
+                try:
+                    x = model.map_data[system][obs][subobs]['x']
+                    y = model.map_data[system][obs][subobs]['Y']
+                except KeyError:
+                    continue
 
-            if scale is not None:
-                y = y*scale
+                if scale is not None:
+                    y = y*scale
 
-            ax.plot(x, y, color=color, ls=linestyle)
-            handles['model'][system] = \
-                lines.Line2D([], [], color=offblack, ls=linestyle)
+                ax.plot(x, y, color=color)
 
-            if 'label' in opts and (obs, subobs) not in labels:
-                labels[obs, subobs] = ax.text(
-                    x[-1] + 3, y[-1],
-                    opts['label'],
-                    color=darken(color), ha='left', va='center'
+                if 'label' in opts:
+                    offset = (
+                        3 if system == 'PbPb5020'
+                        or plot['title'] == 'Yields' else .17
+                    )
+
+                    ax.text(
+                        x[-1] + offset, y[-1],
+                        opts['label'],
+                        color=darken(color), ha='left', va='center'
+                    )
+
+                try:
+                    dset = expt.data[system][obs][subobs]
+                except KeyError:
+                    continue
+
+                x = dset['x']
+                yexp = dset['y']
+                yerr = dset['yerr']
+                yerrstat = yerr.get('stat')
+                yerrsys = yerr.get('sys', yerr.get('sum'))
+
+                if scale is not None:
+                    yexp = yexp*scale
+                    if yerrstat is not None:
+                        yerrstat = yerrstat*scale
+                    if yerrsys is not None:
+                        yerrsys = yerrsys*scale
+
+                c = '.25'
+                ax.errorbar(
+                    x, yexp, yerr=yerrstat, fmt='o',
+                    capsize=0, mfc=c, mec=c, mew=.2, zorder=1000
                 )
 
-            try:
-                dset = expt.data[system][obs][subobs]
-            except KeyError:
-                continue
+                ax.fill_between(
+                    x, yexp - yerrsys, yexp + yerrsys,
+                    color='.9', zorder=-10
+                )
 
-            x = dset['x']
-            yexp = dset['y']
-            yerr = dset['yerr']
-            yerrstat = yerr.get('stat')
-            yerrsys = yerr.get('sys', yerr.get('sum'))
+                ratio_ax.plot(x, y/yexp, color=color)
 
-            if scale is not None:
-                yexp = yexp*scale
-                if yerrstat is not None:
-                    yerrstat = yerrstat*scale
-                if yerrsys is not None:
-                    yerrsys = yerrsys*scale
+            if plot.get('yscale') == 'log':
+                ax.set_yscale('log')
+                ax.minorticks_off()
+            else:
+                auto_ticks(ax, 'y', nbins=4, minor=2)
 
-            c = '.25'
-            handles['expt'][system] = ax.errorbar(
-                x, yexp, yerr=yerrstat, fmt='o',
-                capsize=0, color=c,
-                mec=c, mfc=(c if fill_markers else '.9'),
-                mew=((.2 if fill_markers else .5) *
-                     plt.rcParams['lines.linewidth']),
-                zorder=1000
-            )
+            if nrow == 0:
+                ax.set_title(format_system(system))
 
-            ax.fill_between(
-                x, yexp - yerrsys, yexp + yerrsys,
-                facecolor='.9', zorder=-10,
-            )
+            if ncol == 0:
+                ax.set_ylabel(plot['ylabel'])
+                ratio_ax.set_ylabel('Ratio')
+            else:
+                ax.text(
+                    1.02, .5, plot['title'],
+                    transform=ax.transAxes, ha='left', va='center',
+                    size=plt.rcParams['axes.labelsize'], rotation=-90
+                )
+                ax.set_yticklabels([])
+                ratio_ax.set_yticklabels([])
 
-            ratio_ax.plot(x, y/yexp, color=color, ls=linestyle)
+            ax.set_xticklabels([])
+            ax.set_xlim(*plot['xlim'][system])
+            ax.set_ylim(plot['ylim'])
 
-        if plot.get('yscale') == 'log':
-            ax.set_yscale('log')
-            ax.minorticks_off()
-        else:
-            auto_ticks(ax, 'y', nbins=4, minor=2)
+            ratio_ax.axhline(1, lw=.5, color='0.5', zorder=-100)
+            ratio_ax.axhspan(0.9, 1.1, color='0.95', zorder=-200)
 
-        for a in [ax, ratio_ax]:
-            a.set_xlim(0, 80)
-            auto_ticks(a, 'x', nbins=5, minor=2)
+            ratio_ax.set_xlim(plot['xlim'][system])
+            ratio_ax.set_xlabel(plot['xlabel'][system])
+            ratio_ax.set_ylim(0.8, 1.2)
+            ratio_ax.set_yticks(np.arange(80, 121, 20)/100)
 
-        if ratio_ax.is_last_row():
-            ratio_ax.set_xlabel('Centrality %')
+            ratio_ax.get_yticklabels()[0].set_verticalalignment('bottom')
+            ratio_ax.get_yticklabels()[-1].set_verticalalignment('top')
 
-        ax.set_ylim(plot['ylim'])
-        ax.set_ylabel(plot['ylabel'])
+    set_tight(fig, h_pad=1, rect=[0, 0, .97, 1])
 
-        if plot.get('legend'):
-            ax.legend(
-                [handles[t][s] for t in ['model', 'expt'] for s in systems],
-                [fmt.format(parse_system(s)[1]/1000)
-                 for fmt in ['', '{} TeV'] for s in systems],
-                ncol=2, loc='upper left', bbox_to_anchor=(0, .94),
-                columnspacing=0, handletextpad=0
-            )
-
-        ax.text(
-            .5, 1 if ax.is_first_row() else .97, plot['title'],
-            transform=ax.transAxes, ha='center', va='top',
-            size=plt.rcParams['axes.labelsize']
-        )
-
-        ratio_ax.axhline(
-            1,
-            linewidth=plt.rcParams['ytick.major.width'], color='0.5',
-            zorder=-100
-        )
-        ratio_ax.axhspan(.9, 1.1, color='0.93', zorder=-200)
-        ratio_ax.set_ylim(.85, 1.15)
-        ratio_ax.set_ylabel('Ratio')
-        ratio_ax.text(
-            ratio_ax.get_xlim()[1], .9, '±10%',
-            color='.5', zorder=-50,
-            ha='right', va='bottom',
-            size=plt.rcParams['xtick.labelsize']
-        )
-
-    set_tight(fig)
 
 @plot
 def find_map():
@@ -662,6 +660,7 @@ def find_map():
     chain = mcmc.Chain()
 
     fixed_params = {
+        'parton_number': 6,
         'Tswitch': 0.151,
     }
 
@@ -694,6 +693,15 @@ def find_map():
     pred = chain._predict(np.atleast_2d(full_x(res.x)))
 
     plots = _observables_plots()
+
+    ylim = {
+        'Yields': (1e2, 1e5),
+        'Mean $p_T$': (0, 1.7),
+        'Flow cumulants': (0, .12),
+    }
+
+    for p in plots:
+        p['ylim'] = ylim[p['title']]
 
     fig = plt.figure(figsize=figsize(1, 1.5))
     gs = gridspec.GridSpec(6, 2, height_ratios=[3, 1, 3, 1, 3, 1])
@@ -772,7 +780,7 @@ def find_map():
             auto_ticks(ax, 'y', nbins=4, minor=2)
 
         ax.set_xticklabels([])
-        ax.set_ylim(plot['ylim_tight'])
+        ax.set_ylim(plot['ylim'])
 
         if ax.is_first_row():
             ax.set_title(format_system(system))
@@ -795,6 +803,136 @@ def find_map():
         ratio_ax.set_yticks(np.arange(80, 121, 20)/100)
 
     set_tight(fig, rect=(0, 0, .95, 1))
+
+
+@plot
+def pT_fluct():
+    """
+    Mean pT fluctuations
+
+    """
+    plt.figure(figsize=figsize(.6))
+
+    system = 'PbPb5020'
+    obs = 'pT_fluct'
+    subobs = None
+
+    x = model.map_data[system][obs][subobs]['x']
+    y = model.map_data[system][obs][subobs]['Y']
+
+    plt.plot(x, y)
+
+    plt.xlabel('Centrality %')
+    plt.ylabel(r'$\delta p_T / \langle p_T \rangle$') 
+    plt.ylim(0, 0.05)
+    plt.title('Mean $p_T$ fluctuations')
+
+    set_tight()
+
+
+@plot
+def flow_corr():
+    """
+    Symmetric cumulants SC(m, n) at the MAP point compared to experiment.
+    """
+    fig, axes = plt.subplots(
+        figsize=figsize(1.05, .7),
+        nrows=2, ncols=2, gridspec_kw=dict(width_ratios=[.8, 1])
+    )
+
+    systems = ['PbPb5020', 'PbPb5020']
+
+    cmapx_normal = .7
+    cmapx_pred = .5
+
+    def label(*mn, normed=False):
+        fmt = r'\mathrm{{SC}}({0}, {1})'
+        if normed:
+            fmt += r'/\langle v_{0}^2 \rangle\langle v_{1}^2 \rangle'
+        return fmt.format(*mn).join('$$')
+
+    for obs, ax in zip(
+            ['sc_central', 'sc', 'sc_normed_central', 'sc_normed'],
+            axes.flat
+    ):
+        for (mn, cmap), sys in itertools.product(
+                [
+                    ((4, 2), 'Blues'),
+                    ((3, 2), 'Oranges'),
+                ],
+                systems
+        ):
+            x = model.map_data[sys][obs][mn]['x']
+            y = model.map_data[sys][obs][mn]['Y']
+
+            pred = obs not in expt.data[sys]
+            cmapx = cmapx_pred if pred else cmapx_normal
+
+            kwargs = {}
+
+            if pred:
+                kwargs.update(linestyle='dashed')
+
+            if ax.is_first_col() and ax.is_first_row():
+                fmt = '{:.2f} TeV'
+                if pred:
+                    fmt += ' (prediction)'
+                lbl = fmt.format(parse_system(sys)[1]/1000)
+                if not any(l.get_label() == lbl for l in ax.get_lines()):
+                    ax.add_line(lines.Line2D(
+                        [], [], color=plt.cm.Greys(cmapx),
+                        label=lbl, **kwargs
+                    ))
+            elif ax.is_last_col() and not pred:
+                kwargs.update(label=label(*mn, normed='normed' in obs))
+
+            ax.plot(
+                x, y, lw=.75,
+                color=getattr(plt.cm, cmap)(cmapx),
+                **kwargs
+            )
+
+            if pred:
+                continue
+
+            x = expt.data[sys][obs][mn]['x']
+            y = expt.data[sys][obs][mn]['y']
+            yerr = expt.data[sys][obs][mn]['yerr']
+
+            ax.errorbar(
+                x, y, yerr=yerr['stat'],
+                fmt='o', ms=.8*plt.rcParams['lines.markersize'],
+                capsize=0, color='.25', zorder=100
+            )
+
+            ax.fill_between(
+                x, y - yerr['sys'], y + yerr['sys'],
+                color='.9', zorder=-10
+            )
+
+        ax.axhline(
+            0, color='.5', lw=plt.rcParams['xtick.major.width'],
+            zorder=-100
+        )
+
+        ax.set_xlim(0, 10 if 'central' in obs else 70)
+
+        auto_ticks(ax, nbins=6, minor=2)
+
+        if all(ax.get_legend_handles_labels()):
+            ax.legend(loc='best')
+
+        if ax.is_first_col():
+            ax.set_ylabel(label('m', 'n', normed='normed' in obs))
+
+        if ax.is_first_row():
+            ax.set_title(
+                'Central'
+                if 'central' in obs else
+                'Minimum bias'
+            )
+        else:
+            ax.set_xlabel('Centrality %')
 
 
 def format_ci(samples, ci=.9):
@@ -1798,8 +1936,6 @@ def validation_example(
     )
 
 
-
-
 @plot
 def correlation_matrices(system=default_system):
     """
@@ -2056,45 +2192,6 @@ def grid_error():
         ax.set_aspect('equal')
         auto_ticks(ax, 'x', nbins=3)
         auto_ticks(ax, 'y', nbins=3)
-
-    set_tight(fig)
-
-
-@plot
-def observable_normality():
-    """
-    Scatter plot every observable bin against every other observable bin
-    to assess normality.
-
-    """
-    plots = _observables_plots()
-    default_system = 'PbPb5020'
-    model_data = model._data(default_system)
-
-    observables = [
-        (obs, subobs, y) for plot in plots
-        for (obs, subobs, opts) in plot['subplots']
-        for y in model_data[obs][subobs]['Y'].T
-    ]
-
-    nobs = len(observables)
-
-    fig, axes = plt.subplots(
-        nrows=nobs, ncols=nobs,
-        figsize=figsize(relwidth=10, aspect=1)
-    )
-
-    for (obs, subobs, y), ax in zip(observables, axes.diagonal()):
-        ax.hist(y, bins=30)
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-        ax.set_title('{} {}'.format(obs, subobs if subobs else ''))
-
-    for ny, nx in zip(*np.tril_indices_from(axes, k=-1)):
-        obs, subobs, Y = zip(*observables)
-        ax = axes[ny][nx]
-        ax.scatter(Y[nx], Y[ny])
-        axes[nx][ny].set_axis_off()
 
     set_tight(fig)
 

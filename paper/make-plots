@@ -170,11 +170,11 @@ def coupling():
     fluid coupling as a step function
 
     """
-    plt.figure(figsize=figsize(.45, aspect=.7))
+    plt.figure(figsize=figsize(.5, aspect=.7))
 
     tau = np.linspace(0, 1, 100)
 
-    coupling = .3 + .6 / (1 + 10**(-(tau - .5)/.2))
+    coupling = .3 + .675 / (1 + 10**(-(tau - .5)/.2))
     plt.plot(tau, coupling, color='black')
     plt.annotate('free-streaming', xy=(.25, .1), xycoords='data',
                  ha='center', va='center')
@@ -205,7 +205,7 @@ def thickness():
     Load and plot trento thickness function.
 
     """
-    fig, axes = plt.subplots(ncols=2, figsize=figsize(1, .5), frameon=False)
+    fig, axes = plt.subplots(ncols=2, figsize=figsize(.5, .5), frameon=False)
     filenames = ['data/thick_lead.hdf', 'data/thick_lead_sub.hdf']
 
     for ax, filename in zip(axes, filenames):
@@ -233,6 +233,52 @@ def thickness():
                 ax.set_ylim(-10, 10)
 
     set_tight(fig)
+
+
+@plot
+def viscosity_dof():
+    """
+    Example curves for temperature dependent shear and bulk viscosity
+    parametrizations.
+
+    """
+    fig, axes = plt.subplots(nrows=2, figsize=figsize(.5, 1.236), sharex=True)
+
+    T = np.linspace(154, 300, 100)
+    Tc = 154
+
+    def shear(T, etas_min, etas_slope, etas_crv):
+        return etas_min + etas_slope * (T - Tc) * (T/Tc)**etas_crv
+
+    def bulk(T, zetas_max, zetas_width, zetas_T0):
+        return zetas_max / (1 + ((T - zetas_T0)/zetas_width)**2)
+
+    functions = [shear, bulk]
+    labels = [r'$\eta/s$', r'$\zeta/s$']
+    titles = ['Shear', 'Bulk']
+    ylimits = [(0, .6), (0, .1)]
+    parameter_sets_list= [
+        [(0.04, .001, -1), (0.12, .0015, 0), (0.2, .002, 1)],
+        [(0.02, 20, 200), (0.06, 50, 175), (0.1, 100, 150)]
+    ]
+
+    for ax, func, parameter_sets, label, title, ylim in zip(
+            axes, functions, parameter_sets_list, labels, titles, ylimits):
+        for parameters in parameter_sets:
+            ax.plot(T, func(T, *parameters), color=colors['blue'])
+
+        if ax.is_last_row():
+            ax.set_xlabel('Temperature [MeV]')
+            ax.set_xticks([150, 200, 250, 300])
+
+        ax.set_ylabel(label)
+
+        ax.set_xlim(150, 300)
+        ax.set_ylim(*ylim)
+        #ax.set_title(title, y=1, va='top')
+
+    set_tight(h_pad=.5)
+
 
 
 if __name__ == '__main__':

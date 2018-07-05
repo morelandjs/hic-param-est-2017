@@ -93,30 +93,31 @@ Hydrodynamic models of ultrarelativistic nuclear collisions are complicated by a
 In general, these theoretical uncertainties tend to grow with decreasing system size, where emergent physics at sub-fermi length scales becomes important to describe bulk properties of the produced system.
 
 One method for reducing theoretical uncertainties is to test model calculations by varying the species of colliding nuclei at a single beam energy \cite{Adare:2015bua, Schenke:2014tga, Aidala:2018mcw, Adare:2017wlc, Adamczyk:2015obl, Shen:2016zpp, Aidala:2017ajz, Adare:2006ti}.
-Since initial condition and hydrodynamic models generally factorize the structure of the colliding nuclei from the subsequent time dynamics of the collision, a single theory framework can be simultaneously tested and compared to measurements from multiple collision systems using a self consistent set of model parameters where only the nuclear structure in the model is permitted to vary.
+Since initial condition and hydrodynamic models generally factorize the structure of the colliding nuclei from the subsequent time dynamics of the collision, a single theory framework can be simultaneously tested and compared to measurements from multiple collision systems using a self-consistent set of model parameters where only the nuclear structure in the model is permitted to vary.
 
 Typically, the macroscopic structure of heavy nuclei, characterized e.g.\ by an atomic mass and set of Woods-Saxon coefficients \cite{MOLLER1995185, DEVRIES1987495}, is regarded as a known input to hydrodynamic models which contributes negligible uncertainty to simulation predictions, outweighed by large uncertainties in modeling initial energy deposition and off-equilibrium dynamics \cite{Niemi:2014lha, Song:2011hk, Retinskaya:2013gca, Liu:2015nwa, Kurkela:2016vts}.
 The geometry of light ions, meanwhile, is naturally more sensitive to the detailed size and shape of individual protons and neutrons inside the nucleus, which may fluctuate event-by-event and differ signficantly from the round blobs typically used to approximate nucleons in heavy-ion collisions \cite{Schenke:2014zha, Welsh:2016siu, Moreland:2017kdx, Schenke:2014gaa, Schlichting:2014ipa}.
 These nucleon substructure properties are difficult to measure and calculate from first principles and hence contribute significant uncertainty to model predictions of small systems.
 
-One approach to investigate the effect of nucleon substructure on hydrodynamic simulations is to replace round protons with composite protons, described by a few salient structure parameters such the number of constituents and each constituent's width, in order to study the effect of each structure parameter on simulated observables \cite{Adler:2013aqf, Mitchell:2016jio, Welsh:2016siu}.
-Such sensitivity studies are useful for identifying cause and effect relationships between model inputs and outputs, but lack the ability to constrain nucleon substructure parameters in any kind of global or systematic fashion.
+Early substructure studies replaced round protons with composite protons, described by a few salient model parameters, in order to investigate the effect of each parameter on simulated observables \cite{Adler:2013aqf, Mitchell:2016jio, Welsh:2016siu}.
+These sensitivity studies were able to identify cause and effect relationships between model inputs and outputs, but lacked the ability to constrain nucleon substructure parameters in any kind of global or systematic fashion.
+It quickly became apparent that numerous substructure implementations might be compatible with available data, and that additional work would be required to identify observables which are particularly sensitive to the average size, shape and fluctuations of the proton.
 
-An alternative approach to constrain nucleon substructure parameters, is to leverage information from independent experimental measurements which are particularly sensitive to the average size, shape and fluctuations of the proton.
-For instance, measurements by the TOTEM collaboration at $\sqrt{s}=7$~TeV found an unexpected dip in the inelasticity density of $p$-$p$ collisions at nonzero impact parameter \cite{Antchev:2011zz}.
+Several such observables have been identified in proton-proton and proton-lepton scattering data.
+Measurements by the TOTEM collaboration at $\sqrt{s}=7$~TeV, for instance, found an unexpected dip in the inelasticity density of $p$-$p$ collisions at zero impact parameter \cite{Antchev:2011zz}.
 It was later realized that this depression, or so-called hollowness effect in the $p$-$p$ inelastic collision profile \cite{Arriola2016}, can be explained by the existence of correlated domains inside the proton, and that aspects of these domains, such as their size and correlation strength, may be constrained by comparing model predictions to inelastic $p$-$p$ measurements \cite{Albacete:2016gxu, Albacete:2016pmp}.
 
 Independently, studies of coherent and incoherent $J/\psi$ production based on a color dipole picture of vector meson production were used to simultaneously constrain both the average color charge density of the proton as well as its event-by-event fluctuations in a saturation based framework \cite{Mantysaari:2016ykx, Aaron:2009aa, Abramowicz:2015mha}.
-Meanwhile, initial condition studies using the IP-Glasma model of color-glass condensate effective field theory demonstrated that these color charge fluctuations leave a lasting imprint on the \mbox{small-x} gluon distribution of the proton and the initial geometry of QGP energy deposition \cite{Schlichting:2014ipa}. Recent work now shows that IP-Glasma initial conditions with color charge fluctuations tuned to fit coherent and incoherent $J/\psi$ diffraction measured by the H1 and Zeus experiments at HERA \cite{Aaron:2009aa, Abramowicz:2015mha} well reproduces the collective flow observables in small and large collision systems without additional fine tuning of the nucleon substructure parameters \note.
+Meanwhile, initial condition studies using the IP-Glasma model of color-glass condensate effective field theory demonstrated that these color charge fluctuations leave a lasting imprint on the \mbox{small-x} gluon distribution of the proton and hence the initial geometry of QGP energy deposition \cite{Schlichting:2014ipa}.
+Recent work now shows that hydrodynamic simulations using IP-Glasma initial conditions---with color charge fluctuations calibrated to fit coherent and incoherent $J/\psi$ diffraction measured by the H1 and Zeus experiments at HERA \cite{Aaron:2009aa, Abramowicz:2015mha}---describe collectivity in both small and large collision systems without additional retuning of the nucleon substructure parameters \note.
 
-More comprehensive efforts to constrain nucleon substructure properties are complicated by the typically large number of free parameters already used in hydrodynamic transport models.
-Parameters generally affect multiple observables at once, and intercorrelate in complex ways which make it impossible to tune the parameters by hand.
-Evaluating even a single set of parameter values is a computationally intensive process, which generally involves thousands of simulated hydrodynamic events and hundreds of processor hours.
+Model parameters are of course always in some degree of tension; for instance, fitting one observable may require parameter values which degrade the quantitative description of some other observable.
+Correspondingly, parameters which provide an optimal description of small-system bulk observables may lead to a sub-optimal description of heavy-ion collision bulk observables or \emph{vice versa}.
+It is thus import to look at the experimental data holistically, and to adopt rigorous statistical measures that facilitate systematic model-to-data comparison with meaningful uncertainties.
 
-In this work, we take a somewhat different approach to the aforementioned studies and investigate the extent to which nucleon substructure properties can be inferred from a global analysis of p-Pb and Pb-Pb bulk observables at $\sqrts=5.02$~TeV.
+In this work, we perform a global analysis of soft-sector observables measured in $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV using established Bayesian methodology to estimate the parameters of a hybrid transport model based on viscous hydrodynamics and Boltzmann transport.
 Theoretical ingredients of our model which are uncertain, such as the size and shape of the nucleon, the temperature dependence of the QGP transport coefficients, and the duration of pre-equilibrium dynamics, are described by free parameters with probabilistic values that reflect their inherent uncertainty.
 
-TODO finish introduction.
 
 \section{Nuclear collision model}
 
@@ -215,8 +216,8 @@ Assuming our two protons collide at the sampled impact parameter $\mathbf{b}$, w
   \label{fluctuated_thick}
   \T_{A, B}(\x) \equiv \int dz\, \frac{1}{M} \sum\limits_{i=1}^M \gamma_i\, \rho_c \,(\mathbf{x} - \mathbf{x_i} \pm \mathbf{b}/2),
 \end{equation}
-equal to the beam-integrated proton density in Eqn.~\eqref{rho}, with each constituent shifted by the appropriate impact parameter offset, and multiplied by a gamma random variable with unit mean and variance $1/k$.
-These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their exact physical origin is unknown.
+equal to the beam-integrated proton density in Eqn.~\eqref{rho}, with each constituent shifted by the appropriate impact parameter offset, and multiplied by a gamma random variable $\gamma_i$ with unit mean and variance $1/k$.
+These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their physical justification is not yet well understood.
 
 Within the eikonal approximation, the initial entropy deposited at midrapidity at proper time $\tau=0^+$~fm/$c$ can be represented by some mapping ${f(\T_A, \T_B) \mapsto dS/dy}$.
 A natural first guess for the function $f$ is an arithmetic mean $f \propto (\T_A + \T_B)/2$, equal to a wounded nucleon model up to meaningless factor of two in the overall normalization.
@@ -250,8 +251,9 @@ Of course the model is \emph{not} a substitute for first principle saturation ca
   \centering
   \begin{tikzpicture}
     \node {\includegraphics[width=\columnwidth]{fig/thickness}};
-    \draw [<->] (0, -1)--(0, 1);
-    \node (0, 1) {${\sim}20$ fm};
+    \node[label=above:{10 fm}] (a) at (0, 1.1) {};
+    \node (b) at (0, -1.1) {};
+    \draw [<->, semithick] (a) to (b);
   \end{tikzpicture}
   \caption{\label{fig:substructure} Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus.
     The nucleus on the left has Gaussian nucleons of width $0.88$~fm, while the nucleus on the right has composite nucleons, each containing six Gaussian constituents of width $0.41$~fm.}
@@ -262,7 +264,7 @@ The model readily generalizes from individual proton-proton collisions to arbitr
 The only modeling difference between $p$-$p$ collisions and Pb-Pb collisions is the number and the position of the nucleons.
 
 When applying the model to heavy-ions, we sample nucleon positions from a Woods-Saxon density distribution subject to a minimum distance criteria $|\mathbf{x_i} - \mathbf{x_j}| > d_\mathrm{min}$ between all pairs of nucleons $i$, $j$.
-The minimum distance algorithm, first described in Ref.~\note, uses a simple trick to resample the nucleon positions without modifying the target Woods-Saxon distribution.
+The minimum distance algorithm, first described in Ref.~\note, uses a simple trick to resample the nucleon positions without modifying the target Woods-Saxon radial distribution.
 We first presample the radii of all nucleons in a given nucleus and sort them in ascending order.
 We then sample the solid angles of each nucleon one-by-one, starting with the nucleon closest to the center of the nucleus and working our way outwards.
 If a sampled nucleon position is too close to any of its previously placed neighbors, its solid angle is resampled until the minimum distance criteria is satisfied.
@@ -277,7 +279,7 @@ Similar methods could be used to model correlations between individual constitue
 
 There are of course two limiting cases for the strength of interactions inside the QGP medium immediately at the collision: infinitely weak coupling where the secondary partons free-stream without interacting, and infinitely strong coupling where the fluid's inter-particle mean free path effectively vanishes.
 Realistically, one expects the initial parton interactions to lie somewhere between these two extremes.
-We therefore choose to model the initial off-equilibrium dynamics of the produced QGP medium using a simple step-function approximation, depicted in Fig.~\ref{fig:freestream}, which free-streams the initial state for proper time $\tau_{fs}$ (zero coupling) before instantaneously switching to viscous hydrodynamics (strong coupling) \note.
+We therefore choose to model the QGP's initial off-equilibrium dynamics using a simple step-function approximation, depicted in Fig.~\ref{fig:freestream}, which free-streams the initial state for proper time $\tau_{fs}$ (zero coupling) before instantaneously switching to viscous hydrodynamics (strong coupling) \note.
 The free parameter $\tau_{fs}$ allows us to parametrically vary the \emph{time averaged} coupling strength in the approximate window $0 < \tau_{fs} \lesssim1$~fm/$c$.
 
 The parametric entropy deposition ansatz in Eqn.~\eqref{gmean} does not provide any information about the initial masses or momenta of particles produced in the collision.
@@ -288,7 +290,7 @@ In general, these details will affect the dynamics predicted by the collisionles
 \end{equation}
 through its dependence on the underlying distribution function $f(x, p)$, and hence are necessary inputs for any free-streaming implementation.
 Equation~\eqref{freestream}, however, simplifies for massless partons with momentum distributions that are locally isotropic.
-Under this assumption, it was shown in Refs.~\cite{Broniowski:2008qk, Liu:2015nwa} that the energy-momentum tensor $T^{\mu\nu}$ of partons at midrapidity and time $\tau$ only depends on its spatial distribution at some earlier time $\tau_0$, but not its $p_\perp$-distribution (which could depend on $\mathbf{x}$).
+Under this assumption, it was shown in Refs.~\cite{Broniowski:2008qk, Liu:2015nwa} that the energy-momentum tensor $T^{\mu\nu}$ of partons at midrapidity and time $\tau$ only depends on its spatial distribution at some earlier time $\tau_0$, but not its $p_\perp$-distribution, which could vary as a function of position.
 
 We thus follow the procedure of the authors and reinterpret our initial transverse entropy density at midrapidity $s(\mathbf{x_\perp}, \tau_0)\vert_{\eta=0}$ as a transverse density of noninteracting massless partons $n(\mathbf{x}, \tau_0)\vert_{\eta=0}$.
 The free-streamed energy-momentum tensor $T^{\mu\nu}(x, y, \eta, \tau)$ at transverse coordinate $(x, y)$, midrapidity $\eta=0$, and proper time $\tau > \tau_0$ is then given by
@@ -322,14 +324,16 @@ The initial bulk and shear corrections are finally solved for by subtracting the
 This procedure provides initial values for $T^{\mu\nu}$, $u^\mu$, $\Pi$ and $\pi^{\mu\nu}$ which conserve energy and are consistent with the underlying hydrodynamic equation of state.
 We therefore expect it to provide a more realistic description of the initial stages of the collision as compared to a previous study using the \trento\ initial condition model which set $\Pi$, $\pi^{\mu\nu}$ and $u^\mu$ initially to zero \cite{Bernhard:2016tnd}.
 
-\subsection{Hydrodynamics and Boltzmann transport}
+
+\subsection{Hydrodynamics}
 
 After free-streaming for proper time $\tau_{fs}$, we transition to viscous hydrodynamics which solves the conservation equations
 \begin{equation}
   \label{eq:continuity}
   \partial_\mu T^{\mu\nu} = 0
 \end{equation}
-for the hydrodynamic energy-momentum tensor $T^{\mu\nu}$ expressed in Eqn.~\eqref{hydro-eqn} using a set of second-order Israel-Stewart equations formulated in the 14-moment approximation \note.
+for the hydrodynamic energy-momentum tensor $T^{\mu\nu}$ expressed in Eqn.~\eqref{hydro-eqn} using a set of second-order Israel-Stewart equations formulated in the 14-moment approximation
+\cite{Israel:1979wp, Israel:1976aa, Denicol:2012cn, Denicol:2010xn}.
 This produces a pair of relaxation-type equations
 \begin{subequations}
   \label{eq:relaxation}
@@ -345,33 +349,111 @@ This produces a pair of relaxation-type equations
   \end{align}
 \end{subequations}
 for the bulk pressure $\Pi$ and shear-stress $\pi^{\mu\nu}$.
-We model the shear viscosity $\eta$ and bulk viscosity $\zeta$ as free parameters in our study and fix the remaining transport coefficients $\{\tau_\Pi, \delta_{\Pi\Pi}, \lambda_{\Pi\pi}, \tau_\pi, \delta_{\pi\pi}, \phi_7, \tau_{\pi\pi}, \lambda_{\pi\Pi}\}$ using analytic results derived in the limit of small but finite masses \note.
+We model the shear viscosity $\eta$ and bulk viscosity $\zeta$ as unknown temperature dependent quantities and fix the remaining transport coefficients $\{\tau_\Pi, \delta_{\Pi\Pi}, \lambda_{\Pi\pi}, \tau_\pi, \delta_{\pi\pi}, \phi_7, \tau_{\pi\pi}, \lambda_{\pi\Pi}\}$ using analytic results derived in the limit of small but finite masses \cite{Denicol:2014vaa}.
 
-The hydrodynamic equations of motion are closed using an equation of state (EoS) to relate the energy density $e$ and pressure $P$ of the produced medium.
-We use a parametrization for $P(e)$ that matches continuum-extrapolated lattice calculations for (2+1)-flavor QCD by the HotQCD collaboration \note\ to a hadron resonance gas EoS in the temperature interval $165 \le T \le 200$~MeV.
+\begin{figure}
+  \centering
+  \includegraphics{fig/viscosity_dof}
+  \caption{\label{fig:viscosity_dof} Degrees of freedom in the temperature dependent shear and bulk viscosity parametrizations.
+  Lines are chosen for illustrative purposes only and do not represent all possible variability.
+  For instance, $\eta/s$ could have a large slope and negative curvature, or $\zeta/s$ could have a large max and narrow width, neither of which are depicted above.
+}
+\end{figure}
 
-Latest results for the HotQCD trace anomaly calculated using a HISQ/tree fermion action are in good agreement with previous calculations by the Wuppertal-Budapest group using a stout fermion action \note.
+The hydrodynamic equations of motion are necessarily closed using an equation of state (EoS) to relate the energy density $e$ and pressure $P$ of the produced medium.
+We use a parametrization for $P(e)$ that matches a hadron resonance gas EoS at low temperature to a lattice QCD EoS at high temperature by smoothly connecting their trace anomalies in the interval $165 \le T \le 200$~MeV.
+For the lattice EoS, we use a calculation by the HotQCD collaboration for (2+1)-flavor QCD which was extrapolated to the continuum limit \cite{Bazavov:2014pvz}. Recent developments in lattice QCD now enable calculations in (2+1+1)-flavors \cite{Borsanyi:2016ksw}, i.e.\ with thermalized charm quarks, and the additional charm flavor has been shown to visibly affect predictions of $p_T$-differential flow observables \cite{Noronha-Hostler:2018zxc}.
+Investigating this sensitivity would thus be a natural target for future improvements to the present work.
 
-Subsequent lattice calculations for (2+1+1)-flavors to investigate the effect of thermalized charm quarks, although studies indicate that the effect on hydrodynamic observables should be relatively small.
-%We implement the hydrodynamic equations using the well-tested \texttt{VISH2+1} viscous hydrodynamics code \note, which solves equations .
+We parametrize the temperature dependence of the QGP viscosities in order to marginalize over their uncertainty when calibrating to data.
+For the specific shear viscosity $\eta/s$, we use a modified linear ansatz
+\begin{equation}
+  \label{eq:shear_viscosity}
+  (\eta/s)(T) = (\eta/s)_\mathrm{min} + (\eta/s)_\mathrm{slope}\cdot(T - T_c)\cdot(T/T_c)^{(\eta/s)_\mathrm{crv}}
+\end{equation}
+where $\eta/s$ min, slope and curvature are tunable parameters and $T_c=0.154$~GeV is the pseudocritical transition temperature of the HotQCD EoS.
+While for the specific bulk viscosity $\zeta/s$, we use an unnormalized Cauchy distribution
+\begin{equation}
+  \label{eq:bulk_viscosity}
+  (\zeta/s)(T) = \frac{(\zeta/s)_\mathrm{max}}{1 + \left(\dfrac{T - (\zeta/s)_{T_0}}{(\zeta/s)_\mathrm{width}}\right)^2},
+\end{equation}
+described by tunable maximum, width, and location ($T_0$) parameters.
+Figure~\ref{fig:viscosity_dof} shows several of the possible curves parametrized by Eqns.~\eqref{eq:shear_viscosity} and \eqref{eq:bulk_viscosity}, although many more are possible.
 
-\bigskip
+The aforementioned hydrodynamic equations are solved numerically using the boost-invariant \texttt{VISH2+1} viscous hydrodynamics code \note\ which is documented extensively in Ref.~\note.
+We simulate each hydrodynamic event on a spacetime grid with transverse extent $x_\mathrm{max}$, spatial grid step $dx$, and time step $d\tau$ which are optimized \emph{event-by-event} to balance trade-offs between numerical accuracy and computation time (see appendix).
+Although these details are somewhat mundane, they are critically important to the present study, since the computation time explodes with the number of grid cells,
+\begin{equation}
+  \mathrm{cpu~time} \sim n_x^2 n_\tau,
+\end{equation}
+and $nx$ and $n\tau$ typically have to be quite large to resolve the small length scales associated with nucleon substructure.
+
+\subsection{Particlization and Boltzmann transport}
+
+We evolve the system hydrodynamically down to a pre-specified switching isotherm $T_{sw}$ at which point the medium is converted into particles using the Cooper-Frye formula \note
+\begin{equation}
+  \label{cooper-frye}
+  E \frac{dN_i}{d^3p} = \frac{g_i}{(2\pi)^3} \int_\Sigma f_i(x, p)\, p^\mu\, d^3\sigma_\mu,
+\end{equation}
+where $i$ is an index over species, $f_i$ is the distribution function of that species, and $d^3\sigma_\mu$ is a volume element of the isothermal hypersurface $\Sigma$ defined by $T_\mathrm{sw}$.
+Thermal particles are then sampled in the rest frame of each fluid cell according to a Bose-Einstein or Fermi-Dirac distribution at zero baryon chemical potential
+\begin{equation}
+  \label{distribution}
+  f(m, p) = \frac{1}{\exp(\sqrt{m^2 + p^2}/T) \mp 1},
+\end{equation}
+where $m$ is the mass of the sampled particle, $p$ is its momentum, and $T$ is the temperature of the fluid cell.
+
+\subsubsection{Sampling with finite resonance widths}
+
+Traditionally, particlization models have sampled resonances using each particle's pole mass in Eqn.~\eqref{distribution}.
+This approximation, however, is somewhat crude and has been known to underpredict pion production, particularly at low $p_T$ \note.
+We thus follow Ref.~\note, and sample particles with a \emph{distribution} of masses
+\begin{equation}
+  f(p) = \int dm\, \mathcal{P}(m)\, f(m, p),
+\end{equation}
+where $\mathcal{P}(m)$ is modeled by a Breit-Wigner distribution
+\begin{equation}
+  \mathcal{P}(m) \propto \frac{\Gamma(m)}{(m - m_0)^2 + \Gamma(m)^2/4}.
+\end{equation}
+Here $m_0$ is the resonance's Breit-Wigner mass and $\Gamma(m)$ is its mass-dependent width, for which we use a simple form:
+\begin{equation}
+  \Gamma(m) = \Gamma_0 \sqrt{\frac{m - m_\mathrm{min}}{m_0 - m_\mathrm{min}}},
+\end{equation}
+where $\Gamma_0$ is the usual Breit-Wigner width and $m_\mathrm{min}$ is a production threshold equal to the total mass of the lightest decay products.
+
+We tabulate the values of $\{\Gamma_0, m_0, m_\mathrm{min}\}$ for all particles and sample the masses of each particle during particlization \note.
+The resonances are then passed to a hadronic transport model, described shortly, which simulates subsequent scatterings and decays.
+
+\subsubsection{Viscous corrections to the distribution function}
+
+When the viscous terms $\pi^{\mu\nu}$ and $\Pi$ are nonzero in Eqn.~\eqref{hydro-eqn}, the distribution function $f$ must be modified to preserve the continuity of $T^{\mu\nu}$ as the system transitions from hydrodynamics to Boltzmann transport.
+We perform the appropriate modification using a general method which transforms the momentum vector \emph{inside} the distribution function
+\begin{align}
+  p_i \rightarrow p'_i &= p_i + \sum\limits_j \lambda_{ij}\, p_j,\\
+  \lambda_{ij} &= (\lambda_\mathrm{shear})_{ij} + \lambda_\mathrm{bulk}\, \delta_{ij},
+\end{align}
+where $\lambda_{ij}$ is a linear transformation matrix consisting of a traceless shear part and a bulk part which is proportional to the identity matrix \note.
+
+We use for the shear viscous correction the form \note
+\begin{equation}
+  (\lambda_\mathrm{shear})_{ij} = \frac{\tau}{2 \eta} \pi_{ij},
+\end{equation}
+with a value for $\eta/\tau$ obtained from the noninteracting hadron resonance gas model
+\begin{equation}
+  \frac{\eta}{\tau} = \frac{1}{15 T} \sum\limits_{sp} g \int \frac{d^3p}{(2\pi)^3}\frac{p^4}{E^2} f_0 (1 \pm f_0).
+\end{equation}
+
+For the bulk viscous correction, we use a novel procedure developed by one of the authors of this work \note.
+
+\subsubsection{Hadronic Boltzmann transport}
+
+\vfill
 
 \section{Parameter estimation}
 
 
 \subsection{Computer experiment design}
 
-We parametrize the temperature dependence of the specific shear viscosity $\eta/s$ using a modified linear ansatz
-\begin{equation}
-  (\eta/s)(T) = (\eta/s)_\mathrm{min} + (\eta/s)_\mathrm{slope}\cdot(T - T_c)\cdot(T/T_c)^{(\eta/s)_\mathrm{crv}}
-\end{equation}
-where $\eta/s$ min, slope and curvature are tunable parameters and $T_c=0.154$~GeV is the pseudocritical transition temperature of the HotQCD EoS.
-For the specific bulk viscosity $\zeta/s$, we use an unnormalized Cauchy distribution
-\begin{equation}
-  (\zeta/s)(T) = \frac{(\zeta/s)_\mathrm{max}}{1 + \left(\dfrac{T - (\zeta/s)_{T_0}}{(\zeta/s)_\mathrm{width}}\right)^2}.
-\end{equation}
-described by tunable maximum, width, and location ($T_0$) parameters.
 
 \subsection{Gaussian process emulators}
 
@@ -383,13 +465,17 @@ described by tunable maximum, width, and location ($T_0$) parameters.
 
 \subsection{QGP medium properties}
 
-
 \section{Summary and conclusions}
-
 
 \begin{acknowledgments}
   The authors thank ...
 \end{acknowledgments}
+
+\appendix*
+
+\section{Adaptive grid sizing}
+\label{appendix}
+This is the appendix
 
 \bibliography{trento-substructure}
 

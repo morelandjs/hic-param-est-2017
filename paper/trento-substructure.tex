@@ -5,6 +5,8 @@
 \usepackage{amssymb}
 \usepackage{multirow}
 
+\usepackage[inline]{enumitem}
+
 \usepackage{color}
 \definecolor{theblue}{RGB}{0,50,230}
 
@@ -108,15 +110,28 @@ Measurements by the TOTEM collaboration at $\sqrt{s}=7$~TeV, for instance, found
 It was later realized that this depression, or so-called hollowness effect in the $p$-$p$ inelastic collision profile \cite{Arriola2016}, can be explained by the existence of correlated domains inside the proton, and that aspects of these domains, such as their size and correlation strength, may be constrained by comparing model predictions to inelastic $p$-$p$ measurements \cite{Albacete:2016gxu, Albacete:2016pmp}.
 
 Independently, studies of coherent and incoherent $J/\psi$ production based on a color dipole picture of vector meson production were used to simultaneously constrain both the average color charge density of the proton as well as its event-by-event fluctuations in a saturation based framework \cite{Mantysaari:2016ykx, Aaron:2009aa, Abramowicz:2015mha}.
-Meanwhile, initial condition studies using the IP-Glasma model of color-glass condensate effective field theory demonstrated that these color charge fluctuations leave a lasting imprint on the \mbox{small-x} gluon distribution of the proton and hence the initial geometry of QGP energy deposition \cite{Schlichting:2014ipa}.
-Recent work now shows that hydrodynamic simulations using IP-Glasma initial conditions---with color charge fluctuations calibrated to fit coherent and incoherent $J/\psi$ diffraction measured by the H1 and Zeus experiments at HERA \cite{Aaron:2009aa, Abramowicz:2015mha}---describe collectivity in both small and large collision systems without additional retuning of the nucleon substructure parameters \note.
+Initial condition studies using the IP-Glasma model of color-glass condensate effective field theory simultaneously demonstrated that these color charge fluctuations leave a lasting imprint on the \mbox{small-x} gluon distribution of the proton and hence the initial geometry of QGP energy deposition \cite{Schlichting:2014ipa}.
+Just recently, hydrodynamic simulations using IP-Glasma initial conditions with color charge fluctuations calibrated to fit coherent and incoherent $J/\psi$ diffraction measured by the H1 and Zeus experiments at HERA \cite{Aaron:2009aa, Abramowicz:2015mha} were shown to provide a good description of collectivity in small and large collision systems \note.
 
-Model parameters are of course always in some degree of tension; for instance, fitting one observable may require parameter values which degrade the quantitative description of some other observable.
-Correspondingly, parameters which provide an optimal description of small-system bulk observables may lead to a sub-optimal description of heavy-ion collision bulk observables or \emph{vice versa}.
-It is thus import to look at the experimental data holistically, and to adopt rigorous statistical measures that facilitate systematic model-to-data comparison with meaningful uncertainties.
+Model parameters are of course always in some degree of tension; for instance, fitting one observable may require parameter values that degrade the quantitative description of some other observable.
+Similarly, parameters which provide an optimal description of small-system observables may lead to a sub-optimal description of heavy-ion observables or \emph{vice versa}.
+It is thus import to look at the experimental data holistically, and to use model calibration methods which
+\begin{enumerate*}[label=(\arabic*)]
+  \item explore all parameter combinations and
+  \item compare model predictions to all relevant experimental measurements in a statistically rigorous fashion.
+\end{enumerate*}
 
-In this work, we perform a global analysis of soft-sector observables measured in $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV using established Bayesian methodology to estimate the parameters of a hybrid transport model based on viscous hydrodynamics and Boltzmann transport.
-Theoretical ingredients of our model which are uncertain, such as the size and shape of the nucleon, the temperature dependence of the QGP transport coefficients, and the duration of pre-equilibrium dynamics, are described by free parameters with probabilistic values that reflect their inherent uncertainty.
+We apply, in this work, a model calibration framework known as Bayesian parameter estimation which is ideally suited for this purpose.
+The framework was previously adapted and applied to relativistic heavy-ion collisions, and has since been used in a number of studies to constrain the properties of hot and dense nuclear matter.
+We use it in the present study to search for a unified description of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV.
+
+%Section 1 describes our nuclear collision model.
+%Sections 2 and 3 describe the computer experiment design and model calibration process which is used to obtain posterior estimates of the model input parameters.
+%In section 4 we presents the results of our analysis.
+
+%We perform a global analysis of soft-sector observables measured in $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV and calibrate free parameters of a hybrid transport model to describe the experimental data.
+%
+%to obtain posterior probability estimates for the model parameters given our chosen model, the experimental data and known sources of uncertainty.
 
 
 \section{Nuclear collision model}

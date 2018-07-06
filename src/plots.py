@@ -813,7 +813,7 @@ def pT_fluct():
     """
     plt.figure(figsize=figsize(.6))
 
-    system = 'PbPb5020'
+    system = 'pPb5020'
     obs = 'pT_fluct'
     subobs = None
 

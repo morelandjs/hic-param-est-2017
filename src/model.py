@@ -331,60 +331,60 @@ def _data(system, dataset='main'):
     species = ['pion', 'kaon', 'proton']
 
     # training data is only missing for Pb-Pb charged particle mean pT
-    if dataset == 'main' and system == 'PbPb5020':
+    #if dataset == 'main' and system == 'PbPb5020':
+    #    edges = np.linspace(0, 70, 15)
+    #    cent = [(a, b) for a, b in zip(edges[:-1], edges[1:])]
+    #    x = [(a + b)/2 for a, b in cent]
+    #    empty = dict(cent=cent, x=x)
+    #    data = dict({'mean_pT': {None: empty}}, **data)
+
+    # calculate additional observables for the maximum a posteriori parameters
+    #if dataset == 'map':
+
+    # p-Pb map observables
+    if system == 'pPb5020':
+
+        # yields
+        cent, x = [data['dNch_deta'][None][k] for k in ('cent', 'x')]
+        empty = dict(cent=cent, x=x)
+        data = dict({'dET_deta': {None: empty}}, **data)
+        data = dict({'iden_dN_dy': {s: empty for s in species}}, **data)
+
+        # mean pT
+        mult, x = [data['mean_pT'][None][k] for k in ('mult', 'x')]
+        empty = dict(mult=mult, x=x)
+        data = dict({'iden_mean_pT': {s: empty for s in species}}, **data)
+        data = dict({'pT_fluct': {None: empty}}, **data)
+
+        # symmetric cumulants
+        mult, x = [data['vnk'][(2, 2)][k] for k in ('mult', 'x')]
+        empty = dict(mult=mult, x=x)
+        for obs in ['sc', 'sc_normed', 'sc_central', 'sc_normed_central']:
+            data = dict({obs: {(3, 2): empty, (4, 2): empty}}, **data)
+
+    # Pb-Pb map observables
+    if system == 'PbPb5020':
+
+        # yields
+        cent, x = [data['dNch_deta'][None][k] for k in ('cent', 'x')]
+        empty = dict(cent=cent, x=x)
+        data = dict({'dET_deta': {None: empty}}, **data)
+        data = dict({'iden_dN_dy': {s: empty for s in species}}, **data)
+
+        # mean pT
         edges = np.linspace(0, 70, 15)
         cent = [(a, b) for a, b in zip(edges[:-1], edges[1:])]
         x = [(a + b)/2 for a, b in cent]
         empty = dict(cent=cent, x=x)
         data = dict({'mean_pT': {None: empty}}, **data)
+        data = dict({'iden_mean_pT': {s: empty for s in species}}, **data)
+        data = dict({'pT_fluct': {None: empty}}, **data)
 
-    # calculate additional observables for the maximum a posteriori parameters
-    if dataset == 'map':
-
-        # p-Pb map observables
-        if system == 'pPb5020':
-
-            # yields
-            cent, x = [data['dNch_deta'][None][k] for k in ('cent', 'x')]
-            empty = dict(cent=cent, x=x)
-            data = dict({'dET_deta': {None: empty}}, **data)
-            data = dict({'iden_dN_dy': {s: empty for s in species}}, **data)
-
-            # mean pT
-            mult, x = [data['mean_pT'][None][k] for k in ('mult', 'x')]
-            empty = dict(mult=mult, x=x)
-            data = dict({'iden_mean_pT': {s: empty for s in species}}, **data)
-            data = dict({'pT_fluct': {None: empty}}, **data)
-
-            # symmetric cumulants
-            mult, x = [data['vnk'][(2, 2)][k] for k in ('mult', 'x')]
-            empty = dict(mult=mult, x=x)
-            for obs in ['sc', 'sc_normed', 'sc_central', 'sc_normed_central']:
-                data = dict({obs: {(3, 2): empty, (4, 2): empty}}, **data)
-
-        # Pb-Pb map observables
-        if system == 'PbPb5020':
-
-            # yields
-            cent, x = [data['dNch_deta'][None][k] for k in ('cent', 'x')]
-            empty = dict(cent=cent, x=x)
-            data = dict({'dET_deta': {None: empty}}, **data)
-            data = dict({'iden_dN_dy': {s: empty for s in species}}, **data)
-
-            # mean pT
-            edges = np.linspace(0, 70, 15)
-            cent = [(a, b) for a, b in zip(edges[:-1], edges[1:])]
-            x = [(a + b)/2 for a, b in cent]
-            empty = dict(cent=cent, x=x)
-            data = dict({'mean_pT': {None: empty}}, **data)
-            data = dict({'iden_mean_pT': {s: empty for s in species}}, **data)
-            data = dict({'pT_fluct': {None: empty}}, **data)
-
-            # symmetric cumulants
-            cent, x = [data['vnk'][(2, 2)][k] for k in ('cent', 'x')]
-            empty = dict(cent=cent, x=x)
-            for obs in ['sc', 'sc_normed', 'sc_central', 'sc_normed_central']:
-                data = dict({obs: {(3, 2): empty, (4, 2): empty}}, **data)
+        # symmetric cumulants
+        cent, x = [data['vnk'][(2, 2)][k] for k in ('cent', 'x')]
+        empty = dict(cent=cent, x=x)
+        for obs in ['sc', 'sc_normed', 'sc_central', 'sc_normed_central']:
+            data = dict({obs: {(3, 2): empty, (4, 2): empty}}, **data)
 
     data = ModelData(system, *files).observables_like(data)
 

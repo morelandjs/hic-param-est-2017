@@ -124,7 +124,7 @@ def plot(f):
     return wrapper
 
 
-def figsize(relwidth=1, aspect=.618, refwidth=6):
+def figsize(relwidth=1, aspect=.618, refwidth=6.6):
     """
     Return figure dimensions from a relative width (to a reference width) and
     aspect ratio (default: 1/golden ratio).
@@ -170,7 +170,7 @@ def coupling():
     fluid coupling as a step function
 
     """
-    plt.figure(figsize=figsize(.5, aspect=.7))
+    plt.figure(figsize=figsize(.45, aspect=.7))
 
     tau = np.linspace(0, 1, 100)
 

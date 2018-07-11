@@ -13,7 +13,7 @@
 
 \usepackage[pdfencoding=auto, psdextra]{hyperref}
 
-\usepackage[labelfont={color=theblue}, justification=raggedright, labelsep=quad]{caption}
+\usepackage[font=small, justification=raggedright, labelsep=quad]{caption}
 
 \hypersetup{
   colorlinks=true,
@@ -38,6 +38,8 @@
 \newcommand{\dmin}{d_\mathrm{min}}
 \newcommand{\T}{\tilde{T}}
 \newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\yexp}{\mathbf{y_\mathrm{exp}}}
 \newcommand{\X}{\mathcal{X}_\mathrm{struct}}
 \newcommand{\vnk}[2]{v_#1\{#2\}}
 \newcommand{\paddedhline}{\noalign{\smallskip}\hline\noalign{\smallskip}}
@@ -135,7 +137,7 @@ We begin, in Sec.~\ref{sec:model}, by constructing a nuclear collision model for
 In Sec.~\ref{sec:calibration}, we calibrate free parameters of the model to fit charged particle yields, mean $p_T$ and anisotropic flow coefficients of \emph{both} collision systems at $\sqrts=5.02$~TeV, and finally, in Secs.~\ref{sec:results} and \ref{sec:summary}, we present posterior results for the model input parameters and comment on the implications for hydrodynamics descriptions of small collision systems.
 
 
-\section{nuclear collision model}
+\section{Nuclear collision model}
 \label{sec:model}
 
 We employ a multi-stage hybrid transport model that uses relativistic viscous hydrodynamics to describe the QGP medium and microscopic Boltzmann transport to simulate the dynamics of the system after hadronization \cite{Shen:2014vra, Bernhard:2016tnd}.
@@ -199,11 +201,8 @@ The corresponding proton density $\rho(\mathbf{x})$ is then assumed to be that o
       \draw[xshift=2.5cm] ({\theta}:\radius) circle (.3cm);
     }
   \end{tikzpicture}
-  \caption{
-    \label{fig:substructure}
-    Schematic of plausible proton shapes.
-    The sketch on the left shows a spherically symmetric proton (dashed line), while the middle and right illustrations depict a fluctuating proton with three and nine constituents respectively (solid lines).
-  }
+  \caption{Schematic of plausible proton shapes. The sketch on the left shows a spherically symmetric proton (dashed line), while the middle and right illustrations depict a fluctuating proton with three and nine constituents respectively (solid lines).}
+  \label{fig:substructure}
 \end{figure}
 
 In this work, we pursue a less restrictive and more parametric description of the proton where the number of substructure degrees of freedom are uncertain as depicted in Fig.~\ref{fig:substructure}.
@@ -274,9 +273,8 @@ Of course the model is \emph{not} a substitute for first principle saturation ca
     \node (b) at (0, -1.1) {};
     \draw [<->, semithick] (a) to (b);
   \end{tikzpicture}
-  \caption{
-    \label{fig:thickness} Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus.
-    The nucleus on the left has Gaussian nucleons of width $0.88$~fm, while the nucleus on the right has composite nucleons, each containing six Gaussian constituents of width $0.41$~fm.}
+  \caption{Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus. The nucleus on the left has Gaussian nucleons of width $0.88$~fm, while the nucleus on the right has composite nucleons, each containing six Gaussian constituents of width $0.41$~fm.}
+  \label{fig:thickness}
 \end{figure}
 
 Equation~\eqref{eq:gmean} is a purely local function of nuclear density in the transverse plane and should (in principle) be equally valid for any pair of colliding nuclei at sufficiently high beam energy.
@@ -371,10 +369,7 @@ This produces a pair of relaxation-type equations
 for the bulk pressure $\Pi$ and shear-stress $\pi^{\mu\nu}$.
 We model the shear viscosity $\eta$ and bulk viscosity $\zeta$ as unknown temperature dependent quantities and fix the remaining transport coefficients $\{\tau_\Pi, \delta_{\Pi\Pi}, \lambda_{\Pi\pi}, \tau_\pi, \delta_{\pi\pi}, \phi_7, \tau_{\pi\pi}, \lambda_{\pi\Pi}\}$ using analytic results derived in the limit of small but finite masses \cite{Denicol:2014vaa}.
 
-\fig[t]{viscosity_dof}{
-Degrees of freedom in the temperature dependent shear and bulk viscosity parametrizations.
-Lines are chosen for illustrative purposes only and do not represent all possible variability.
-For instance, $\eta/s$ could have a large slope and negative curvature, or $\zeta/s$ could have a large max and narrow width, neither of which are depicted above.
+\fig[t]{viscosity_dof}{Degrees of freedom in the temperature dependent shear and bulk viscosity parametrizations. Lines are chosen for illustrative purposes only and do not represent all possible variability. For instance, $\eta/s$ could have a large slope and negative curvature, or $\zeta/s$ could have a large max and narrow width, neither of which are depicted above.
 }
 
 The hydrodynamic equations of motion are necessarily closed using an equation of state (EoS) to relate the energy density $e$ and pressure $P$ of the produced medium.
@@ -485,17 +480,47 @@ One primary advantage of using a microscopic transport model such as \texttt{UrQ
 This dilute limit is expected to play a significant role in small collision systems where the produced medium is smaller and shorter lived.
 
 
-\section{parameter estimation}
+\section{Parameter estimation}
 \label{sec:calibration}
 
-The nuclear collision model constructed in Sec.~\ref{model} includes a number of free parameters $\x$ which describe the initial state, pre-equilibrium dynamics, and hydrodynamic medium.
-We assume that these parameters are embedded in a realistic model such that each parameter is meaningful, but we concede that we know very little about their true values in nature.
+The nuclear collision model constructed in Sec.~\ref{sec:model} includes a number of free parameters $\x$ which describe the initial state, pre-equilibrium dynamics, and hydrodynamic medium.
+Given values for the parameters $\x$, the model may be used to predict a vector of experimental observables $\y$.
+For example, $\y$ might be a vector of fixed length which includes charged particle yields in different centrality bins.
+The physics model thus represents a vector-valued function $f(\x) = \y$
+which maps the parameter values $\x$ to the observable state $\y$.
+
+The goal of this work is to estimate the true model parameters $\x_\star$, given some evidence that our model ${f: X \mapsto Y}$ describes the experimental data $\yexp$ for the simulated observables $\y$.
+According to Bayes' theorem, the probability for the true model parameters $\x_\star$ is
+\begin{equation}
+  \label{eq:bayes}
+  P(\x_\star|f, \yexp) \propto P(f, \yexp|\x_\star) P(\x_\star).
+\end{equation}
+The left-side of this expression is the \emph{posterior}: the probability that $\x_\star$ is the correct value given evidence from the model $f: X \mapsto Y$ and the experimental data $\yexp$.
+
+On the right-side, the \emph{likelihood} function $P(f, \yexp | \x_\star)$ is the compatibility of the experimental evidence $\yexp$ with the hypothetical model parameters $\x_\star$, and the \emph{prior} probability $P(\x_\star)$ is the estimate of the probability of $\x_\star$ in the absence of evidence $\yexp$.
+
+\begin{equation}
+  P(H1 | E, H2) \propto P(E | H1, H2)\, P(H1 | H2)
+\end{equation}
+There are three types of events,
+\begin{itemize}
+  \item $H1$: hypothesis that the model parameters $\x_\star$ are the true model parameters.
+  \item $H2$: hypothesis that nuclear collisions are describable using the hybrid transport model formulated in this work.
+  \item $E$: experimental evidence provided by data $\yexp$.
+\end{itemize}
+
+\subsection{Parameter design}
+
+We create a scaffolding of the parameter space and distribute $n=500$ parameter points in our 15-dimensional parameter space using a Latin hypercube design \note.
+The algorithm maximizes the
+
+We assume a flat prior distribution for each model parameter $x \in \x$ described by the range of values shown in Tbl.~\ref{tab:design}.
+The minimum and maximum values of the parameters are conservative to avoid clipping the calibrated posterior; for example, previous analyses of \trento\ model found $p \sim 0$, but we use the prior $-1 < p < 1$ to account for physics differences in the present model which might modify its posterior.
+
+\subsection{Gaussian process emulator}
 
 \begin{table}
-  \caption{
-    \label{tab:design}
-    Input parameter ranges for the initial condition and hydrodynamic models.
-  }
+  \caption{Input parameter ranges for the initial condition and hydrodynamic models.}
   \begin{ruledtabular}
   \begin{tabular}{lll}
     Parameter         & Description                        & Range             \\
@@ -517,46 +542,41 @@ We assume that these parameters are embedded in a realistic model such that each
     $T_\text{switch}$ & Switching/particlization temp.       & 135--165 MeV    \\
   \end{tabular}
   \end{ruledtabular}
+  \label{tab:design}
 \end{table}
 
-\section{results}
+\section{Results}
 \label{sec:results}
 
 \fig*[t]{validation_example}{
   Placeholder
 }
 
-\fig*[t]{observables_design}{
-Hybrid model calculations compared to experimental data for $p$-Pb collisions (left column) and Pb-Pb collisions (right column) at $\sqrts=5.02$~TeV.
-Colored lines are model calculations (no emulator) for each of the 500 design points.
-Points with error bars are experimental data from ALICE and CMS \note, with statistical and systematic errors added in quadrature.
-}
-
-\fig*[t]{observables_posterior}{
-Calibrated emulator predictions compared to experimental data for $p$-Pb collisions (left column) and Pb-Pb collisions (right column) at $\sqrts=5.02$~TeV.
-Colored lines are emulator predictions for $n=100$ different parameter sets randomly sampled from the Bayesian posterior.
-Points with error bars are experimental data from ALICE and CMS \note, with statistical and systematic errors added in quadrature.
-}
+\begin{figure}[h]
+  \makebox[\textwidth]{
+    \begin{minipage}[t]{\paperwidth}
+      \includegraphics[width=.95\paperwidth]{posterior}
+      \captionsetup{
+        width={.83\textwidth},
+        justification=raggedright,
+      }
+      \caption{Bayesian posterior distribution of the model input parameters. The diagonal panels show the marginalized distributions of individual model parameters, while off-diagonal panels show the joint distributions for pairs of model parameters, visualizing their correlations. The marginalized distribution medians and 90\% credible intervals are annotated along the diagonal.}
+    \end{minipage}
+  }
+  \label{fig:posterior}
+\end{figure}
 
 \begin{figure*}[p]
-  \makebox[\textwidth]{
-    \includegraphics[width=.95\paperwidth]{posterior}
-  }
-  \captionsetup{
-    margin={.3\textwidth,0pt},
-    justification=raggedleft,
-    skip=-.75\textheight
-  }
-  \caption{Bayesian posterior distribution of the model input parameters. The diagonal panels show the marginalized distributions of individual\\ model parameters, while the off-diagonal panels show the joint\\ distributions for pairs of model parameters, visualizing\\ their correlations. The marginalized distribution\\ medians are annotated along the diagonal.}
-  \label{fig:posterior}
-  \vspace{.5\textheight}
+  \includegraphics{observables_pbpb}
+  \caption{Simulated observables compared to experimental data for Pb-Pb collisions at $\sqrts=5.02$~TeV. Top row: explicit model calculations (no emulator) for each of the 500 design points; bottom row: emulator predictions for $n=100$ random samples drawn from the posterior. Points with error bars are experimental data from ALICE with statistical and systematic errors added in quadrature \note.}
+  \vspace{5ex}
+  \includegraphics{observables_ppb}
+  \caption{Same as above but for $p$-Pb collisions at $\sqrts=5.02$~TeV. Note that multiplicity bins are used for mean $p_T$ and flow cumulant observables to match the bins used by experiment. Experimental data are from ALICE and CMS \note.}
 \end{figure*}
 
 \fig*[t]{observables_map}{
-Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment.
-Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV.
-Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from ALICE and CMS \note.
-The ratio axes show the ratio of model over data where where available with gray bands indicating $\pm 10\%$.
+  Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment.
+Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from ALICE and CMS \note. The ratio axes show the ratio of model over data where where available with gray bands indicating $\pm 10\%$.
 }
 
 \fig*[t]{flow_corr}{
@@ -564,15 +584,11 @@ The ratio axes show the ratio of model over data where where available with gray
 }
 
 \fig{posterior_proton_shape}{
-  Posterior distribution for the constituent sampling radius $\R$ and constituent width $\w$.
-  The white trapezoidal region (lower-right) covers the initial range of allowed values for $\R$ and $\w$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $\w > \R$.
-  The posterior distribution, shown in blue, indicates the preferred values for $\R$ and $\w$ determined by the analysis.
+  Posterior distribution for the constituent sampling radius $\R$ and constituent width $\w$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $\R$ and $\w$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $\w > \R$. The posterior distribution, shown in blue, indicates the preferred values for $\R$ and $\w$ determined by the analysis.
 }
 
 \fig*[t]{region_shear_bulk}{
-  Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \note.
-  The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions.
-  Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.
+  Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \note. The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions. Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.
 }
 
 \section{summary}

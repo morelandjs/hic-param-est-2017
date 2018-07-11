@@ -346,7 +346,7 @@ def _observables_plots():
             ),
             xlim=dict(
                 pPb5020=(0, 60),
-                PbPb5020=(0, 80),
+                PbPb5020=(0, 75),
             ),
             ylim=(1e2, 1e5),
             yscale='log',
@@ -366,7 +366,7 @@ def _observables_plots():
             ylabel=r'$\langle p_T \rangle$ [GeV]',
             xlim=dict(
                 pPb5020=(1, 6),
-                PbPb5020=(0, 80),
+                PbPb5020=(0, 75),
             ),
             ylim=(0, 1.5),
             subplots=[
@@ -398,7 +398,7 @@ def _observables_plots():
             ylabel=r'$v_n\{2\}$',
             xlim=dict(
                 pPb5020=(1, 6),
-                PbPb5020=(0, 80),
+                PbPb5020=(0, 75),
             ),
             ylim=(0, .15),
             subplots=[
@@ -409,8 +409,7 @@ def _observables_plots():
     ]
 
 
-def _observables(posterior=False):
-
+def observables(system):
     """
     Model observables at all design points or drawn from the posterior with
     experimental data points.
@@ -421,17 +420,20 @@ def _observables(posterior=False):
 
     plot_fixes = [
         dict(
+            title=r'Yields $dN_\mathrm{ch}/d\eta$',
             ylabel=r'$dN_\mathrm{ch}/d\eta$',
-            ylim=(1, 1e4),
+            ylim=(1e1, 1e4) if system == 'PbPb5020' else (1, 1e3),
             height_ratio=1,
             subplots=[
-                ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$', scale=1))
+                ('dNch_deta', None, dict(label=''))
             ]
         ),
         dict(
-            subplots=[('mean_pT', None, dict(label='ch'))]
-        ),
-        dict()
+            title=r'Mean $p_T$ [GeV]',
+            subplots=[('mean_pT', None, dict(label=''))]),
+        dict(
+            title=r'Flow cumulants $v_n\{2\}$',
+        )
     ]
 
     for a, b in zip(plots, plot_fixes):
@@ -439,14 +441,16 @@ def _observables(posterior=False):
             a[k] = v
 
     fig, axes = plt.subplots(
-        nrows=len(plots), ncols=len(systems),
-        figsize=figsize(.8, aspect=1.1),
+        nrows=2, ncols=len(plots),
+        figsize=figsize(1.1, aspect=.5),
     )
 
-    if posterior:
-        samples = mcmc.Chain().samples(100)
+    for (posterior, plot), ax in zip(
+            itertools.product([False, True], plots), axes.flat):
 
-    for (plot, system), ax in zip(itertools.product(plots, systems), axes.flat):
+        if posterior:
+            samples = mcmc.Chain().samples(100)
+
         for obs, subobs, opts in plot['subplots']:
             color = obs_color(obs, subobs)
             scale = opts.get('scale')
@@ -493,44 +497,43 @@ def _observables(posterior=False):
                     color=darken(color), ha='left', va='center'
                 )
 
+        ax.set_xlim(*plot['xlim'][system])
+        ax.set_ylim(plot['ylim'])
+
         auto_ticks(ax, 'x', nbins=4, minor=2)
+        auto_ticks(ax, 'y', nbins=4, minor=2)
 
         if plot.get('yscale') == 'log':
             ax.set_yscale('log')
             ax.minorticks_off()
-        else:
-            auto_ticks(ax, 'y', nbins=4, minor=2)
 
         if ax.is_first_row():
-            ax.set_title(format_system(system), va='top')
-
-        if ax.is_first_col():
-            ax.set_ylabel(plot['ylabel'])
+            ax.set_title(plot['title'], fontsize=fontsize['normal'])
+            ax.set_xticklabels([])
+            if ax.is_first_col():
+                ax.set_ylabel('Training data')
         else:
-            ax.set_yticklabels([])
+            ax.set_xlabel(plot['xlabel'][system])
+            if ax.is_first_col():
+                ax.set_ylabel('Posterior samples')
 
-        if ax.is_last_col():
-            ax.text(
-                1.02, .5, plot['title'],
-                transform=ax.transAxes, ha='left', va='center',
-                size=plt.rcParams['axes.labelsize'], rotation=-90
-            )
+    title = dict(
+        pPb5020=r'$p$-Pb 5.02 TeV',
+        PbPb5020=r'Pb-Pb 5.02 TeV',
+    )
 
-        ax.set_xlabel(plot['xlabel'][system])
-        ax.set_xlim(*plot['xlim'][system])
-        ax.set_ylim(plot['ylim'])
-
-    set_tight(fig, rect=[0, 0, .97, 1])
+    fig.suptitle(title[system], va='top')
+    set_tight(fig, rect=[0, 0, 1, .9])
 
 
 @plot
-def observables_design():
-    _observables(posterior=False)
+def observables_ppb():
+    observables('pPb5020')
 
 
 @plot
-def observables_posterior():
-    _observables(posterior=True)
+def observables_pbpb():
+    observables('PbPb5020')
 
 
 @plot

@@ -31,16 +31,12 @@
 \newcommand{\nch}{N_\text{ch}}
 \newcommand{\sqrts}{\sqrt{s_{NN}}}
 \newcommand{\sigmaf}{\sigma_\mathrm{fluct}}
+\newcommand{\X}{\chi_\mathrm{struct}}
 \newcommand{\taufs}{\tau_\mathrm{fs}}
-\newcommand{\n}{n_\mathrm{c}}
-\newcommand{\R}{R_\mathrm{c}}
-\newcommand{\w}{w_\mathrm{c}}
 \newcommand{\dmin}{d_\mathrm{min}}
 \newcommand{\T}{\tilde{T}}
 \newcommand{\x}{\mathbf{x}}
 \newcommand{\y}{\mathbf{y}}
-\newcommand{\yexp}{\mathbf{y_\mathrm{exp}}}
-\newcommand{\X}{\mathcal{X}_\mathrm{struct}}
 \newcommand{\vnk}[2]{v_#1\{#2\}}
 \newcommand{\paddedhline}{\noalign{\smallskip}\hline\noalign{\smallskip}}
 \newcommand{\order}[1]{$\mathcal O(10^{#1})$}
@@ -143,9 +139,10 @@ In Sec.~\ref{sec:calibration}, we calibrate free parameters of the model to fit 
 We employ a multi-stage hybrid transport model that uses relativistic viscous hydrodynamics to describe the QGP medium and microscopic Boltzmann transport to simulate the dynamics of the system after hadronization \cite{Shen:2014vra, Bernhard:2016tnd}.
 The hydrodynamic initial conditions are provided by a modified version of the \trento\ model \cite{Moreland:2014oya} with additional parameters to vary the size and shape of the nucleon.
 Each initial condition profile is free streamed to the hydrodynamic starting time and matched onto the hydrodynamic energy-momentum tensor using the Landau matching procedure \cite{Broniowski:2008qk, Heinz:2015arc}.
-Many of the components of the present model have been documented in previous studies \cite{Moreland:2014oya, Bernhard:2016tnd, Bernhard:2018hnz}; we review each component here for clarity.
+Many of the components of the present model have been documented in previous studies \cite{Moreland:2014oya, Bernhard:2016tnd, Bernhard:2018hnz}; we review each component here for completeness.
 
 \subsection{Initial state}
+\label{sec:initial_state}
 
 We model the QGP initial state in $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV using a simple parametric form for boost-invariant entropy deposition employed by the \trento\ model \cite{Moreland:2014oya}.
 Generally speaking, the initial three-dimensional distribution of matter produced in relativistic nuclear collisions is \emph{not} boost-invariant; longitudinal entropy deposition fluctuates both locally point-to-point in the transverse plane as well as globally event-by-event due to asymmetries in the sampled density of participant matter \cite{Ke:2016jrd, Bozek:2010vz}.
@@ -165,7 +162,7 @@ The proton-proton overlap function
 describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$ where coordinates $(x, y)$ lie in the transverse plane and $z$ is parallel to the beam axis.
 Here we assume that each proton is comprised of smaller constituents---e.g.\ valence quarks, sea quarks, and small-x gluons---which may collide to produce secondary particles and contribute to the observed inelastic proton-proton cross section.
 
-Within a picture of independent pairwise collisions between the constituents, a Glauber model model may be used to calculate the probability $P_\mathrm{coll}$ that the two protons collide inelastically at impact parameter $b$. In the limit when the number of constituents $M \gg 1$, it yields the particularly simple form
+Within a picture of independent pairwise collisions between the constituents, a Glauber model model may be used to calculate the probability $P_\mathrm{coll}$ that the two protons collide inelastically at impact parameter $b$. In the limit when the number of constituents $n_c \gg 1$, it yields the particularly simple form
 \begin{equation}
   \label{eq:pcoll}
   P_\mathrm{coll} = 1 - \exp[-\sigma_\mathrm{eff}\, T_{pp}(b)], \\
@@ -206,21 +203,17 @@ The corresponding proton density $\rho(\mathbf{x})$ is then assumed to be that o
 \end{figure}
 
 In this work, we pursue a less restrictive and more parametric description of the proton where the number of substructure degrees of freedom are uncertain as depicted in Fig.~\ref{fig:substructure}.
-We model each nucleon's density $\rho_{A,B}$ as a sum of $M$ independent constituents
+We model each nucleon's density $\rho_{A,B}$ as a sum of $n_c$ independent constituents
 \begin{equation}
   \label{eq:rho}
-  \rho_{A, B}(\x) = \frac{1}{M} \sum\limits_{i=1}^M \rho_c(\mathbf{x} - \mathbf{x_i}),
+  \rho_{A, B}(\x) = \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \rho_c(\mathbf{x} - \mathbf{x_i}),
 \end{equation}
-where each constituent density $\rho_c$ is described by a Gaussian distribution of width $w$
+where each constituent density $\rho_c$ is described by a Gaussian distribution of width $v$
 \begin{equation}
-  \rho_c(\mathbf{x}) = \frac{1}{(2\pi w^2)^{3/2}} \exp\left(-\frac{\x^2}{2 w^2}\right),
+  \label{eq:constituent_density}
+  \rho_c(\mathbf{x}) = \frac{1}{(2\pi v^2)^{3/2}} \exp\left(-\frac{\x^2}{2 v^2}\right),
 \end{equation}
 and each constituent's position $\mathbf{x_i}$ in Eqn.~\eqref{eq:rho} is sampled from a Gaussian radial distribution of width $r$.
-In the limit $M\to \infty$, the composite proton's root mean square radius is simply the convolution of its sampling radius and constituent width, which add together in quadrature
-\begin{equation}
-  \lim_{M\to\infty} \mathrm{RMS}\{\rho(\mathbf{x})\} = \sqrt{r^2 + w^2}.
-\end{equation}
-We therefore choose to reparametrize the sampling radius $r$ in terms of the variable $\w = \sqrt{r^2 - w^2}$ which approximates the rms ``width'' of the proton when the number of sampled constituents is large.
 
 The two protons $A$, $B$ are assigned a random impact parameter, and Eqn.~\eqref{eq:pcoll} is used to sample their inelastic collision probability $P_\mathrm{coll}(b)$.
 Note that this proton-proton inelastic collision probability has no direct knowledge of the individual constituent degrees of freedom; it is only \emph{indirectly} sensitive through the geometry of $\rho_{A, B}$ which depends on each of the constituent positions.
@@ -232,7 +225,7 @@ We correspondingly require that the nucleons in Eqn.~\eqref{eq:rho} participate 
 Assuming our two protons collide at the sampled impact parameter $\mathbf{b}$, we assign each a \emph{fluctuated} thickness
 \begin{equation}
   \label{eq:fluctuated_thick}
-  \T_{A, B}(\x) \equiv \int dz\, \frac{1}{M} \sum\limits_{i=1}^M \gamma_i\, \rho_c \,(\mathbf{x} - \mathbf{x_i} \pm \mathbf{b}/2),
+  \T_{A, B}(\x) \equiv \int dz\, \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \gamma_i\, \rho_c \,(\mathbf{x} - \mathbf{x_i} \pm \mathbf{b}/2),
 \end{equation}
 equal to the beam-integrated proton density in Eqn.~\eqref{eq:rho}, with each constituent shifted by the appropriate impact parameter offset, and multiplied by a gamma random variable $\gamma_i$ with unit mean and variance $1/k$.
 These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their physical justification is not yet well understood.
@@ -273,7 +266,7 @@ Of course the model is \emph{not} a substitute for first principle saturation ca
     \node (b) at (0, -1.1) {};
     \draw [<->, semithick] (a) to (b);
   \end{tikzpicture}
-  \caption{Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus. The nucleus on the left has Gaussian nucleons of width $0.88$~fm, while the nucleus on the right has composite nucleons, each containing six Gaussian constituents of width $0.41$~fm.}
+  \caption{Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus. The nucleus on the left has Gaussian nucleons of width $0.8$~fm, while the nucleus on the right has composite nucleons, each containing six constituents of width $0.4$~fm.}
   \label{fig:thickness}
 \end{figure}
 
@@ -484,43 +477,38 @@ This dilute limit is expected to play a significant role in small collision syst
 \label{sec:calibration}
 
 The nuclear collision model constructed in Sec.~\ref{sec:model} includes a number of free parameters $\x$ which describe the initial state, pre-equilibrium dynamics, and hydrodynamic medium.
-Given values for the parameters $\x$, the model may be used to predict a vector of experimental observables $\y$.
-For example, $\y$ might be a vector of fixed length which includes charged particle yields in different centrality bins.
-The physics model thus represents a vector-valued function $f(\x) = \y$
-which maps the parameter values $\x$ to the observable state $\y$.
+Given values for the parameters $\x$, the model may be used to predict a vector of simulated experimental observables $\y_m$.
+For example, $\y_m$ might be a vector consisting of charged particle yields in different centrality bins.
+The physics model thus represents a vector-valued function $f(\x) = \y_m$ which maps the parameter values $\x$ to the simulated observables $\y_m$.
 
-The goal of this work is to estimate the true model parameters $\x_\star$, given some evidence that our model ${f: X \mapsto Y}$ describes the experimental data $\yexp$ for the simulated observables $\y$.
-According to Bayes' theorem, the probability for the true model parameters $\x_\star$ is
+The goal of this work is to estimate the true model parameters $\x_\star$ provided some evidence that our model predictions $\y_m$ describe experimental measurements $\y_e$.
+The problem involves three distinct components:
+\begin{enumerate}[itemsep=0pt, leftmargin=2\parindent]
+  \item $H_f$: the hypothesis that the nuclear collision model $f$ formulated in this work provides a realistic description of reality,
+  \item $H_\x$: the hypothesis that the model parameters $\x$ are the true model parameters $\x_\star$ of $f$, and
+  \item $E$: the evidence provided by the experimental data $\y_e$ and its corresponding uncertainties.
+\end{enumerate}
+As a practical matter, we always assume that hypothesis $H_f$ is correct, meaning there are no glaring flaws in our chosen theoretical framework.
+This is a significant assumption; the application of hydrodynamic simulations to small collision systems is speculative, and our conclusions are conditional on the framework making sense.
+
+Subject to this assumption, we can apply Bayes' theorem to evaluate the hypothesis $H_\x$ for the true model parameters
 \begin{equation}
   \label{eq:bayes}
-  P(\x_\star|f, \yexp) \propto P(f, \yexp|\x_\star) P(\x_\star).
+  P(H_\x | E) \propto P(E | H_\x)\, P(H_\x).
 \end{equation}
-The left-side of this expression is the \emph{posterior}: the probability that $\x_\star$ is the correct value given evidence from the model $f: X \mapsto Y$ and the experimental data $\yexp$.
+The left-side of this expression is the \emph{posterior}: the probability for hypothesis $H_\x$ given the experimental evidence $E$.
+On the right-side there are two separate terms.
+The first term $P(E | H_\x)$ is the \emph{likelihood} function: the probability of observing the experimental evidence $E$ given our model and the hypothesis $H_\x$ for the true model parameters $\x_\star$, and the second term $P(H_\x)$ is the \emph{prior}: an estimate of the probability of hypothesis $H_\x$ in the absence of evidence $E$.
 
-On the right-side, the \emph{likelihood} function $P(f, \yexp | \x_\star)$ is the compatibility of the experimental evidence $\yexp$ with the hypothetical model parameters $\x_\star$, and the \emph{prior} probability $P(\x_\star)$ is the estimate of the probability of $\x_\star$ in the absence of evidence $\yexp$.
-
+We assume that the likelihood function in Eqn.~\eqref{eq:bayes} is described by a multivariate normal distribution
 \begin{equation}
-  P(H1 | E, H2) \propto P(E | H1, H2)\, P(H1 | H2)
+  \label{eq:likelihood}
+  P(E | H_\x) = \frac{1}{\sqrt{(2\pi)^m \det \Sigma}} \exp \left ( -\frac{1}{2}\Delta\y^\intercal \Sigma^{-1} \Delta\y \right ),
 \end{equation}
-There are three types of events,
-\begin{itemize}
-  \item $H1$: hypothesis that the model parameters $\x_\star$ are the true model parameters.
-  \item $H2$: hypothesis that nuclear collisions are describable using the hybrid transport model formulated in this work.
-  \item $E$: experimental evidence provided by data $\yexp$.
-\end{itemize}
+where $\Delta\y = \y_m(\x) - \y_e$ is the discrepancy of the model and experiment, and $\Sigma$ is the total covariance matrix which includes all known sources of uncertainty for the simulated and measured observables.
 
-\subsection{Parameter design}
-
-We create a scaffolding of the parameter space and distribute $n=500$ parameter points in our 15-dimensional parameter space using a Latin hypercube design \note.
-The algorithm maximizes the
-
-We assume a flat prior distribution for each model parameter $x \in \x$ described by the range of values shown in Tbl.~\ref{tab:design}.
-The minimum and maximum values of the parameters are conservative to avoid clipping the calibrated posterior; for example, previous analyses of \trento\ model found $p \sim 0$, but we use the prior $-1 < p < 1$ to account for physics differences in the present model which might modify its posterior.
-
-\subsection{Gaussian process emulator}
-
-\begin{table}
-  \caption{Input parameter ranges for the initial condition and hydrodynamic models.}
+\begin{table}[t]
+  \caption{Input parameter ranges for the physics model.}
   \begin{ruledtabular}
   \begin{tabular}{lll}
     Parameter         & Description                        & Range             \\
@@ -528,8 +516,8 @@ The minimum and maximum values of the parameters are conservative to avoid clipp
     Norm              & Normalization factor                 & 9--28           \\
     $p$               & Entropy deposition parameter         & $-1$ to $+1$    \\
     $\sigmaf$         & Nucleon fluctuation std.\ dev.\      & 0--2            \\
-    $\w$              & Constituent sampling width           & 0.4--1.2 fm     \\
-    $\n$              & Number of constituents               & 1--9            \\
+    $w$               & Nucleon width parameter              & 0.4--1.2 fm     \\
+    $n_c$             & Number of nucleon constituents       & 1--9            \\
     $\X$              & Nucleon structure parameter          & 0--1            \\
     $\dmin$           & Minimum inter-nucleon distance       & 0--1.7 fm       \\
     $\taufs$          & Free-streaming time                  & 0.1--1.5 fm/$c$ \\
@@ -544,6 +532,108 @@ The minimum and maximum values of the parameters are conservative to avoid clipp
   \end{ruledtabular}
   \label{tab:design}
 \end{table}
+
+\subsection{Parameter design}
+
+For the prior $P(H_\x)$, we specify ranges, i.e.\ minimum and maximum values, for each parameter which are listed in Tbl.~\ref{tab:design}.
+We assume the prior distribution is constant and nonzero within each specified range and zero otherwise.
+The selected parameter ranges are intentionally wide to avoid clipping the calibrated posterior; for example, a previous analysis of the \trento\ model \cite{Bernhard:2016tnd} found $p \sim 0$, but we use a prior range $p \in [-1, 1]$ to account for differences in the present model, e.g.\ nucleon substructure, which could modify its posterior.
+Several of the model parameters require special care and are reparametrized accordingly:
+\begin{itemize}[leftmargin=2\parindent]
+  \item The constituent fluctuations, modeled by the gamma random weights $\gamma_i$ in Eqn.~\eqref{eq:fluctuated_thick}, generate overall nucleon fluctuations which are suppressed by the number of constituents $n_c$ inside the nucleon.
+    The observed nucleon fluctuation variance falls like $1 / n_c$ which means the natural range for the constituent fluctuations is larger when the number of constituents is larger and \emph{vice versa}.
+    We therefore reparametrize the constituent fluctuations using the standard deviation of the effective nucleon fluctuations
+    \begin{equation}
+      \sigma_\mathrm{fluct} = 1 / \sqrt{k\, n_c},
+    \end{equation}
+    where $k$ is the shape parameter of the gamma distribution used to fluctuate each constituent.
+  \item In Sec.~\ref{sec:initial_state} we parametrized nucleon substructure using three degrees of freedom:
+    \begin{enumerate*}[label=(\roman*)]
+      \item a parameter $v$ for the Gaussian width of each constituent,
+      \item a parameter $r$ for the Gaussian width of the radial distribution used to sample the constituent centers, and
+      \item a parameter $n_c$ to vary the number of constituents inside the nucleon.
+    \end{enumerate*}
+    In the limit $n_c \to \infty$, the composite nucleon's root mean square (rms) radius is simply the convolution of its sampling radius $r$ and constituent width $v$ which add together in quadrature
+  \begin{equation}
+    \lim_{n_c \to\infty} \mathrm{RMS}\{\rho(\mathbf{x})\} = \sqrt{r^2 + v^2}.
+  \end{equation}
+  We therefore choose to reparametrize the sampling radius $r$ in terms of a new variable
+  \begin{equation}
+    \label{eq:nucleon_width}
+    w = \sqrt{r^2 + v^2},
+  \end{equation}
+  visualized in Fig.~\ref{fig:nucleon_schematic}, which approximates the rms radius of the nucleon when the number of sampled constituents is large.
+  We thus call $w$ a nucleon ``width'', although for smaller numbers of constituents, the \emph{actual} rms radius of our sampled nucleons can be significantly smaller than our width parameter $w$ due to fluctuations in the nucleon's center of mass, and hence once should account for these difference when discussing the nucleon's rms radius.
+  We account for this effect when discussing the nucleon width posterior distribution later in the text.
+
+\begin{figure}[t]
+  \begin{tikzpicture}
+    \draw[dashed] (0,0) circle (1.6cm);
+    \foreach \theta in {60, 180, 300}{
+      \draw ({\theta}:.8) circle (.65cm);
+    }
+    \coordinate (a) at (0, 0);
+    \coordinate (b) at (.8, 1.385);
+    \coordinate (c) at (.4, -.693);
+    \coordinate (d) at (-1.45, 0);
+    \coordinate (e) at (-.8, 0);
+    \draw[<->] (a) -- (b) node[midway, xshift=-1ex, yshift=.8ex]{$w$};
+    \draw[<->] (a) -- (c) node[midway, xshift=1ex, yshift=.8ex]{$r$};
+    \draw[<->] (d) -- (e) node[midway, yshift=1ex]{$v$};
+  \end{tikzpicture}
+  \caption{Schematic illustrating the constituent sampling radius $r$, constituent width $v$ and nucleon width parameter $w = \sqrt{r^2 + v^2}$ for a nucleon with $n_c=3$ constituents.}
+  \label{fig:nucleon_schematic}
+\end{figure}
+
+\begin{table*}
+  \caption{
+    \label{tab:observables}
+    Experimental data to be compared with model calculations.
+  }
+  \begin{ruledtabular}
+  \begin{tabular}{lcccc}
+    Collision system & Observable & Particle selection & Event bins & Ref. \\
+    \paddedhline
+    \multirow{2}{*}{Pb-Pb 5.02 TeV} & Yield $d\nch/d\eta$ & chg \& $|\eta| < 0.5$ & centrality: 0--5, 5--10, 10--20, \ldots, 60--70 & \note \\
+    \noalign{\smallskip}
+    & Flow cumulants $\vnk{n}{2}$ & chg \& $|\eta| < 1$ & centrality: 0--5, 5--10, 10--20, \ldots, 60--70 & \note \\
+    \noalign{\smallskip}
+    %Mean transverse momentum $\langle p_T \rangle$ & $\pi^\pm$, $K^\pm$, $p\bar p$ &
+  \end{tabular}
+  \end{ruledtabular}
+\end{table*}
+
+\item Equation~\eqref{eq:nucleon_width} requires the nucleon width to be larger than the constituent width, i.e. $w > v$, lest the sampling radius $r$ turn imaginary, and thus we cannot vary the nucleon width $w$ and the constituent width $v$ independently.
+  We therefore reparametrize the constituent width $v$ using a new variable $\X$ to interpolate between minimum and maximum allowed values:
+  \begin{equation}
+    v = v_\mathrm{min} + \X (v_\mathrm{max} - v_\mathrm{min}).
+  \end{equation}
+  Here we choose a minimum width $v_\mathrm{min} = 0.2$~fm determined by computational limits and a maximum width $v_\mathrm{max} = w$ equal to the nucleon width.
+  Thus for $\X=0$, the nucleons consist of small, distinct hot spots, whereas for $\X=1$ the nucleon is a single Gaussian blob of width $w$.
+  The parameter $\X$ thus varies the granularity of the nucleon while keeping the number of constituents $n_c$ and approximate size of the nucleon $w$ fixed.
+\end{itemize}
+
+\subsection{Calibration observables}
+
+We focus on simple nuclear collision observables which are sensitive to the bulk properties of the produced medium and which can be calculated using a relatively small $\mathcal{O}(10^4)$ number of events.
+
+\subsection{Model emulator}
+
+In principle, one could calculate the likelihood function in Eqn.~\eqref{eq:likelihood} directly, e.g.\ by running the model a large number of times at a given parameter point $\x$ to calculate the model observables $\y_m(\x)$ from the ensemble of simulated events, but in practice such a procedure would be intractable.
+The model is computationally intensive to evaluate, ${\sim}10$~min/event per processor core, and thousands of events are required to calculate the simplest observables for a single parameter point.
+Moreover, we need to evaluate Eqn.~\eqref{eq:likelihood} \emph{numerous} times in order to sample and visualize the multidimensional posterior distribution.
+
+We therefore follow an established framework for computationally intensive models and train a Gaussian process emulator (GPE) to act as a fast surrogate for direct model evaluation.
+The GPE enables essentially instantaneous predictions $\y_m = f(\x)$ which allows us to sample the posterior distribution millions of times.
+With the posterior parameter samples $\{\x_\star\}$ in hand, we simply histogram the samples to marginalize over (integrate out) all but one or two model parameters.
+We can then plot the flattened distribution to examine the constraints on each individual model parameter.
+
+In order to train the GPE, we first generate a scaffolding of the parameter space using a maximin Latin hypercube design to distribute 500 points in our 15-dimensional parameter space according to the ranges in Tbl.~\ref{tab:design}.
+We then run $\mathcal{O}(10^4)$ $p$-Pb and Pb-Pb events at each design point, and calculate the model observables $\y_m$---discussed in the next subsection---from the ensemble of events.
+
+
+\subsection{Experimental }
+
 
 \section{Results}
 \label{sec:results}
@@ -584,7 +674,7 @@ Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb coll
 }
 
 \fig{posterior_proton_shape}{
-  Posterior distribution for the constituent sampling radius $\R$ and constituent width $\w$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $\R$ and $\w$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $\w > \R$. The posterior distribution, shown in blue, indicates the preferred values for $\R$ and $\w$ determined by the analysis.
+%  Posterior distribution for the constituent sampling radius $\R$ and constituent width $\w$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $\R$ and $\w$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $\w > \R$. The posterior distribution, shown in blue, indicates the preferred values for $\R$ and $\w$ determined by the analysis.
 }
 
 \fig*[t]{region_shear_bulk}{

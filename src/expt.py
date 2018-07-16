@@ -213,7 +213,7 @@ def pPb5020_yield():
 
     """
     eta_beam = -0.465
-    eta_cut = 1.4
+    eta_cut = 0.5
 
     # use the V0M centrality estimator
     dset = HEPData(1335350, 2)
@@ -351,9 +351,15 @@ def _data():
         data['PbPb5020']['dNch_deta'] = {None: HEPData(1410589, 2).dataset(name)}
 
         # PbPb5020 flows
-        system, tables_nk = ('PbPb5020', [(1, [(2, 2)]), (2, [(3, 2), (4, 2)]),])
+        system, tables_nk = (
+            'PbPb5020', [
+                (1, [(2, 2), (2, 4)]),
+                (2, [(3, 2), (4, 2)]),
+            ]
+        )
 
         data[system]['vnk'] = {}
+
         for table, nk in tables_nk:
             d = HEPData(1419244, table)
             for n, k in nk:

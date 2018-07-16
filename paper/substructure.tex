@@ -11,6 +11,8 @@
 \usepackage{color}
 \definecolor{theblue}{RGB}{0,50,230}
 
+\usepackage{multirow}
+
 \usepackage[pdfencoding=auto, psdextra]{hyperref}
 
 \usepackage[font=small, justification=raggedright, labelsep=quad]{caption}
@@ -29,6 +31,7 @@
 
 \newcommand{\trento}{T\raisebox{-0.5ex}{R}ENTo}
 \newcommand{\nch}{N_\text{ch}}
+\newcommand{\ntrk}{N_\text{trk}^\text{offline}}
 \newcommand{\sqrts}{\sqrt{s_{NN}}}
 \newcommand{\sigmaf}{\sigma_\mathrm{fluct}}
 \newcommand{\X}{\chi_\mathrm{struct}}
@@ -41,6 +44,10 @@
 \newcommand{\paddedhline}{\noalign{\smallskip}\hline\noalign{\smallskip}}
 \newcommand{\order}[1]{$\mathcal O(10^{#1})$}
 \newcommand{\note}{\textcolor{theblue}{[?]}}
+
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\scriptsize$\bullet$}}$}
+
 
 % hyperref throws warning when a line break is used in the title
 % this removes the warning by redefining the line break in a pdf string
@@ -103,7 +110,7 @@ In general, these theoretical uncertainties tend to grow with decreasing system 
 One method for reducing theoretical uncertainties is to test model calculations by varying the species of colliding nuclei at a single beam energy \cite{Adare:2015bua, Schenke:2014tga, Aidala:2018mcw, Adare:2017wlc, Adamczyk:2015obl, Shen:2016zpp, Aidala:2017ajz, Adare:2006ti}.
 Since initial condition and hydrodynamic models generally factorize the structure of the colliding nuclei from the subsequent time dynamics of the collision, a single theory framework can be simultaneously tested and compared to measurements from multiple collision systems using a self-consistent set of model parameters where only the nuclear structure in the model is permitted to vary.
 
-Typically, the macroscopic structure of heavy nuclei, characterized e.g.\ by an atomic mass and set of Woods-Saxon coefficients \cite{MOLLER1995185, DEVRIES1987495}, is regarded as a known input to hydrodynamic models which contributes negligible uncertainty to simulation predictions, outweighed by large uncertainties in modeling initial energy deposition and off-equilibrium dynamics \cite{Niemi:2014lha, Song:2011hk, Retinskaya:2013gca, Liu:2015nwa, Kurkela:2016vts}.
+Typically, the macroscopic structure of heavy nuclei, characterized e.g.\ by an atomic mass number and set of Woods-Saxon coefficients \cite{MOLLER1995185, DEVRIES1987495}, is regarded as a known input to hydrodynamic models which contributes negligible uncertainty to simulation predictions, outweighed by large uncertainties in modeling initial energy deposition and off-equilibrium dynamics \cite{Niemi:2014lha, Song:2011hk, Retinskaya:2013gca, Liu:2015nwa, Kurkela:2016vts}.
 The geometry of light ions, meanwhile, is naturally more sensitive to the detailed size and shape of individual protons and neutrons inside the nucleus, which may fluctuate event-by-event and differ signficantly from the round blobs typically used to approximate nucleons in heavy-ion collisions \cite{Schenke:2014zha, Welsh:2016siu, Moreland:2017kdx, Schenke:2014gaa, Schlichting:2014ipa}.
 These nucleon substructure properties are difficult to measure and calculate from first principles and hence contribute significant uncertainty to model predictions of small systems.
 
@@ -162,7 +169,7 @@ The proton-proton overlap function
 describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$ where coordinates $(x, y)$ lie in the transverse plane and $z$ is parallel to the beam axis.
 Here we assume that each proton is comprised of smaller constituents---e.g.\ valence quarks, sea quarks, and small-x gluons---which may collide to produce secondary particles and contribute to the observed inelastic proton-proton cross section.
 
-Within a picture of independent pairwise collisions between the constituents, a Glauber model model may be used to calculate the probability $P_\mathrm{coll}$ that the two protons collide inelastically at impact parameter $b$. In the limit when the number of constituents $n_c \gg 1$, it yields the particularly simple form
+Within a picture of independent pairwise collisions between the constituents, a Glauber model model may be used to calculate the probability $P_\mathrm{coll}$ that the two protons collide inelastically at impact parameter $b$. In the limit when the number of constituents is large, it yields the particularly simple form
 \begin{equation}
   \label{eq:pcoll}
   P_\mathrm{coll} = 1 - \exp[-\sigma_\mathrm{eff}\, T_{pp}(b)], \\
@@ -213,7 +220,7 @@ where each constituent density $\rho_c$ is described by a Gaussian distribution 
   \label{eq:constituent_density}
   \rho_c(\mathbf{x}) = \frac{1}{(2\pi v^2)^{3/2}} \exp\left(-\frac{\x^2}{2 v^2}\right),
 \end{equation}
-and each constituent's position $\mathbf{x_i}$ in Eqn.~\eqref{eq:rho} is sampled from a Gaussian radial distribution of width $r$.
+and each constituent's position $\mathbf{x_i}$ in Eqn.~\eqref{eq:rho} is sampled from a Gaussian radial distribution with standard deviation $r$.
 
 The two protons $A$, $B$ are assigned a random impact parameter, and Eqn.~\eqref{eq:pcoll} is used to sample their inelastic collision probability $P_\mathrm{coll}(b)$.
 Note that this proton-proton inelastic collision probability has no direct knowledge of the individual constituent degrees of freedom; it is only \emph{indirectly} sensitive through the geometry of $\rho_{A, B}$ which depends on each of the constituent positions.
@@ -256,7 +263,7 @@ For certain discrete values of $p$, it reduces to well known functional forms su
   \end{cases}
 \end{equation}
 Conveniently, it has been shown that the generalized mean ansatz is able to mimic the scaling behavior of certain saturation based initial condition models \cite{Bernhard:2016tnd}, and hence it should serve as a reasonable parametric form for exploring QGP entropy deposition, assuming imperfect knowledge of saturation effects in nature.
-Of course the model is \emph{not} a substitute for first principle saturation calculations, and may fail to reproduce nuanced features of \emph{ab initio} saturation theory calculations, such as the existence of short-range gluon field fluctuations \cite{Schenke:2012wb}.
+Of course the model is \emph{not} a substitute for first principle saturation calculations, and may fail to reproduce nuanced features of \emph{ab initio} models such as the existence of short-range gluon field fluctuations \cite{Schenke:2012wb}.
 
 \begin{figure}
   \centering
@@ -320,9 +327,9 @@ where $\Delta\tau$ is the free-streaming time $\Delta\tau = \tau - \tau_0$.
 The solution \eqref{energy-momentum} is decomposed in hydrodynamic form
 \begin{equation}
   \label{hydro-eqn}
-  T^{\mu\nu} = e u^\mu u^\nu - (P + \Pi) \Delta^{\mu\nu} + \pi^{\mu\nu}
+  T^{\mu\nu} = e u^\mu u^\nu - (P + \Pi) \Delta^{\mu\nu} + \pi^{\mu\nu},
 \end{equation}
-where $e$ and $P$ are the energy density and pressure in the local fluid rest frame, $u^\mu$ is the local fluid velocity, ${\Delta^{\mu\nu} \equiv g^{\mu\nu} - u^\mu u^\nu}$, and $\Pi$ and $\pi^{\mu\nu}$ are the bulk pressure and shear stress tensor respectively.
+where $e$ and $P$ are the energy density and pressure in the local fluid rest frame, $u^\mu$ is the local fluid velocity, ${\Delta^{\mu\nu} \equiv g^{\mu\nu} - u^\mu u^\nu}$ is the projector onto the space orthogonal to $u^\mu$, and $\Pi$ and $\pi^{\mu\nu}$ are the bulk pressure and shear stress tensor respectively.
 We then solve for the energy density $e$ and fluid velocity $u^\mu$ using the Landau matching condition which defines the fluid rest frame velocity as the time-like eigenvector of $T^{\mu\nu}$ with energy density $e$ as its eigenvalue,
 \begin{equation}
   T^{\mu\nu} u_\nu = e u^\mu.
@@ -367,7 +374,7 @@ We model the shear viscosity $\eta$ and bulk viscosity $\zeta$ as unknown temper
 
 The hydrodynamic equations of motion are necessarily closed using an equation of state (EoS) to relate the energy density $e$ and pressure $P$ of the produced medium.
 We use a parametrization for $P(e)$ that matches a hadron resonance gas EoS at low temperature to a lattice QCD EoS at high temperature by smoothly connecting their trace anomalies in the interval
-$165 \le T \le 200$~MeV.
+$165 \le T \le 200$~MeV \cite{Bernhard:2018hnz}.
 For the lattice EoS, we use a calculation by the HotQCD collaboration for (2+1)-flavor QCD which was extrapolated to the continuum limit \cite{Bazavov:2014pvz}. Recent developments in lattice QCD now enable calculations in (2+1+1)-flavors \cite{Borsanyi:2016ksw}, i.e.\ with thermalized charm quarks, and the additional charm flavor has been shown to visibly affect predictions of $p_T$-differential flow observables \cite{Noronha-Hostler:2018zxc}.
 Investigating this sensitivity would thus be a natural target for future improvements to the present work.
 
@@ -542,7 +549,7 @@ Several of the model parameters require special care and are reparametrized acco
 \begin{itemize}[leftmargin=2\parindent]
   \item The constituent fluctuations, modeled by the gamma random weights $\gamma_i$ in Eqn.~\eqref{eq:fluctuated_thick}, generate overall nucleon fluctuations which are suppressed by the number of constituents $n_c$ inside the nucleon.
     The observed nucleon fluctuation variance falls like $1 / n_c$ which means the natural range for the constituent fluctuations is larger when the number of constituents is larger and \emph{vice versa}.
-    We therefore reparametrize the constituent fluctuations using the standard deviation of the effective nucleon fluctuations
+    We therefore reparametrize the constituent fluctuations using the standard deviation of the resulting nucleon fluctuations
     \begin{equation}
       \sigma_\mathrm{fluct} = 1 / \sqrt{k\, n_c},
     \end{equation}
@@ -562,9 +569,8 @@ Several of the model parameters require special care and are reparametrized acco
     \label{eq:nucleon_width}
     w = \sqrt{r^2 + v^2},
   \end{equation}
-  visualized in Fig.~\ref{fig:nucleon_schematic}, which approximates the rms radius of the nucleon when the number of sampled constituents is large.
-  We thus call $w$ a nucleon ``width'', although for smaller numbers of constituents, the \emph{actual} rms radius of our sampled nucleons can be significantly smaller than our width parameter $w$ due to fluctuations in the nucleon's center of mass, and hence once should account for these difference when discussing the nucleon's rms radius.
-  We account for this effect when discussing the nucleon width posterior distribution later in the text.
+  depicted in Fig.~\ref{fig:nucleon_schematic}, which approximates the rms radius of the nucleon when the number of sampled constituents is large.
+  We thus call $w$ a nucleon ``width'', although for smaller numbers of constituents, the \emph{actual} rms radius of our sampled nucleons can be significantly smaller than our width parameter $w$ due to fluctuations in the nucleon's center of mass, and hence one should account for the difference when discussing the nucleon's posterior rms radius.
 
 \begin{figure}[t]
   \begin{tikzpicture}
@@ -588,17 +594,18 @@ Several of the model parameters require special care and are reparametrized acco
 \begin{table*}
   \caption{
     \label{tab:observables}
-    Experimental data to be compared with model calculations.
+    Experimental data used to calibrate the model.
   }
   \begin{ruledtabular}
-  \begin{tabular}{lcccc}
-    Collision system & Observable & Particle selection & Event bins & Ref. \\
+  \begin{tabular}{cc}
+    Pb-Pb $\sqrts=5.02$~TeV & $p$-Pb $\sqrts=5.02$~TeV \\
     \paddedhline
-    \multirow{2}{*}{Pb-Pb 5.02 TeV} & Yield $d\nch/d\eta$ & chg \& $|\eta| < 0.5$ & centrality: 0--5, 5--10, 10--20, \ldots, 60--70 & \note \\
+    Charged-particle multiplicity $d\nch/d\eta$, $|\eta| < 0.5$ \cite{Adam:2015ptt} & Charged-particle multiplicity $d\nch/d\eta$, $|\eta| < 1.4$ \cite{Adam:2014qja} \\
     \noalign{\smallskip}
-    & Flow cumulants $\vnk{n}{2}$ & chg \& $|\eta| < 1$ & centrality: 0--5, 5--10, 10--20, \ldots, 60--70 & \note \\
+  Two-particle flow cumulants  $\vnk{n}{2}$ for $n=2,3,4$, $|\eta| < 0.8$,  & Two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3$, $|\eta| < 2.4$, \\
+    charged-particles, $|\Delta\eta| > 1$,\, $0.2 < p_T < 5.0$~GeV \cite{Adam:2016izf} & charged-particles, $|\Delta\eta| > 2$,\, $0.3 < p_T < 3.0$~GeV \cite{Chatrchyan:2013nka}\\
     \noalign{\smallskip}
-    %Mean transverse momentum $\langle p_T \rangle$ & $\pi^\pm$, $K^\pm$, $p\bar p$ &
+    & Charged-particle mean $p_T$, $0.15 < p_T < 10$~GeV, $|\eta| < 0.3$ \cite{Abelev:2013bla}\\
   \end{tabular}
   \end{ruledtabular}
 \end{table*}
@@ -613,9 +620,51 @@ Several of the model parameters require special care and are reparametrized acco
   The parameter $\X$ thus varies the granularity of the nucleon while keeping the number of constituents $n_c$ and approximate size of the nucleon $w$ fixed.
 \end{itemize}
 
-\subsection{Calibration observables}
+\subsection{Simulated and measured observables}
 
-We focus on simple nuclear collision observables which are sensitive to the bulk properties of the produced medium and which can be calculated using a relatively small $\mathcal{O}(10^4)$ number of events.
+The likelihood function \eqref{eq:likelihood} provides evidence for \mbox{(or against)} the model parameters $\x$ by comparing the model predictions $\y_m(\x)$ to experimental data $\y_e$.
+We focus on simple experimental observables in the present study which are sensitive to the bulk properties of the produced medium.
+We calculate for each set of model parameters the following observables at midrapidity:
+\begin{itemize}[leftmargin=2\parindent, itemsep=0pt]
+  \item Charged-particle multiplicity $d\nch/d\eta$ \cite{Adam:2015ptt, Adam:2014qja}.
+  \item Identified particle yields $dN/dy$ of pions, kaons, and protons.
+  \item Transverse energy production $dE_T/d\eta$.
+  \item Charged particle mean transverse momentum $\langle p_T \rangle$ ($0.15 < p_T < 10$~GeV) \cite{Abelev:2013bla}.
+  \item Identified particle mean transverse momentum $\langle p_T \rangle$ of pions, kaons and protons.
+  \item Mean transverse momentum fluctuations $\delta p_T / \langle p_T \rangle$ (charged particles, $0.15 < p_T < 2.0$~GeV).
+  \item Two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3,4$\\ (charged particles, $0.2 < p_T < 5.0$~GeV \cite{Adam:2016izf}, and $0.3 < p_T < 3.0$~GeV \cite{Chatrchyan:2013nka}).
+\item Four-particle flow cumulant $\vnk{2}{4}$\\ (charged particles, $0.2 < p_T < 5.0$) \cite{Adam:2016izf}.
+  \item Symmetric cumulants $\mathrm{SC}(4, 2)$ and $\mathrm{SC}(3,2)$.
+\end{itemize}
+Each observable is calculated from the list of final state particles produced by \texttt{UrQMD} using the same methods applied by experiment.
+We generally match the kinematic cuts of all measurements with two exceptions: we use use a larger rapidity interval $|\eta| < 0.8$ than experiment for some boost-invariant observables to improve our finite particle statistics, and we do not apply a finite rapidity gap, e.g.\ $|\Delta \eta| > 1$, between pairs of particles when calculating the two-particle cumulant $\vnk{n}{2}$ since we already oversample particles from each hydrodynamic event, and this oversampling suppresses non-flow correlations.
+
+At the time of this writing, many of the aforementioned experimental observables are not yet published for $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV.
+We therefore restrict our calibration to the subset of measured and published observables listed in Tbl.~\ref{tab:observables}.
+The Pb-Pb four-particle cumulants $\vnk{n}{4}$ at $\sqrts=5.02$~TeV which are noticeably absent \emph{are} currently available, but we exclude from the present calibration for statistical reasons.
+
+Most of the calibration observables listed in Tbl.~\ref{tab:observables} are calculated as a function of collision centrality, where centrality is defined as some measure of the underlying event activity, e.g.\ the charged particle yield in a given rapidity window.
+When calculating these observables, we generate $\mathcal{O}(10^4)$ minimum-bias events at each design point and divide the events into centrality bins using the charged particle yield at midrapidity, similar to the procedure used by experiment.
+
+However, for some observables such as $p$-Pb mean $p_T$ and flow cumulants, the experiments use a special high-multiplicity trigger to select rare, ultra-central events according to the number of charged particles produced or detector tracks offline \note.
+These high-multiplicity bins are too selective for our modest minimum-bias event sample, and so a different procedure is required.
+We exploit, for this purpose, the approximate correspondence
+\begin{equation}
+  \ntrk \sim \nch \propto \int d^2x\, n(\x)
+\end{equation}
+between each event's initial transverse parton density $n(\x)$ and its final-state event activity, characterized by $\nch$ or $\ntrk$.
+
+and the event's initial parton density $n(\x)$ in Eqn.~\eqref{energy-momentum}, and run a high-multiplicity trigger on the relative event activity
+\begin{equation}
+  \mathrm{bin~low} \le \nch / \langle \nch \rangle \le \mathrm{bin~high}.
+\end{equation}
+
+
+\fig*{correlation_matrices}{
+  Correlation matrices for Pb-Pb collisions at $\sqrts=5.02$~TeV for the model/emulator (left) and experimental data (right) used to construct the covariance matrix $\Sigma = \Sigma_\mathrm{model} + \Sigma_\mathrm{expt}$ in Eqn.~\eqref{eq:likelihood}.
+  Experimental statistical and systematic errors are from ALICE and CMS \note.
+  The experimental correlation structure is modeled using Eqn.~?.
+}
 
 \subsection{Model emulator}
 

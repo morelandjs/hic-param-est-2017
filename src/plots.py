@@ -553,9 +553,18 @@ def observables_map():
         'Flow cumulants': (0, .12),
     }
 
-    for p in plots:
+    for n, p in enumerate(plots):
         p['ylim'] = ylim[p['title']]
-
+        if p['title'] == 'Flow cumulants':
+            move_index = n
+            p.update(
+                ylabel=r'$v_n\{k\}$',
+                subplots=[
+                    ('vnk', nk, dict(label='$v_{}\{{{}\}}$'.format(*nk)))
+                    for nk in [(2, 2), (2, 4), (3, 2), (4, 2)]
+                ],
+                legend=True
+            )
     fig = plt.figure(figsize=figsize(1.1, 1.5))
 
     yields, mean_pT, mean_pT_fluct, flows = [
@@ -831,16 +840,17 @@ def find_map():
 def flow_corr():
     """
     Symmetric cumulants SC(m, n) at the MAP point compared to experiment.
+
     """
     fig, axes = plt.subplots(
-        figsize=figsize(1.1, .7),
-        nrows=2, ncols=2, gridspec_kw=dict(width_ratios=[.8, 1])
+        figsize=figsize(0.5, 1.2), sharex=True,
+        nrows=2, ncols=1
     )
 
-    systems = ['PbPb5020', 'PbPb5020']
-
-    cmapx_normal = .7
-    cmapx_pred = .5
+    observables = ['sc', 'sc_normed']
+    ylims = [(-2.5e-6, 2.5e-6), (-0.3, 0.8)]
+    labels = ['(4,2)', '(3,2)']
+    system = 'PbPb5020'
 
     def label(*mn, normed=False):
         fmt = r'\mathrm{{SC}}({0}, {1})'
@@ -848,88 +858,37 @@ def flow_corr():
             fmt += r'/\langle v_{0}^2 \rangle\langle v_{1}^2 \rangle'
         return fmt.format(*mn).join('$$')
 
-    for obs, ax in zip(
-            ['sc_central', 'sc', 'sc_normed_central', 'sc_normed'],
-            axes.flat
-    ):
-        for (mn, cmap), sys in itertools.product(
-                [
-                    ((4, 2), 'Blues'),
-                    ((3, 2), 'Oranges'),
-                ],
-                systems
-        ):
-            x = model.map_data[sys][obs][mn]['x']
-            y = model.map_data[sys][obs][mn]['Y']
-
-            pred = obs not in expt.data[sys]
-            cmapx = cmapx_pred if pred else cmapx_normal
-
-            kwargs = {}
-
-            if pred:
-                kwargs.update(linestyle='dashed')
-
-            if ax.is_first_col() and ax.is_first_row():
-                fmt = '{:.2f} TeV'
-                if pred:
-                    fmt += ' (prediction)'
-                lbl = fmt.format(parse_system(sys)[1]/1000)
-                if not any(l.get_label() == lbl for l in ax.get_lines()):
-                    ax.add_line(lines.Line2D(
-                        [], [], color=plt.cm.Greys(cmapx),
-                        label=lbl, **kwargs
-                    ))
-            elif ax.is_last_col() and not pred:
-                kwargs.update(label=label(*mn, normed='normed' in obs))
+    for obs, ylim, ax in zip(observables, ylims, axes.flat):
+        for (mn, cmap), lbl in zip([((4, 2), 'Blues'), ((3, 2), 'Oranges')], labels):
+            x = model.map_data[system][obs][mn]['x']
+            y = model.map_data[system][obs][mn]['Y']
 
             ax.plot(
                 x, y, lw=.75,
-                color=getattr(plt.cm, cmap)(cmapx),
-                **kwargs
+                color=getattr(plt.cm, cmap)(.7),
             )
 
-            if pred:
-                continue
-
-            x = expt.data[sys][obs][mn]['x']
-            y = expt.data[sys][obs][mn]['y']
-            yerr = expt.data[sys][obs][mn]['yerr']
-
-            ax.errorbar(
-                x, y, yerr=yerr['stat'],
-                fmt='o', ms=.8*plt.rcParams['lines.markersize'],
-                capsize=0, color='.25', zorder=100
-            )
-
-            ax.fill_between(
-                x, y - yerr['sys'], y + yerr['sys'],
-                color='.9', zorder=-10
-            )
+            ax.text(1.02*x[-1], y[-1], lbl, va='center', ha='left')
 
         ax.axhline(
             0, color='.5', lw=plt.rcParams['xtick.major.width'],
             zorder=-100
         )
 
-        ax.set_xlim(0, 10 if 'central' in obs else 70)
+        ax.set_xlim(0, 80)
+        ax.set_ylim(*ylim)
 
         auto_ticks(ax, nbins=6, minor=2)
-
-        if all(ax.get_legend_handles_labels()):
-            ax.legend(loc='best')
 
         if ax.is_first_col():
             ax.set_ylabel(label('m', 'n', normed='normed' in obs))
 
         if ax.is_first_row():
-            ax.set_title(
-                'Central'
-                if 'central' in obs else
-                'Minimum bias'
-            )
+            ax.set_title('Pb-Pb 5.02 TeV')
         else:
             ax.set_xlabel('Centrality %')
+
+    set_tight(fig)
 
 
 def format_ci(samples, ci=.9):
@@ -1956,7 +1915,7 @@ def correlation_matrices(system=default_system):
     emu_cov = emu.predict(X, return_cov=True)[1].array[0]
 
     fig, axes = plt.subplots(
-        ncols=3, figsize=figsize(1.7, .47),
+        ncols=3, figsize=figsize(1.1, .47),
         gridspec_kw=dict(width_ratios=[1, 1, .02])
     )
 
@@ -2363,13 +2322,13 @@ def posterior_proton_shape():
         color='.9', edgecolor=None
     )
     plt.annotate(
-        r'width > radius', xy=(.45, 1.15), xycoords='data',
+        r'constit. width > nucleon width', xy=(.45, 1.15), xycoords='data',
         ha='left', va='top', color=offblack
     )
 
     plt.xticks([.4, .6, .8, 1, 1.2])
     plt.yticks([.2, .4, .6, .8, 1, 1.2])
-    plt.xlabel('Constituent sampling radius [fm]')
+    plt.xlabel('Nucleon width [fm]')
     plt.ylabel('Constituent width [fm]')
     plt.gca().set_aspect('equal')
 

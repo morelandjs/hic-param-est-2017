@@ -620,20 +620,20 @@ Several of the model parameters require special care and are reparametrized acco
   The parameter $\X$ thus varies the granularity of the nucleon while keeping the number of constituents $n_c$ and approximate size of the nucleon $w$ fixed.
 \end{itemize}
 
-\subsection{Simulated and measured observables}
+\subsection{Observables}
 
 The likelihood function \eqref{eq:likelihood} provides evidence for \mbox{(or against)} the model parameters $\x$ by comparing the model predictions $\y_m(\x)$ to experimental data $\y_e$.
 We focus on simple experimental observables in the present study which are sensitive to the bulk properties of the produced medium.
 We calculate for each set of model parameters the following observables at midrapidity:
 \begin{itemize}[leftmargin=2\parindent, itemsep=0pt]
-  \item Charged-particle multiplicity $d\nch/d\eta$ \cite{Adam:2015ptt, Adam:2014qja}.
+  \item Charged-particle multiplicity $d\nch/d\eta$.
   \item Identified particle yields $dN/dy$ of pions, kaons, and protons.
   \item Transverse energy production $dE_T/d\eta$.
-  \item Charged particle mean transverse momentum $\langle p_T \rangle$ ($0.15 < p_T < 10$~GeV) \cite{Abelev:2013bla}.
+  \item Charged particle mean transverse momentum $\langle p_T \rangle$ ($0.15 < p_T < 10$~GeV).
   \item Identified particle mean transverse momentum $\langle p_T \rangle$ of pions, kaons and protons.
   \item Mean transverse momentum fluctuations $\delta p_T / \langle p_T \rangle$ (charged particles, $0.15 < p_T < 2.0$~GeV).
-  \item Two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3,4$\\ (charged particles, $0.2 < p_T < 5.0$~GeV \cite{Adam:2016izf}, and $0.3 < p_T < 3.0$~GeV \cite{Chatrchyan:2013nka}).
-\item Four-particle flow cumulant $\vnk{2}{4}$\\ (charged particles, $0.2 < p_T < 5.0$) \cite{Adam:2016izf}.
+  \item Two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3,4$\\ (charged particles, $0.2 < p_T < 5.0$~GeV, and \\$0.3 < p_T < 3.0$~GeV).
+  \item Four-particle flow cumulant $\vnk{2}{4}$ \\(charged particles, $0.2 < p_T < 5.0$).
   \item Symmetric cumulants $\mathrm{SC}(4, 2)$ and $\mathrm{SC}(3,2)$.
 \end{itemize}
 Each observable is calculated from the list of final state particles produced by \texttt{UrQMD} using the same methods applied by experiment.
@@ -641,27 +641,76 @@ We generally match the kinematic cuts of all measurements with two exceptions: w
 
 At the time of this writing, many of the aforementioned experimental observables are not yet published for $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV.
 We therefore restrict our calibration to the subset of measured and published observables listed in Tbl.~\ref{tab:observables}.
-The Pb-Pb four-particle cumulants $\vnk{n}{4}$ at $\sqrts=5.02$~TeV which are noticeably absent \emph{are} currently available, but we exclude from the present calibration for statistical reasons.
+Notably absent from this list are the four-particle cumulants $\vnk{n}{4}$ at $\sqrts=5.02$~TeV despite being measured and published.
+Unfortunately, the four-particle cumulants require minimum-bias event statistics an order of magnitude larger than those used in this work.
+We therefore refrain from \emph{calibrating} on the four-particle cumulants, although we do show calculations of the four-particle cumulant $\vnk{2}{4}$ later in the text, using a single set of calibration parameters.
 
-Most of the calibration observables listed in Tbl.~\ref{tab:observables} are calculated as a function of collision centrality, where centrality is defined as some measure of the underlying event activity, e.g.\ the charged particle yield in a given rapidity window.
+Most of the calibration observables listed in Tbl.~\ref{tab:observables} are calculated as a function of collision centrality, where centrality is defined using some measure of the underlying event activity, e.g.\ the charged particle yield in a given rapidity window.
 When calculating these observables, we generate $\mathcal{O}(10^4)$ minimum-bias events at each design point and divide the events into centrality bins using the charged particle yield at midrapidity, similar to the procedure used by experiment.
 
-However, for some observables such as $p$-Pb mean $p_T$ and flow cumulants, the experiments use a special high-multiplicity trigger to select rare, ultra-central events according to the number of charged particles produced or detector tracks offline \note.
+However, for some observables such as $p$-Pb mean $p_T$ \cite{Abelev:2013bla} and flow cumulants $\vnk{n}{k}$ \cite{Chatrchyan:2013nka}, the experiments use a special high-multiplicity trigger to select rare, ultra-central events according to the number of charged particles produced or detector tracks offline.
 These high-multiplicity bins are too selective for our modest minimum-bias event sample, and so a different procedure is required.
 We exploit, for this purpose, the approximate correspondence
 \begin{equation}
-  \ntrk \sim \nch \propto \int d^2x\, n(\x)
+  \label{eq:bin_equiv}
+  \ntrk \sim \nch \propto N_\rho
 \end{equation}
-between each event's initial transverse parton density $n(\x)$ and its final-state event activity, characterized by $\nch$ or $\ntrk$.
+between each event's initial secondary-parton multiplicity ${N_\rho = \int d^2x\,n(\x)}$ in Eqn.~\eqref{energy-momentum} and its final-state event activity, characterized by $\nch$ or $\ntrk$ \cite{Abelev:2013bla, Chatrchyan:2013nka}.
 
-and the event's initial parton density $n(\x)$ in Eqn.~\eqref{energy-momentum}, and run a high-multiplicity trigger on the relative event activity
+Consider, for example, an experimental multiplicity bin $(\nch^\text{low}, \nch^\text{high})$ with some kinematic cuts on $p_T$ and $\eta$.
+We rescale this bin by the average multiplicity $\langle \nch \rangle$ of the corresponding minimum-bias event sample, i.e.\
 \begin{equation}
-  \mathrm{bin~low} \le \nch / \langle \nch \rangle \le \mathrm{bin~high}.
+  (\nch^\text{low}, \nch^\text{high}) \rightarrow (\nch^\text{low} / \langle \nch \rangle, \nch^\text{high} / \langle \nch \rangle)
+\end{equation}
+in order to reexpress each bin edge as a unitless variable.
+These rescaled bins are then used to select initial condition events using the equivalence \eqref{eq:bin_equiv}:
+\begin{equation}
+  \label{eq:mult_trigger}
+  \left (\frac{N^\text{low}_\rho}{\langle N_\rho \rangle}, \frac{N^\text{high}_\rho}{\langle N_\rho \rangle} \right) \leftrightarrow \left (\frac{\nch^\text{low}}{\langle \nch \rangle}, \frac{\nch^\text{high}}{\langle \nch \rangle} \right ).
 \end{equation}
 
+Finally, we mimic the method used by experiment and apply \eqref{eq:mult_trigger} to select rare high-multiplicity events from a continuous stream of minimum-bias \trento\ events that satisfy the correct relative multiplicity bin edges.
+This of course means that, in addition to running a large sample of minimum-bias events for centrality binned observables, we must also generate (much like experiment) a separate sample of multiplicity triggered events.
+In practice, we use a few hundred to a few thousand events per multiplicity bin, depending on the type of observable.
+
+We also take stock of the statistical and systematic errors reported by each experiment and incorporate their uncertainty into the likelihood covariance matrix
+\begin{equation}
+  \Sigma = \Sigma_m + \Sigma_e,
+\end{equation}
+which includes uncertainty contributions from both the model $\Sigma_m$ and experimental data $\Sigma_e$.
+The experimental contribution to the covariance $\Sigma_e$ is further broken down into statistical and systematic components,
+\begin{equation}
+  \Sigma_e = \Sigma_e^\text{stat} + \Sigma_e^\text{sys}.
+\end{equation}
+
+The statistical errors are uncorrelated and thus its covariance matrix is diagonal:
+\begin{equation}
+  \Sigma_e^\text{stat} = \text{diag}[(\sigma^\text{stat}_1)^2, (\sigma^\text{stat}_2)^2, \dots (\sigma^\text{stat}_m)^2 ],
+\end{equation}
+where $\sigma^\text{stat}_i$ is the statistical uncertainty of observable $y_i$ in the experimental observable vector $\y_e = [y_1, \dots, y_m]$.
+The systematic errors, meanwhile, are typically correlated, but the correlation structure is not reported by the experiments so we assert a reasonable form.
+We can expand the systematic covariance matrix as
+\begin{equation}
+  (\Sigma_e^\text{sys})_{ij} =  \rho_{ij} \sigma_i \sigma_j,
+\end{equation}
+where $\sigma_i$ and $\sigma_j$ are the systematic errors of observables $y_i$ and $y_j$ respectively, and $\rho_{ij}$ is the Pearson correlation coefficient between observable $y_i$ and $y_j$:
+\begin{equation}
+  \rho_{ij} = \frac{\text{cov}(y_i, y_j)}{\sigma_i \sigma_j},
+\end{equation}
+which satisfies $\rho_{ij}=1$ for $i=j$ and $|\rho_{ij}| \le 1$ for $i \ne j$.
+We assume that each observable is correlated across different centrality/multiplicity bins, and uncorrelated with observables of a different type, e.g.\ correlations between yields and flows.
+This is a crude simplifying assumption but it is better than neglecting the correlation structure of the experimental data entirely.
+
+For the correlation structure between different observable bins, we assert a simple Gaussian form
+\begin{equation}
+  \rho_{ij}^\text{sys} = \exp \left[ -\frac{1}{2} \left(\frac{b_i - b_j}{l} \right)^2 \right],
+\end{equation}
+where $b_i$ and $b_j$ are the midpoints of two observable bins of a single type (centrality or relative multiplicity) and $l$ is a correlation length which describes how quickly the observable bins decorrelate as the distance between the bins increases.
+We use centrality correlation lengths ${l=100\%}$ for all Pb-Pb observables and ${l=30\%}$ for the $p$-Pb charged particle yield $d\nch/d\eta$.
+The $p$-Pb mean $p_T$ and flow observables, meanwhile, use relative multiplicity bins $\nch / \langle \nch \rangle$ and $\ntrk / \langle \ntrk \rangle$ so we use a much smaller correlation length $l=5$ to reflect the smaller range of bin values.
 
 \fig*{correlation_matrices}{
-  Correlation matrices for Pb-Pb collisions at $\sqrts=5.02$~TeV for the model/emulator (left) and experimental data (right) used to construct the covariance matrix $\Sigma = \Sigma_\mathrm{model} + \Sigma_\mathrm{expt}$ in Eqn.~\eqref{eq:likelihood}.
+  Correlation matrices for Pb-Pb collisions at $\sqrts=5.02$~TeV for the model/emulator (left) and experimental data (right) used to construct the covariance matrix ${\Sigma = \Sigma_\mathrm{model} + \Sigma_\mathrm{expt}}$ in Eqn.~\eqref{eq:likelihood}.
   Experimental statistical and systematic errors are from ALICE and CMS \note.
   The experimental correlation structure is modeled using Eqn.~?.
 }
@@ -669,16 +718,15 @@ and the event's initial parton density $n(\x)$ in Eqn.~\eqref{energy-momentum}, 
 \subsection{Model emulator}
 
 In principle, one could calculate the likelihood function in Eqn.~\eqref{eq:likelihood} directly, e.g.\ by running the model a large number of times at a given parameter point $\x$ to calculate the model observables $\y_m(\x)$ from the ensemble of simulated events, but in practice such a procedure would be intractable.
-The model is computationally intensive to evaluate, ${\sim}10$~min/event per processor core, and thousands of events are required to calculate the simplest observables for a single parameter point.
-Moreover, we need to evaluate Eqn.~\eqref{eq:likelihood} \emph{numerous} times in order to sample and visualize the multidimensional posterior distribution.
+The model is computationally intensive to evaluate, ${\sim}10$~min/event per processor core, and thousands of events are required to calculate the simplest observables at a single parameter point.
+Moreover, we need to evaluate Eqn.~\eqref{eq:likelihood} \emph{numerous} times in order to sample the multidimensional posterior distribution so that the samples may be histogrammed and visualized.
 
-We therefore follow an established framework for computationally intensive models and train a Gaussian process emulator (GPE) to act as a fast surrogate for direct model evaluation.
-The GPE enables essentially instantaneous predictions $\y_m = f(\x)$ which allows us to sample the posterior distribution millions of times.
-With the posterior parameter samples $\{\x_\star\}$ in hand, we simply histogram the samples to marginalize over (integrate out) all but one or two model parameters.
-We can then plot the flattened distribution to examine the constraints on each individual model parameter.
+We therefore follow an established framework for computationally intensive models and train a Gaussian process emulator (GPE) to act as a fast surrogate for the full physics simulation \note.
+The GPE enables essentially instantaneous predictions for $\y_m = f(\x)$ which allows us to sample the posterior distribution millions of times.
+In order to train the GPE, we first generate a scaffolding of the parameter space using a maximin Latin hypercube design to distribute 500 points uniformly in our 15-dimensional parameter space according to the ranges in Tbl.~\ref{tab:design}.
+We then run minimum-bias and multiplicity triggered $p$-Pb and Pb-Pb events at each design point, and calculate the model observables from the ensemble of events.
 
-In order to train the GPE, we first generate a scaffolding of the parameter space using a maximin Latin hypercube design to distribute 500 points in our 15-dimensional parameter space according to the ranges in Tbl.~\ref{tab:design}.
-We then run $\mathcal{O}(10^4)$ $p$-Pb and Pb-Pb events at each design point, and calculate the model observables $\y_m$---discussed in the next subsection---from the ensemble of events.
+Let $X$ denote the $d \times m$ dimensional matrix of design points where $d=500$ is the number of design points and $m$ is the number of emulated observables $y \in \y_m$.
 
 
 \subsection{Experimental }

@@ -170,7 +170,7 @@ def coupling():
     fluid coupling as a step function
 
     """
-    plt.figure(figsize=figsize(.45, aspect=.7))
+    plt.figure(figsize=figsize(.5, aspect=.7))
 
     tau = np.linspace(0, 1, 100)
 

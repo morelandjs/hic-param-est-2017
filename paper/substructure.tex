@@ -11,10 +11,7 @@
 \usepackage{color}
 \definecolor{theblue}{RGB}{0,50,230}
 
-\usepackage{multirow}
-
 \usepackage[pdfencoding=auto, psdextra]{hyperref}
-
 \usepackage[font=small, justification=raggedright, labelsep=quad]{caption}
 
 \hypersetup{
@@ -40,11 +37,11 @@
 \newcommand{\T}{\tilde{T}}
 \newcommand{\x}{\mathbf{x}}
 \newcommand{\y}{\mathbf{y}}
+\newcommand{\z}{\mathbf{z}}
 \newcommand{\vnk}[2]{v_#1\{#2\}}
 \newcommand{\paddedhline}{\noalign{\smallskip}\hline\noalign{\smallskip}}
 \newcommand{\order}[1]{$\mathcal O(10^{#1})$}
 \newcommand{\note}{\textcolor{theblue}{[?]}}
-
 
 \renewcommand\labelitemi{$\vcenter{\hbox{\scriptsize$\bullet$}}$}
 
@@ -266,7 +263,6 @@ Conveniently, it has been shown that the generalized mean ansatz is able to mimi
 Of course the model is \emph{not} a substitute for first principle saturation calculations, and may fail to reproduce nuanced features of \emph{ab initio} models such as the existence of short-range gluon field fluctuations \cite{Schenke:2012wb}.
 
 \begin{figure}
-  \centering
   \begin{tikzpicture}
     \node {\includegraphics{thickness}};
     \node[label=above:{10 fm}] (a) at (0, 1.1) {};
@@ -290,11 +286,11 @@ Similar methods could be used to model correlations between individual constitue
 
 \subsection{Pre-equilibrium dynamics}
 
-\fig[b]{coupling}{
-Cartoon of the free-streaming approximation for hydrodynamic initialization.
-The initial state is free-streamed for proper time $\taufs$ (zero-coupling) before it is matched to hydrodynamics (strong-coupling).
-This piecewise evolution approximates the more realistic scenario expected in nature where the medium's coupling strength smoothly changes as a function of time.
-}
+\begin{figure}[b]
+  \includegraphics{coupling}
+  \caption{Cartoon of the free-streaming approximation for hydrodynamic initialization. The initial state is free-streamed for proper time $\taufs$ (zero-coupling) before it is matched to hydrodynamics (strong-coupling). This piecewise evolution approximates the more realistic scenario expected in nature where the medium's coupling strength smoothly changes as a function of time.}
+  \label{fig:coupling}
+\end{figure}
 
 There are of course two limiting cases for the strength of interactions inside the QGP medium immediately at the collision: infinitely weak coupling where the secondary partons free-stream without interacting, and infinitely strong coupling where the fluid's inter-particle mean free path effectively vanishes.
 Realistically, one expects the initial parton interactions to lie somewhere between these two extremes.
@@ -369,8 +365,11 @@ This produces a pair of relaxation-type equations
 for the bulk pressure $\Pi$ and shear-stress $\pi^{\mu\nu}$.
 We model the shear viscosity $\eta$ and bulk viscosity $\zeta$ as unknown temperature dependent quantities and fix the remaining transport coefficients $\{\tau_\Pi, \delta_{\Pi\Pi}, \lambda_{\Pi\pi}, \tau_\pi, \delta_{\pi\pi}, \phi_7, \tau_{\pi\pi}, \lambda_{\pi\Pi}\}$ using analytic results derived in the limit of small but finite masses \cite{Denicol:2014vaa}.
 
-\fig[t]{viscosity_dof}{Degrees of freedom in the temperature dependent shear and bulk viscosity parametrizations. Lines are chosen for illustrative purposes only and do not represent all possible variability. For instance, $\eta/s$ could have a large slope and negative curvature, or $\zeta/s$ could have a large max and narrow width, neither of which are depicted above.
-}
+\begin{figure}[t]
+  \includegraphics{viscosity_dof}
+  \caption{Degrees of freedom in the temperature dependent shear and bulk viscosity parametrizations. Lines are chosen for illustrative purposes only and do not represent all possible variability. For instance, $\eta/s$ could have a large slope and negative curvature, or $\zeta/s$ could have a large max and narrow width, neither of which are depicted above.}
+  \label{fig:viscosity_dof}
+\end{figure}
 
 The hydrodynamic equations of motion are necessarily closed using an equation of state (EoS) to relate the energy density $e$ and pressure $P$ of the produced medium.
 We use a parametrization for $P(e)$ that matches a hadron resonance gas EoS at low temperature to a lattice QCD EoS at high temperature by smoothly connecting their trace anomalies in the interval
@@ -512,7 +511,7 @@ We assume that the likelihood function in Eqn.~\eqref{eq:bayes} is described by 
   \label{eq:likelihood}
   P(E | H_\x) = \frac{1}{\sqrt{(2\pi)^m \det \Sigma}} \exp \left ( -\frac{1}{2}\Delta\y^\intercal \Sigma^{-1} \Delta\y \right ),
 \end{equation}
-where $\Delta\y = \y_m(\x) - \y_e$ is the discrepancy of the model and experiment, and $\Sigma$ is the total covariance matrix which includes all known sources of uncertainty for the simulated and measured observables.
+where $\Delta\y = \y_m(\x) - \y_e$ is the discrepancy of the model and experiment, and $\Sigma = \Sigma_m(\x) + \Sigma_e$ is the \emph{total} covariance matrix, equal to the sum of a modeling component $\Sigma_m(\x)$ and an experimental component $\Sigma_e$ which account for all known sources of uncertainty in the simulated and measured observables.
 
 \begin{table}[t]
   \caption{Input parameter ranges for the physics model.}
@@ -622,10 +621,16 @@ Several of the model parameters require special care and are reparametrized acco
 
 \subsection{Observables}
 
+\begin{figure*}[t]
+  \includegraphics{correlation_matrices}
+  \caption{Correlation matrices for Pb-Pb collisions at $\sqrts=5.02$~TeV for the model/emulator (left) at a random point in parameter space and the experimental data (right) used to construct the covariance matrix ${\Sigma = \Sigma_m + \Sigma_e}$ in Eqn.~\eqref{eq:likelihood}. Experimental statistical and systematic errors are from ALICE and CMS \note. The experimental correlation structure is modeled using Eqn.~\eqref{eq:corr}.}
+  \label{fig:correlation}
+\end{figure*}
+
 The likelihood function \eqref{eq:likelihood} provides evidence for \mbox{(or against)} the model parameters $\x$ by comparing the model predictions $\y_m(\x)$ to experimental data $\y_e$.
 We focus on simple experimental observables in the present study which are sensitive to the bulk properties of the produced medium.
 We calculate for each set of model parameters the following observables at midrapidity:
-\begin{itemize}[leftmargin=2\parindent, itemsep=0pt]
+\begin{itemize}[leftmargin=1\parindent, itemsep=0pt]
   \item Charged-particle multiplicity $d\nch/d\eta$.
   \item Identified particle yields $dN/dy$ of pions, kaons, and protons.
   \item Transverse energy production $dE_T/d\eta$.
@@ -703,17 +708,16 @@ This is a crude simplifying assumption but it is better than neglecting the corr
 
 For the correlation structure between different observable bins, we assert a simple Gaussian form
 \begin{equation}
+  \label{eq:corr}
   \rho_{ij}^\text{sys} = \exp \left[ -\frac{1}{2} \left(\frac{b_i - b_j}{l} \right)^2 \right],
 \end{equation}
+
 where $b_i$ and $b_j$ are the midpoints of two observable bins of a single type (centrality or relative multiplicity) and $l$ is a correlation length which describes how quickly the observable bins decorrelate as the distance between the bins increases.
 We use centrality correlation lengths ${l=100\%}$ for all Pb-Pb observables and ${l=30\%}$ for the $p$-Pb charged particle yield $d\nch/d\eta$.
 The $p$-Pb mean $p_T$ and flow observables, meanwhile, use relative multiplicity bins $\nch / \langle \nch \rangle$ and $\ntrk / \langle \ntrk \rangle$ so we use a much smaller correlation length $l=5$ to reflect the smaller range of bin values.
+We show, as an example, the resulting experimental correlation matrix $\text{corr}(\Sigma_e)$ for the Pb-Pb system on the right side of Fig.~\ref{fig:correlation}.
+The correlation matrix is block diagonal, with each block representing the correlations within a single class of observable; in this case, the experimental yield $d\nch/d\eta$ and flows $\vnk{n}{2}$.
 
-\fig*{correlation_matrices}{
-  Correlation matrices for Pb-Pb collisions at $\sqrts=5.02$~TeV for the model/emulator (left) and experimental data (right) used to construct the covariance matrix ${\Sigma = \Sigma_\mathrm{model} + \Sigma_\mathrm{expt}}$ in Eqn.~\eqref{eq:likelihood}.
-  Experimental statistical and systematic errors are from ALICE and CMS \note.
-  The experimental correlation structure is modeled using Eqn.~?.
-}
 
 \subsection{Model emulator}
 
@@ -721,62 +725,148 @@ In principle, one could calculate the likelihood function in Eqn.~\eqref{eq:like
 The model is computationally intensive to evaluate, ${\sim}10$~min/event per processor core, and thousands of events are required to calculate the simplest observables at a single parameter point.
 Moreover, we need to evaluate Eqn.~\eqref{eq:likelihood} \emph{numerous} times in order to sample the multidimensional posterior distribution so that the samples may be histogrammed and visualized.
 
-We therefore follow an established framework for computationally intensive models and train a Gaussian process emulator (GPE) to act as a fast surrogate for the full physics simulation \note.
-The GPE enables essentially instantaneous predictions for $\y_m = f(\x)$ which allows us to sample the posterior distribution millions of times.
-In order to train the GPE, we first generate a scaffolding of the parameter space using a maximin Latin hypercube design to distribute 500 points uniformly in our 15-dimensional parameter space according to the ranges in Tbl.~\ref{tab:design}.
+We therefore follow an established framework for computationally intensive models and train an emulator to act as a fast surrogate for the full physics simulation \note.
+The emulator enables essentially instantaneous predictions for $\y_m = f(\x)$ and allows us to sample the posterior distribution millions of times.
+In order to train the emulator, we first generate a scaffolding of the parameter space using a maximin Latin hypercube design \note\ to distribute 500 points uniformly throughout our 15-dimensional parameter space according to the parameter ranges in Tbl.~\ref{tab:design}.
 We then run minimum-bias and multiplicity triggered $p$-Pb and Pb-Pb events at each design point, and calculate the model observables from the ensemble of events.
 
-Let $X$ denote the $d \times m$ dimensional matrix of design points where $d=500$ is the number of design points and $m$ is the number of emulated observables $y \in \y_m$.
+Specifically, let $X$ denote the ${d \times n}$ design matrix of $d=500$ training points, where each training point is a vector $\x = (x_1, x_2, \dots, x_n)$ of the $n=15$ model parameters in Tbl.~\ref{tab:design}.
+Similarly, let $Y$ denote the corresponding ${d \times m}$ observables matrix, where each row of $Y$ is a vector $\y_m = (y_1, y_2, \dots, y_m)$ of $m$ different simulated observables (here we overload our notation so the subscript $m$ means both \emph{model} and \emph{observable number}).
+Our goal is to train an emulator for the physics model $f$ using the discrete observations $f: X \mapsto Y$.
 
+We use for this purpose a specific type of emulator known as a Gaussian process emulator (GPE).
+The advantage of using GPE's is that they provide an estimate of their own uncertainty which allows us to account for this uncertainty when constructing the covariance matrix $\Sigma$ in Eqn.~\eqref{eq:likelihood}.
+One quirk of GPE's is that they are restricted to scalar-valued functions, i.e.\ functions of one output, whereas we require an emulator for vector-valued functions with multiple outputs.
+This restriction is commonly circumvented using principal component analysis (PCA): a general procedure which transforms a set of correlated variables $\y = (y_1, y_2, \dots, y_m)$ into a new basis representation $\z = (z_1, z_2, \dots, z_m)$ where the linear correlations between $z_i$, $z_j$ vanish for all $i\ne j \in m$ \note.
 
-\subsection{Experimental }
+We first preprocess our model observables by centering and scaling each column of $Y$ (single observable) to zero mean and unit variance to generate a standardized observable matrix $\tilde{Y}$.
+PCA is then used to reexpress each row-vector $\tilde{\y}$ of $\tilde{Y}$ (all standardized observables at a single design point) in the new principal component basis:
+\begin{equation}
+  \tilde{\y}_i = \sum\limits_{j=1}^m z_{ij} \mathbf{v_j},
+\end{equation}
+where $\tilde{\y}_i$ are the standardized observables of the $i$-th row-vector (design point) of matrix $\tilde{Y}$, and $z_{ij}$ and $\mathbf{v}_j$ are the coefficients and corresponding vectors of its $j$-th principal component.
+
+The principal components are reported in order of explained variance, with the first principal component vector $\mathbf{v}_1$ accounting for the most variance in $\tilde{Y}$, and the last principal component vector $\mathbf{v}_m$ accounting for the least.
+We then train a set of independent GPE's,
+\begin{align}
+  \label{eq:gpe}
+  z_1 &= \text{gp}_1(\x), \nonumber \\
+  z_2 &= \text{gp}_2(\x), \nonumber \\
+  \vdots & \nonumber\\
+  z_k &= \text{gp}_k(\x),
+\end{align}
+to predict the principal components (coefficients) $(z_1, \dots, z_k)$ of the first $k$ principal component vectors as a function of the model parameters $\x$ which vary across the design $X$.
+We use $k=7$ principal components when emulating the $p$-Pb system and $k=8$ principal components when emulating Pb-Pb, chosen to describe 99.5\% of the total observed variance of each system.
+
+The GPE's are essentially fancy interpolators applied to the model's training points and PCA transformed observables.
+Each GPE reports a mean value $z(\x)$ as well as an estimated error $\delta z(\x)$ which accounts for statistical noise in the training data and interpolation error between the design points.
+Once the GPE's \eqref{eq:gpe} are trained, we can predict the model observables $\y_m$ at parameter point $\x$ by transforming the vector of principal components
+\begin{equation}
+  \mathbf{z}(\x) = (z_1(\x), z_2(\x), \dots, z_k(\x))
+\end{equation}
+\emph{back} to physical space.
+Similarly, we can construct the covariance matrix of the observables in PCA space,
+\begin{equation}
+\text{Cov}(z_i, z_j) = \text{diag}[(\delta z_{1})^2, (\delta z_2)^2, \dots, (\delta z_k)^2 ],
+\end{equation}
+
+\onecolumngrid
+{\centering\includegraphics{observables_pbpb}\par}
+\captionof{figure}{Simulated observables compared to experimental data for Pb-Pb collisions at $\sqrts=5.02$~TeV. Top row: explicit model calculations (no emulator) for each of the 500 design points; bottom row: emulator predictions for $n=100$ random samples drawn from the posterior. Points with error bars are experimental data from ALICE with statistical and systematic errors added in quadrature \note.}
+\vspace{.5cm}
+{\centering\includegraphics{observables_ppb}\par}
+\captionof{figure}{Same as Fig.~\ref{fig:obs_pbpb} but for $p$-Pb collisions at $\sqrts=5.02$~TeV. Note that multiplicity bins are used for mean $p_T$ and flow cumulant observables to match the bins used by experiment. Experimental data are from ALICE and CMS \note.}
+\twocolumngrid
+
+and transform it back to physical space as well to obtain the covariance matrix of the model observables $\y_m$ at a given parameter point $\x$.
+
+The resulting emulator therefore predicts both a mean prediction $\y_m(\x)$ and an uncertainty covariance matrix $\Sigma_m(\x)$ which accounts for multiple sources of model and emulator uncertainty, including the truncation error expected from using a finite number of principal components $k < m$.
+The covariance matrix $\Sigma_\text{emu}$ thus includes the \emph{known-unknowns}, but not the \emph{unknown-unknowns}, such as the overall credibility of viscous hydrodynamics, which are difficult and often impossible to quantify.
+We show in Fig.~\ref{fig:correlation} the correlation structure $\text{Corr}(\Sigma)$ of the model (emulator) covariance $\Sigma_m(\x)$ for a random parameter point $\x$ in the design space (left-side), along side the same correlation matrix for the experimental covariance (right-side) for the Pb-Pb collision system.
+For additional information on the model emulator, we direct the reader to the appendix which includes several validation tests of the emulator prediction accuracy \note.
+
+\subsection{Bayesian calibration}
+
+In order to calibrate the model on two different collision systems, we expand the likelihood function \eqref{eq:likelihood} into a joint likelihood
+\begin{equation}
+  \label{eq:joint_likelihood}
+  P(E | H_\x) = P(E_\text{Pb-Pb} | H_\x) \cdot P(E_\text{$p$-Pb} | H_\x),
+\end{equation}
+where $E$ subsumes all evidence from the $p$-Pb and Pb-Pb collision systems and $H_\x$ is our hypothesis that $\x$ equals the true parameters $\x_\star$.
+
+We then perform Markov-chain Monte Carlo (MCMC) importance sampling on the posterior distribution in Eqn.~\eqref{eq:bayes} to draw random samples for $P(H_\x | E)$, the estimate of the true model parameters given the model and the experimental data.
+We use an affine-invariant ensemble sampler which uses a large ensemble of interdependent walkers \note\ and allow the MCMC chain to ``burn-in'' before generating $\mathcal{O}(10^7)$ posterior samples.
 
 
 \section{Results}
 \label{sec:results}
 
-\fig*[t]{validation_example}{
-  Placeholder
+We show simulated and emulated model observables (thin colored lines) for Pb-Pb collisions (Fig.~\ref{fig:obs_pbpb}) and \mbox{$p$-Pb} collisions (Fig.~\ref{fig:obs_ppb}) at $\sqrts=5.02$~TeV compared to experimental data from CMS and ALICE \note.
+The top row of each figure shows explicit model calculations at each of the $d=500$ design points (training data), while the bottom row shows emulator predictions for $n=100$ random parameter samples drawn from the Bayesian posterior.
+Each column shows a different class of observable.
+The charged-particle yield $d\nch/d\eta$ is shown on the left, mean $p_T$ is in the middle, and two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3,4$ are on the right.
+The Pb-Pb mean $p_T$ and $p$-Pb $\vnk{4}{2}$ datasets are missing and hence are omitted from the present calibration.
+
+Notice the large spread of the observables calculated at the training points (top row of each figure).
+The design is constructed to vary each parameter across a wide range of values, specified in Tbl.~\ref{tab:design}, and hence the corresponding model calculations are equally uncertain.
+We also point out that there is considerably more variance in the $p$-Pb training data than the Pb-Pb training data.
+The $p$-Pb yields, mean $p_T$ and flow cumulants all vary wildly within the chosen parameter ranges.
+For instance, we can turn the $p$-Pb flows completely \emph{off} with suitably chosen parameters which is not possible in the Pb-Pb system.
+Evidently the $p$-Pb model predictions are far more sensitive to modeling uncertainties.
+
+Conversely, the calibrated emulator predictions (bottom row of each figure) are far better constrained and nicely track the experimental data points.
+We emphasize here that the posterior parameter values are obtained from a \emph{simultaneous} calibration to $p$-Pb and Pb-Pb data, and thus they are self-consistent between the two systems.
+The spread in the posterior samples reflects different sources of model and experimental uncertainty as well as tension in the optimal fit parameters which describe each observable.
+We demonstrate later in the text that a single set of model parameters well describes all of the calibration data, and thus we believe that much of the spread in the posterior samples is uncertainty contributed by our emulator.
+We also note that although the $p$-Pb posterior samples have a somewhat larger spread than the Pb-Pb samples, the percentage uncertainty of the $p$-Pb emulator is similar to that of the Pb-Pb emulator, and thus the difference is likely due to the larger variance of the $p$-Pb training data.
+The uncertainty in the posterior distribution would thus be improved by running the calibration with more design points or with a narrower range of parameter values to increase the density of the training points and reduce interpolation error.
+
+We now direct our attention to Fig.~\ref{fig:posterior} which shows the posterior distribution of the model input parameters.
+Recall that the posterior $P(H_\x | E)$ is the probability that our hypothesis $H_\x$ for the true model parameters $\x_\star$ is correct, given the evidence $E$ provided by experiment.
+The present distribution has 15 dimensions, one for each parameter listed in Tbl.~\ref{tab:design}, and so we sample the distribution and histogram the samples to project the distribution onto a lower number of dimensions for visualization purposes.
+Each diagonal panel in the figure is the distribution of a \emph{single} model parameter (marginalized over all other parameters), and each lower-diagonal panel is the joint distribution of a \emph{pair} of model parameters (marginalized over all other parameters).
+The full posterior distribution includes a wealth of information.
+Here we focus on the most important features...
+
+{
+\onecolumngrid
+\begin{figure}
+  \makebox[\textwidth]{
+      \includegraphics[width=.95\paperwidth]{posterior}
+  }
+\end{figure}
+\captionof{figure}{Bayesian posterior distribution of the model input parameters. The diagonal panels show the marginalized distributions of individual model parameters, while off-diagonal panels show the joint distributions for pairs of model parameters, visualizing their correlations. The marginalized distribution medians and 90\% credible intervals are annotated along the diagonal.}
+\clearpage
+\twocolumngrid
 }
 
-\begin{figure}[h]
-  \makebox[\textwidth]{
-    \begin{minipage}[t]{\paperwidth}
-      \includegraphics[width=.95\paperwidth]{posterior}
-      \captionsetup{
-        width={.83\textwidth},
-        justification=raggedright,
-      }
-      \caption{Bayesian posterior distribution of the model input parameters. The diagonal panels show the marginalized distributions of individual model parameters, while off-diagonal panels show the joint distributions for pairs of model parameters, visualizing their correlations. The marginalized distribution medians and 90\% credible intervals are annotated along the diagonal.}
-    \end{minipage}
-  }
-  \label{fig:posterior}
+\begin{itemize}[leftmargin=1\parindent, itemsep=0pt, topsep=5pt]
+  \item The posterior initial condition normalization factor $\text{Norm} = 20.3^{+2.2}_{-2.2}$ (upper-left diagonal) is well constrained and describes both the $p$-Pb and Pb-Pb yields simultaneously (e.g.\ see Figs.~\ref{fig:obs_ppb}).
+    We emphasize that this self-consistency is highly non-trivial since the ratio of $p$-Pb to Pb-Pb yields model can only fit both yields simultaneously if the \trento\ entropy deposition parameter $p$ is appropriately tuned.
+\end{itemize}
+
+\onecolumngrid
+{\centering\includegraphics{observables_map}\par}
+\captionof{figure}{Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment. Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from ALICE and CMS \note. The ratio axes show the ratio of model over data where where available with gray bands indicating $\pm 10\%$.}
+\twocolumngrid
+
+\begin{figure}
+  \includegraphics{flow_corr}
+  \caption{Model calculations of the symmetric cumulants for Pb-Pb collisions at $\sqrts=5.02$~TeV using the \emph{maximum a posteriori} (MAP) parameters.}
+  \label{fig:flow_corr}
 \end{figure}
 
-\begin{figure*}[p]
-  \includegraphics{observables_pbpb}
-  \caption{Simulated observables compared to experimental data for Pb-Pb collisions at $\sqrts=5.02$~TeV. Top row: explicit model calculations (no emulator) for each of the 500 design points; bottom row: emulator predictions for $n=100$ random samples drawn from the posterior. Points with error bars are experimental data from ALICE with statistical and systematic errors added in quadrature \note.}
-  \vspace{5ex}
-  \includegraphics{observables_ppb}
-  \caption{Same as above but for $p$-Pb collisions at $\sqrts=5.02$~TeV. Note that multiplicity bins are used for mean $p_T$ and flow cumulant observables to match the bins used by experiment. Experimental data are from ALICE and CMS \note.}
+\begin{figure}
+  \includegraphics[width=\columnwidth]{posterior_proton_shape}
+  \caption{Posterior distribution for the nucleon width $w$ and constituent width $v$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $w$ and $v$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $v > w$. The posterior distribution, shown in blue, indicates the preferred values for $w$ and $v$ determined by the analysis.}
+  \label{fig:posterior_proton_shape}
+\end{figure}
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{region_shear_bulk}
+  \caption{Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \note. The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions. Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.}
+  \label{fig:region_shear_bulk}
 \end{figure*}
-
-\fig*[t]{observables_map}{
-  Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment.
-Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from ALICE and CMS \note. The ratio axes show the ratio of model over data where where available with gray bands indicating $\pm 10\%$.
-}
-
-\fig*[t]{flow_corr}{
-  Model calculations of the symmetric cumulants for Pb-Pb collisions at $\sqrts=5.02$~TeV using the \emph{maximum a posteriori} (MAP) parameters.
-}
-
-\fig{posterior_proton_shape}{
-%  Posterior distribution for the constituent sampling radius $\R$ and constituent width $\w$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $\R$ and $\w$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $\w > \R$. The posterior distribution, shown in blue, indicates the preferred values for $\R$ and $\w$ determined by the analysis.
-}
-
-\fig*[t]{region_shear_bulk}{
-  Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \note. The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions. Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.
-}
 
 \section{summary}
 \label{sec:summary}
@@ -785,11 +875,17 @@ Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb coll
   The authors thank ...
 \end{acknowledgments}
 
-\appendix*
+\appendix
 
 \section{Adaptive grid sizing}
 \label{appendix}
 This is the appendix
+
+\section{Emulator validation}
+\label{app:validation}
+\fig*[t]{validation_example}{
+  Placeholder
+}
 
 \bibliography{substructure}
 

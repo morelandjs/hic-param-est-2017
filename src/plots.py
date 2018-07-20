@@ -346,7 +346,7 @@ def _observables_plots():
             ),
             xlim=dict(
                 pPb5020=(0, 60),
-                PbPb5020=(0, 75),
+                PbPb5020=(0, 80),
             ),
             ylim=(1e2, 1e5),
             yscale='log',
@@ -366,7 +366,7 @@ def _observables_plots():
             ylabel=r'$\langle p_T \rangle$ [GeV]',
             xlim=dict(
                 pPb5020=(1, 6),
-                PbPb5020=(0, 75),
+                PbPb5020=(0, 80),
             ),
             ylim=(0, 1.5),
             subplots=[
@@ -383,7 +383,7 @@ def _observables_plots():
             ylabel=r'$\delta p_T/\langle p_T \rangle$',
             xlim=dict(
                 pPb5020=(1, 6),
-                PbPb5020=(0, 75),
+                PbPb5020=(0, 80),
             ),
             ylim=(0, 0.05),
             subplots=[('pT_fluct', None, dict())]
@@ -398,7 +398,7 @@ def _observables_plots():
             ylabel=r'$v_n\{2\}$',
             xlim=dict(
                 pPb5020=(1, 6),
-                PbPb5020=(0, 75),
+                PbPb5020=(0, 80),
             ),
             ylim=(0, .15),
             subplots=[
@@ -442,7 +442,7 @@ def observables(system):
 
     fig, axes = plt.subplots(
         nrows=2, ncols=len(plots),
-        figsize=figsize(1.1, aspect=.5),
+        figsize=figsize(1.1, aspect=.6),
     )
 
     for (posterior, plot), ax in zip(
@@ -565,12 +565,12 @@ def observables_map():
                 ],
                 legend=True
             )
-    fig = plt.figure(figsize=figsize(1.1, 1.5))
+    fig = plt.figure(figsize=figsize(0.955, 1.5))
 
     yields, mean_pT, mean_pT_fluct, flows = [
         gridspec.GridSpecFromSubplotSpec(
             2, 2, gs, height_ratios=[5, 1] if n == 0 else [3, 1],
-            hspace=0.1, wspace=.1
+            hspace=0.1, wspace=.14
         ) for n, gs in enumerate(
             gridspec.GridSpec(4, 1, height_ratios=[6, 4, 4, 4])
         )
@@ -677,7 +677,7 @@ def observables_map():
             ratio_ax.get_yticklabels()[0].set_verticalalignment('bottom')
             ratio_ax.get_yticklabels()[-1].set_verticalalignment('top')
 
-    set_tight(fig, h_pad=0.5, rect=[0, 0, .97, 1])
+    set_tight(fig, h_pad=.5, rect=[0, 0, .97, 1])
 
 
 @plot
@@ -1960,7 +1960,7 @@ def correlation_matrices(system=default_system):
     fig.colorbar(img, cax=cax, ticks=[-1, -.5, 0, .5, 1])
     cax.set_aspect(40)
     cax.yaxis.set_ticks_position('left')
-    cax.set_title('Correlation', y=1.02, fontsize=fontsize['normal'])
+    cax.set_title('Corr', y=1.02, fontsize=fontsize['normal'])
 
     set_tight(fig, rect=(0, 0, 1, .96))
 

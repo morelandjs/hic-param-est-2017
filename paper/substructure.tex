@@ -3,10 +3,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{multirow}
 
 \usepackage[inline]{enumitem}
-\usepackage{lipsum}
 
 \usepackage{color}
 \definecolor{theblue}{RGB}{0,50,230}
@@ -27,9 +25,9 @@
 \graphicspath{{../plots/}{./fig/}}
 
 \newcommand{\trento}{T\raisebox{-0.5ex}{R}ENTo}
+\newcommand{\sqrts}{\sqrt{s_{NN}}}
 \newcommand{\nch}{N_\text{ch}}
 \newcommand{\ntrk}{N_\text{trk}^\text{offline}}
-\newcommand{\sqrts}{\sqrt{s_{NN}}}
 \newcommand{\sigmaf}{\sigma_\mathrm{fluct}}
 \newcommand{\X}{\chi_\mathrm{struct}}
 \newcommand{\taufs}{\tau_\mathrm{fs}}
@@ -43,8 +41,11 @@
 \newcommand{\order}[1]{$\mathcal O(10^{#1})$}
 \newcommand{\note}{\textcolor{theblue}{[?]}}
 
+% Reduce the size of the itemize bullets
 \renewcommand\labelitemi{$\vcenter{\hbox{\scriptsize$\bullet$}}$}
 
+% Create a temporary full-page single column environment
+\newenvironment{fullpage}{\onecolumngrid}{\clearpage\twocolumngrid}
 
 % hyperref throws warning when a line break is used in the title
 % this removes the warning by redefining the line break in a pdf string
@@ -52,29 +53,12 @@
   \def\\#1{ #1}
 }
 
-% Convenient figure macro.  Usage:
-%
-%   \fig[placement specifier = t]{filename}{caption}
-%
-% This creates a figure environment, includes the given filename as graphics,
-% puts the given caption below the graphics, and labels it 'fig:filename'.
-% The optional placement specifier defaults to 't' and is passed directly to
-% the figure environment.
-% Use \fig* to make a figure* environment, i.e. a wide figure.
-\usepackage{xparse}
-\NewDocumentCommand\fig{sO{t}mm}{
-  \begin{figure\IfBooleanT{#1}{*}}[#2]
-    \includegraphics{#3}
-    \caption{\label{fig:#3}#4}
-  \end{figure\IfBooleanT{#1}{*}}
-}
-
 
 \begin{document}
 
 \title{
-  Estimating initial state and quark-gluon plasma medium properties\\
-  using a hybrid model with nucleon substructure\\
+  Estimating initial state and quark-gluon plasma medium properties \\
+  using a hybrid model with nucleon substructure \\
   calibrated to p-Pb and Pb-Pb collisions at \texorpdfstring{$\mathbf{\sqrts=5.02}$}{}~TeV
 }
 
@@ -651,7 +635,7 @@ Unfortunately, the four-particle cumulants require minimum-bias event statistics
 We therefore refrain from \emph{calibrating} on the four-particle cumulants, although we do show calculations of the four-particle cumulant $\vnk{2}{4}$ later in the text, using a single set of calibration parameters.
 
 Most of the calibration observables listed in Tbl.~\ref{tab:observables} are calculated as a function of collision centrality, where centrality is defined using some measure of the underlying event activity, e.g.\ the charged particle yield in a given rapidity window.
-When calculating these observables, we generate $\mathcal{O}(10^4)$ minimum-bias events at each design point and divide the events into centrality bins using the charged particle yield at midrapidity, similar to the procedure used by experiment.
+When calculating these observables, we generate \order{10^4} minimum-bias events at each design point and divide the events into centrality bins using the charged particle yield at midrapidity, similar to the procedure used by experiment.
 
 However, for some observables such as $p$-Pb mean $p_T$ \cite{Abelev:2013bla} and flow cumulants $\vnk{n}{k}$ \cite{Chatrchyan:2013nka}, the experiments use a special high-multiplicity trigger to select rare, ultra-central events according to the number of charged particles produced or detector tracks offline.
 These high-multiplicity bins are too selective for our modest minimum-bias event sample, and so a different procedure is required.
@@ -711,13 +695,11 @@ For the correlation structure between different observable bins, we assert a sim
   \label{eq:corr}
   \rho_{ij}^\text{sys} = \exp \left[ -\frac{1}{2} \left(\frac{b_i - b_j}{l} \right)^2 \right],
 \end{equation}
-
 where $b_i$ and $b_j$ are the midpoints of two observable bins of a single type (centrality or relative multiplicity) and $l$ is a correlation length which describes how quickly the observable bins decorrelate as the distance between the bins increases.
 We use centrality correlation lengths ${l=100\%}$ for all Pb-Pb observables and ${l=30\%}$ for the $p$-Pb charged particle yield $d\nch/d\eta$.
 The $p$-Pb mean $p_T$ and flow observables, meanwhile, use relative multiplicity bins $\nch / \langle \nch \rangle$ and $\ntrk / \langle \ntrk \rangle$ so we use a much smaller correlation length $l=5$ to reflect the smaller range of bin values.
 We show, as an example, the resulting experimental correlation matrix $\text{corr}(\Sigma_e)$ for the Pb-Pb system on the right side of Fig.~\ref{fig:correlation}.
 The correlation matrix is block diagonal, with each block representing the correlations within a single class of observable; in this case, the experimental yield $d\nch/d\eta$ and flows $\vnk{n}{2}$.
-
 
 \subsection{Model emulator}
 
@@ -752,7 +734,7 @@ We then train a set of independent GPE's,
   \label{eq:gpe}
   z_1 &= \text{gp}_1(\x), \nonumber \\
   z_2 &= \text{gp}_2(\x), \nonumber \\
-  \vdots & \nonumber\\
+  \vdots & \nonumber \\
   z_k &= \text{gp}_k(\x),
 \end{align}
 to predict the principal components (coefficients) $(z_1, \dots, z_k)$ of the first $k$ principal component vectors as a function of the model parameters $\x$ which vary across the design $X$.
@@ -770,13 +752,13 @@ Similarly, we can construct the covariance matrix of the observables in PCA spac
 \text{Cov}(z_i, z_j) = \text{diag}[(\delta z_{1})^2, (\delta z_2)^2, \dots, (\delta z_k)^2 ],
 \end{equation}
 
-\onecolumngrid
+\begin{fullpage}
 {\centering\includegraphics{observables_pbpb}\par}
 \captionof{figure}{Simulated observables compared to experimental data for Pb-Pb collisions at $\sqrts=5.02$~TeV. Top row: explicit model calculations (no emulator) for each of the 500 design points; bottom row: emulator predictions for $n=100$ random samples drawn from the posterior. Points with error bars are experimental data from ALICE with statistical and systematic errors added in quadrature \note.}
 \vspace{.5cm}
 {\centering\includegraphics{observables_ppb}\par}
 \captionof{figure}{Same as Fig.~\ref{fig:obs_pbpb} but for $p$-Pb collisions at $\sqrts=5.02$~TeV. Note that multiplicity bins are used for mean $p_T$ and flow cumulant observables to match the bins used by experiment. Experimental data are from ALICE and CMS \note.}
-\twocolumngrid
+\end{fullpage}
 
 and transform it back to physical space as well to obtain the covariance matrix of the model observables $\y_m$ at a given parameter point $\x$.
 
@@ -795,7 +777,7 @@ In order to calibrate the model on two different collision systems, we expand th
 where $E$ subsumes all evidence from the $p$-Pb and Pb-Pb collision systems and $H_\x$ is our hypothesis that $\x$ equals the true parameters $\x_\star$.
 
 We then perform Markov-chain Monte Carlo (MCMC) importance sampling on the posterior distribution in Eqn.~\eqref{eq:bayes} to draw random samples for $P(H_\x | E)$, the estimate of the true model parameters given the model and the experimental data.
-We use an affine-invariant ensemble sampler which uses a large ensemble of interdependent walkers \note\ and allow the MCMC chain to ``burn-in'' before generating $\mathcal{O}(10^7)$ posterior samples.
+We use an affine-invariant ensemble sampler which uses a large ensemble of interdependent walkers \note\ and allow the MCMC chain to ``burn-in'' before generating \order{10^7} posterior samples.
 
 
 \section{Results}
@@ -828,27 +810,24 @@ Each diagonal panel in the figure is the distribution of a \emph{single} model p
 The full posterior distribution includes a wealth of information.
 Here we focus on the most important features...
 
-{
-\onecolumngrid
+\begin{fullpage}
 \begin{figure}
   \makebox[\textwidth]{
       \includegraphics[width=.95\paperwidth]{posterior}
   }
 \end{figure}
 \captionof{figure}{Bayesian posterior distribution of the model input parameters. The diagonal panels show the marginalized distributions of individual model parameters, while off-diagonal panels show the joint distributions for pairs of model parameters, visualizing their correlations. The marginalized distribution medians and 90\% credible intervals are annotated along the diagonal.}
-\clearpage
-\twocolumngrid
-}
+\end{fullpage}
 
 \begin{itemize}[leftmargin=1\parindent, itemsep=0pt, topsep=5pt]
   \item The posterior initial condition normalization factor $\text{Norm} = 20.3^{+2.2}_{-2.2}$ (upper-left diagonal) is well constrained and describes both the $p$-Pb and Pb-Pb yields simultaneously (e.g.\ see Figs.~\ref{fig:obs_ppb}).
     We emphasize that this self-consistency is highly non-trivial since the ratio of $p$-Pb to Pb-Pb yields model can only fit both yields simultaneously if the \trento\ entropy deposition parameter $p$ is appropriately tuned.
 \end{itemize}
 
-\onecolumngrid
+\begin{fullpage}
 {\centering\includegraphics{observables_map}\par}
 \captionof{figure}{Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment. Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from ALICE and CMS \note. The ratio axes show the ratio of model over data where where available with gray bands indicating $\pm 10\%$.}
-\twocolumngrid
+\end{fullpage}
 
 \begin{figure}
   \includegraphics{flow_corr}
@@ -883,9 +862,9 @@ This is the appendix
 
 \section{Emulator validation}
 \label{app:validation}
-\fig*[t]{validation_example}{
-  Placeholder
-}
+\begin{figure*}
+  \includegraphics{validation_example}
+\end{figure*}
 
 \bibliography{substructure}
 

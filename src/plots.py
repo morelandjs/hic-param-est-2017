@@ -1765,7 +1765,7 @@ def validation_all(system):
     ax_rms.set_xticks([])
     ax_rms.set_yticks(np.arange(0, 21, 5))
     ax_rms.set_ylim(0, 20)
-    ax_rms.set_ylabel('RMS % error')
+    ax_rms.set_ylabel('Fractional error')
 
     for y in ax_rms.get_yticks():
         ax_rms.axhline(y, color='.5', zorder=-10)

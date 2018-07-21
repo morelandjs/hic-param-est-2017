@@ -856,14 +856,93 @@ Here we focus on the most important features...
 
 \appendix
 
-\section{Adaptive grid sizing}
+\section{Event-by-event grid resizing}
 \label{appendix}
-This is the appendix
+
+\begin{figure}
+  \begin{tikzpicture}
+    \draw [black, thin, step=0.3cm] (0.9, 0.9) grid +(4.5, 4.5);
+    \draw [gray, thin, step=0.9cm] (0, 0) grid +(6.3, 6.3);
+    \draw [theblue] (3.15, 3.15) circle (2.25cm);
+  \end{tikzpicture}
+  \caption{Diagram of the adaptive grid resizing algorithm (not drawn to scale). Each initial condition event is first run on a very large coarse-grained mesh (large gray grid) of one-third the spatial resolution otherwise required to measure hydrodynamic observables. We then measure the maximum transverse radius $R_\text{max}$ (blue circle) of the hypersurface defined by the temperature isotherm $T = T(e_\text{min})$, where $e_\text{min}$ is the largest energy density which can be truncated without modifying the hydrodynamic observables calculated from the event. Finally, the initial condition event is rerun on a smaller and finer mesh (smaller black grid) with three-times the cell density of the pre-run event and a smaller transverse extent $-R_\text{max} < x < R_\text{max}$.}
+  \label{fig:adaptive_grid}
+\end{figure}
+
+The boost-invariant \texttt{VISH2+1} hydrodynamics code used in this work \cite{Song:2007ux, Shen:2014vra} runs on a Cartesian transverse grid specified by a maximum grid size $x_\text{max}$ and grid step width $dx$ which fix the transverse grid extent ${-x_\text{max} < x < x_\text{max}}$ and number of grid cells along each dimension ${n_x = 2\, x_\text{max} / dx}$.
+In general, the maximum grid size $x_\text{max}$ should be set large enough to contain the full spacetime evolution of the event.
+This means that the truncation of $T^{\mu\nu}$ at the boundaries of the grid should never modify the final-state observables.
+We enforce this requirement by finding an energy density cutoff $e_\text{min}$ for which the matter $e < e_\text{min}$ can be effectively discarded without significantly modifying the simulation observables.
+We then fix the maximum grid size $x_\text{max}$ such that it fully encloses the isotherm $T=T(e_\text{min})$ for the full lifetime of the fireball.
+
+We find that we can quickly estimate the maximum radius $R_\text{max} = |\x_\text{max}|^2$ of the spacetime hypersurface ${T = T(e_\text{min})}$ by running the event on a coarse-grained spatial grid with one-third the spatial resolution we would otherwise require to resolve typical hydrodynamic observables such as mean $p_T$ and flows.
+The simulation time of a single \texttt{VISH2+1} event scales like ${\sim}n_x^3$ since $dx \propto d\tau$, and thus our ``pre-run'' event requires only ${\sim}1/27$th the time of a production event.
+We therefore run a coarse-grained pre-event on an excessively large grid for \emph{every} minimum-bias event to estimate $R_\text{max}$, then rerun the same event on a thrice finer grid with a trimmed spatial extent $x_\text{max} \equiv R_\text{max}$.
+See Fig.~\ref{fig:adaptive_grid} for a simple diagram of the procedure.
+
+In practice, we find that event-by-event grid resizing leads to a massive speed increase for minimum bias events compared to using a single fixed grid for the entire minimum bias sample.
+This is because the maximum transverse size of each event varies dramatically, from a few fm in peripheral Pb-Pb collisions to 50 fm or more in central Pb-Pb collisions.
+The procedure should generalize to other hydrodynamic codes, including those with $3+1$ spacetime dimensions, where the time savings could be even more pronounced.
 
 \section{Emulator validation}
 \label{app:validation}
+
 \begin{figure*}
   \includegraphics{validation_example}
+  \caption{Example emulator validation for one observable, the Pb-Pb charged particle yield $d\nch/d\eta$ in the 20-30\% centrality class. We use the k-fold cross validation method (explained in the text) to partition the model inputs $X$ and outputs $Y$ into training and validation data. The scatterplot on the left shows the emulator predictions and one sigma error bars (x-axis) against explicit model calculations (y-axis). Perfect emulator/model agreement is indicated by the black like $y_\text{pred}=y_\text{obs}$. The histogram on the right shows that the errors are properly accounted for, i.e.\ the normalized residuals follow a normal distribution with unit variance and zero mean.
+  }
+  \label{fig:validation_example}
+\end{figure*}
+
+The emulator is a surrogate for the full physics simulation which generates probabilistic predictions for the model observables $\y_m$ at a given point $\x$.
+Here we validate these probabilistic predictions using a method known as k-fold cross validation.
+We first randomly partition our $d=500$ training points into $k=20$ equal sized subsamples or ``folds''.
+One of the subsamples is used to validate the emulator and the remaining $k-1$ subsamples are used to train it.
+The process is then repeated for each of the subsamples so that we end up validating on all of the training data.
+
+Figure~\ref{fig:validation_example} shows a scatterplot of the emulator predictions with one-sigma error bars (x-axis) against explicit model calculations (y-axis).
+Perfect emulator and model agreement is indicated by the black line $y_\text{pred} = y_\text{obs}$.
+If the emulator errors are properly accounted for, then the normalized residuals ${z=(y_\text{pred} - y_\text{obs})/\sigma_\text{pred}}$ sample a unit normal distribution:
+\begin{equation}
+  P(z) \sim \mathcal{N}(\mu=0,\sigma=1).
+\end{equation}
+
+This comparison is shown by the histogram and box plot on the right side of Fig.~\ref{fig:validation_example}.
+The emulator error is clearly significant, but it is also properly modeled, as indicated by the agreement between the normalized residuals and the unit normal distribution on the right (black curve).
+Moreover, since we include this uncertainty in the likelihood covariance matrix \eqref{eq:likelihood}, we expect our results to be robust to the emulator limitations.
+This is an important point that bears repeating.
+The emulator uncertainty does not erode the veracity of the posterior distribution if it is correctly modeled and accounted for.
+
+More generally, we can perform the validation test in Fig.~\ref{fig:validation_example} for \emph{every} observable $y \in \y_m$ and check that each observable's normalized residuals ${z=(y_\text{pred} - y_\text{obs})/\sigma_\text{pred}}$ follow a unit normal distribution.
+This test is applied to the Pb-Pb system in Fig.~\ref{fig:validation_PbPb5020} and the $p$-Pb system in Fig.~\ref{fig:validation_pPb5020}.
+The top row of each figure shows a box-plot for the normalized residuals of each observable compared to the quantiles of a unit normal distribution.
+The thin horizontal black lines correspond to the 10th and 90th percentiles of a unit normal distribution, and the gray band its interquartile range.
+These visual references should be compared to the whiskers and interquartile range respectively of each box plot, analogous to the comparison test of Fig.~\ref{fig:validation_example}.
+The emulators generally behave as expected, although the validation is somewhat better for the Pb-Pb system than the $p$-Pb system.
+For instance, the $p$-Pb charged particle yield $d\nch/d\eta$ uncertainties are over predicted.
+It is not immediately clear why this would be the case, but the MAP observables in Fig.~\note\ are in good agreement with their emulator predictions which suggests it should not be a grave concern.
+
+We also show in Fig.~\ref{fig:validation_PbPb5020} and Fig.~\ref{fig:validation_pPb5020} an estimate of the emulator error magnitude.
+This error is expressed in terms of the unitless variable
+\begin{equation}
+  \hat{z} = \frac{y_\text{pred} - y_\text{obs}}{(\Delta y)_{99\%}},
+\end{equation}
+where $(\Delta y)_{99\%}$ is 99\% of the full variability of $y$ across the design.
+Thus $\hat{z}$ can be thought of as a fractional emulator error relative to the full design variability.
+The bottom row of each figure shows the root-mean-square value of $\hat{z}$.
+We see that $\text{RMS}\{\hat{z}\}$ ranges from a few percent for most observables to a maximum value of 15\% for the $p$-Pb triangular flow $v_3\{2\}$ in the lowest multiplicity bin.
+This suggests that the present analysis would benefit the most from more $p$-Pb events, in particular, from more multiplicity triggered events which are used to calculate the flows.
+
+\begin{figure*}
+  \includegraphics{validation_PbPb5020}
+  \caption{}
+  \label{fig:validation_PbPb5020}
+\end{figure*}
+
+\begin{figure*}
+  \includegraphics{validation_pPb5020}
+  \caption{}
+  \label{fig:validation_pPb5020}
 \end{figure*}
 
 \bibliography{substructure}

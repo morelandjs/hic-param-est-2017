@@ -594,6 +594,7 @@ Several of the model parameters require special care and are reparametrized acco
 \item Equation~\eqref{eq:nucleon_width} requires the nucleon width to be larger than the constituent width, i.e. $w > v$, lest the sampling radius $r$ turn imaginary, and thus we cannot vary the nucleon width $w$ and the constituent width $v$ independently.
   We therefore reparametrize the constituent width $v$ using a new variable $\X$ to interpolate between minimum and maximum allowed values:
   \begin{equation}
+    \label{eq:struct_param}
     v = v_\mathrm{min} + \X (v_\mathrm{max} - v_\mathrm{min}).
   \end{equation}
   Here we choose a minimum constituent width $v_\mathrm{min} = 0.2$~fm determined by computational limits and a maximum width $v_\mathrm{max} = w$ equal to the nucleon width.
@@ -602,6 +603,7 @@ Several of the model parameters require special care and are reparametrized acco
 \end{itemize}
 
 \subsection{Observables}
+\label{sec:observables}
 
 The likelihood function \eqref{eq:likelihood} provides evidence for \mbox{(or against)} the model parameters $\x$ by comparing the model predictions $\y_m(\x)$ to experimental data $\y_e$.
 We focus on simple experimental observables in the present study which are sensitive to the bulk properties of the produced medium.
@@ -816,12 +818,19 @@ For example, $x=2.45_{-0.15}^{+0.20}$ corresponds to a posterior median $\tilde{
 
 \subsection{Initial condition parameters}
 
+\begin{figure}
+  \includegraphics[width=\columnwidth]{posterior_proton_shape}
+  \caption{Posterior distribution for the nucleon width $w$ and constituent width $v$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $w$ and $v$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $v > w$. The posterior distribution, shown in blue, indicates the preferred values for $w$ and $v$ determined by the analysis.}
+  \label{fig:posterior_proton_shape}
+\end{figure}
+
 The \trento\ normalization factor ${\text{Norm} = 20.3^{+2.2}_{-2.2}}$ and generalized mean parameter $p=0.018^{+0.146}_{-0.159}$ are well constrained by the present analysis.
-Moreover, their posterior values nicely describe the calibration observables of both collision systems as evidenced by Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb}.
+Moreover, their posterior values nicely describe the $p$-Pb and Pb-Pb calibration observables in Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb}.
 While it would not be surprising, for example, to fit one or two of these observables using such a narrow range of values, the quality of the combined fit and the number of observables described is highly non-trivial.
-For example, as the entropy deposition parameter $p \rightarrow \pm\infty$, particle production scales like the local maximum (minimum) of the nuclear overlap density.
-This strongly affects the ratio of the predicted $p$-Pb and Pb-Pb yields and consequently---absent any additional information---excludes \emph{most} values of the parameter $p$.
-It just so happens that the small range of $p$-values needed to describe the aforementioned yield ratio are the same values needed to describe all of the calibration observables in the present study, \emph{and} numerous Pb-Pb observables at $\sqrts=2.76$~TeV \note.
+For example, consider the ratio of the $p$-Pb yield over the Pb-Pb yield, which imposes a strong constraint on physically reasonable initial condition models.
+As the entropy deposition parameter $p$ trends toward positive (negative) infinity, particle production scales like the local maximum (minimum) of the nuclear overlap density.
+The parameter $p$ thus strongly affects the $p$-Pb and Pb-Pb yield ratio.
+It just so happens that the small range of $p$-values needed to describe this yield ratio are the same values needed to describe all of the calibration observables in the present study, \emph{and} numerous Pb-Pb observables at $\sqrts=2.76$~TeV \note.
 This work thus reaffirms an empirical scaling law reported in several previous studies \note, that entropy deposition at midrapidity in ultrarelativistic nuclear collisions scales approximately as
 \begin{equation}
   \label{eq:geometric_mean}
@@ -829,23 +838,77 @@ This work thus reaffirms an empirical scaling law reported in several previous s
 \end{equation}
 where $\T_A$ and $\T_B$ are the participant thickness functions \eqref{eq:fluctuated_thick} of each nucleus.
 We emphasize that this specific analytic form should not be interpreted too literally.
-For instance, a generalized mean described by $p=0.05$ is well within our 90\% credible region, but it is not equal to the geometric mean in Eqn.~\ref{eq:geometric_mean}.
-This approximate form, nevertheless, has been shown to mimic the scaling behavior of several saturation-based theory calculations in high-energy QCD \cite{Bernhard:2016tnd}, and thus it appears to be consistent with first-principle theoretical expectations.
+For instance, a generalized mean described by $p=0.05$ is well within our 90\% credible interval, but it is not equal to the geometric mean in Eqn.~\ref{eq:geometric_mean}.
+This approximate form nevertheless has been shown to mimic the scaling behavior of several saturation-based theory calculations in high-energy QCD \cite{Bernhard:2016tnd}, and thus appears consistent with theoretical expectations.
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{region_shear_bulk}
+  \caption{Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \cite{Bernhard:2018hnz}. The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions. Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.}
+  \label{fig:region_shear_bulk}
+\end{figure*}
 
 Continuing down the diagonal in Fig.~\ref{fig:posterior}, we see that the nucleon width parameter $w=0.97_{-0.17}^{+0.19}$~fm.
 We caution that this parameter $w$ is \emph{not} the RMS radius of our nucleons due to idiosyncrasies of the constituent sampling procedure.
 We can, however, easily calculate the RMS radius for a specific nucleon width $w$, constituent width $v$ and constituent number $n_c$.
-For example, the single highest posterior probability region of parameter space prefers a nucleon width $w=0.92$~fm, constituent width $v=0.43$~fm and constituent number $n_c=6$.
+For example, the single highest posterior probability region of the parameter space prefers a nucleon width $w=0.92$~fm, constituent width $v=0.43$~fm and constituent number $n_c=6$.
 The corresponding RMS nucleon radius for these parameters is $R_n = 0.86$~fm, conspicuously close the proton's RMS electric charge radius $R_p = 0.879(8)$~fm \cite{Bernauer:2010wm}.
-
 This is perhaps the single largest difference between our work and the conclusions of recent saturation-based calculations which constrained the event-by-event fluctuations of the proton using a color-dipole picture of vector meson production \cite{Mantysaari:2016ykx, Mantysaari:2016jaz}.
-The studies find that the measured coherent and incoherent $J/\Psi$ spectra at HERA prefer a compact gluon distribution inside each nucleon with an RMS radius $R_g = 0.4$~fm, which is approximately \emph{half} the analogous nucleon length scale in our model and clearly a significant discrepancy.
+Those studies find that the measured coherent and incoherent $J/\Psi$ spectra at HERA prefer a compact gluon distribution inside each nucleon, with an RMS radius $R_g \approx 0.4$~fm, which is roughly \emph{half} the analogous RMS nucleon width preferred by our analysis.
 
-The posterior constituent number $n_c = 6.2_{-3.1}^{+2.8}$ clearly disfavors $n_c=1$ constituent, although there is no strong peak for $n_c > 1$ constituents.
-This suggests that initial condition models which lack nucleon substructure will perform provide a worse description $p$-Pb and Pb-Pb bulk observables simultaneously which is perhaps at odds with 
+Meanwhile, the posterior on the constituent number $n_c$ is not sharply peaked.
+We therefore refrain from quoting a distribution median and 90\% credible interval, although we do note that the distribution clearly favors $n_c > 1$ constituents.
+This is not surprising.
+The \trento\ model mimics saturation-based initial condition models, and saturation models tend to produce ``proton-sized'' fireballs in $p$-Pb collisions \note.
+When the proton is spherically symmetric, the resulting proton-sized QGP is also largely symmetric and thus produces very little flow.
+Saturation-based models are therefore unable to describe the significant flow measured in high-multiplicity $p$-Pb collisions without nucleon substructure, or alternatively, some other source of additional correlations \note.
+
+The posterior on the nucleon substructure parameter $\X=0.34_{-0.17}^{+0.22}$, on the other hand, is particularly sharply peaked.
+Recall that this parameter, defined in Eqn.~\eqref{eq:struct_param}, interpolates between the minimum and maximum widths of each constituent and hence
+two different limits for the granularity of the nucleon.
+When $\X=0$, the nucleon is populated by $n_c$ small compact hot-spots, and when $\X=1$ the hot-spots are large and fully overlapping, restoring spherical symmetry.
+We use the parameter $\X$ purely for calibration purposes and then transform the variable back to a constituent width $v$ for discussion purposes.
+
+We plot the joint posterior distribution for the nucleon width parameter $w$ and constituent width $v$ in Fig.~\ref{fig:posterior_proton_shape}.
+The white trapezoidal region in the lower-right is the joint parameter prior, and the gray triangular region in the upper-left where $v > w$ is a region that we exclude from the prior.
+The posterior distribution, shown in blue, is remarkably well constrained.
+We report a posterior estimate for the constituent width $v=0.46_{-0.15}^{+0.21}$~fm which is roughly the same magnitude as the \emph{nucleon} hot-spots used in recent saturation-based substructure studies that employed IP-Glasma initial conditions \note.
+Evidently, it may be necessary to place an informative prior on our nucleon substructure parameters in order to resolve the apparent tension between our parameter values and those needed to describe DIS measurements at HERA.
+Alternatively, it is also possible that the fluctuations probed by coherent and incoherent $J/\Psi$ production are different than those probed by minimum-bias particle production.
+
+\subsection{Transport properties}
+
+In this section, we compare several of our posterior estimates to those obtained from a similar Bayesian analysis \cite{Bernhard:2018hnz} which used an (almost) identical version of the present physics model.
+The only modeling difference is the inclusion of nucleon substructure in this work which was absent in Ref.~\cite{Bernhard:2018hnz}.
+Several calibration details, however, are different between the two studies.
+The present work uses a much smaller number of $p$-Pb and Pb-Pb observables at $\sqrts=5.02$~TeV (limited by availability), whereas Ref.~\cite{Bernhard:2018hnz} used a larger cross section of Pb-Pb experimental data at $\sqrts=2.76$ and 5.02~TeV.
+
+The posterior free-streaming time $\taufs=0.37_{-0.27}^{+0.34}$~fm/$c$ obtained in this work is significantly smaller than our previous estimate $\taufs=1.16_{-0.25}^{+0.29}$~fm/$c$ in Ref.~\cite{Bernhard:2018hnz}.
+We point out that the present study is missing several important observables which could affect the estimated free-streaming time, e.g.\ the Pb-Pb mean $p_T$ and mean $p_T$ fluctuations at $\sqrts=5.02$~TeV.
+Nevertheless, it appears that the inclusion of nucleon substructure significantly reduces the maximum allowed free-streaming time, although more work is needed to establish if this is indeed the case.
+
+We also compare in Fig.~\ref{fig:region_shear_bulk} our estimates for the temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ and bulk viscosity $(\zeta/s)(T)$ with those of Ref.~\cite{Bernhard:2018hnz}.
+The lines are the distribution medians, and the bands are their 90\% credible regions.
+The results of this work are shown in orange, and the results of Ref.~\cite{Bernhard:2018hnz} are shown in blue.
+In general, our estimates are broader and less certain but otherwise self-consistent.
+Evidently, the combined analysis of Pb-Pb data at $\sqrts=2.76$ and 5.02~TeV in Ref.~\cite{Bernhard:2018hnz} provides a better constraint on the QGP viscosities which is not surprising given the additional observables and multiple beam energies studied.
+The $p$-Pb data, meanwhile, does not appear to provide any unique viscous constraints.
 
 
-\begin{table}[b]
+\subsection{Verification of high-probability parameters}
+
+The full posterior in Fig.~\ref{fig:posterior} is the distribution of true parameter values, given the assumptions of our model and the evidence provided by the experimental data.
+Correspondingly, the probability of nature ``choosing'' any specific set of parameter values is \emph{zero}; we can only assign a probability to a finite region of parameter space.
+Nevertheless, we can define the \emph{maximum a posteriori probability} (MAP) estimate as the single most probable neighborhood (i.e.\ point) in parameter space, equal to the mode of the distribution.
+
+We list the posterior MAP parameters in Tbl.~\ref{tab:map_param}.
+The values are estimated using a m
+
+and run \order{6} events minimum-bias and multiplicity triggered $p$-Pb and Pb-Pb events at $\sqrts=5.02$~TeV.
+We then calculate all of the model observables listed in Sec.~\ref{sec:observables}.
+These ``best fit'' model predictions are plotted in Fig.~\ref{fig:obs_map} alongside the experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
+They are explicit model calculations; \emph{there is no emulator}.
+
+\begin{table}[t]
   \caption{Maximum a posteriori (MAP) parameters.}
   \begin{ruledtabular}
   \begin{tabular}{lll}
@@ -868,22 +931,12 @@ This suggests that initial condition models which lack nucleon substructure will
     $T_\text{switch}$ & Switching/particlization temp.       & 151 MeV        \\
   \end{tabular}
   \end{ruledtabular}
-  \label{tab:design}
+  \label{tab:map_param}
 \end{table}
-
-
-
-\subsection{Verification of high-probability parameters}
-
-The posterior in Fig.~\ref{fig:posterior} is the distribution of true parameter values, given the assumptions of our model and the evidence provided by the experimental data.
-Correspondingly, the probability of nature ``choosing'' any specific set of parameter values is \emph{zero}; we can only assign a probability to a finite region of parameter space.
-Nevertheless, we can define the \emph{maximum a posteriori probability} (MAP) estimate as the single most probable neighborhood (i.e.\ point) in parameter space, equal to the mode of the distribution.
-
-We estimate the MAP parameters for the posterior in Fig.~\ref{fig:posterior} and run \order{6} events for $p$-Pb and Pb-Pb (minimum bias and multiplicity triggered) 
 
 \begin{fullpage}
 {\centering\includegraphics{observables_map}\par}
-\captionof{figure}{\label{fig:obs_map} Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment. Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}. The ratio axes show the ratio of model over data where where available with gray bands indicating $\pm 10\%$.}
+\captionof{figure}{\label{fig:obs_map} Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment. Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}. The sub-axes show the ratio of model over data where available with gray bands indicating $\pm 10\%$.}
 \end{fullpage}
 
 \begin{figure}
@@ -892,18 +945,6 @@ We estimate the MAP parameters for the posterior in Fig.~\ref{fig:posterior} and
   \label{fig:flow_corr}
 \end{figure}
 
-\begin{figure}
-  \includegraphics[width=\columnwidth]{posterior_proton_shape}
-  \caption{Posterior distribution for the nucleon width $w$ and constituent width $v$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $w$ and $v$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $v > w$. The posterior distribution, shown in blue, indicates the preferred values for $w$ and $v$ determined by the analysis.}
-  \label{fig:posterior_proton_shape}
-\end{figure}
-
-\begin{figure*}
-  \includegraphics[width=\textwidth]{region_shear_bulk}
-  \caption{Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \cite{Bernhard:2018hnz}. The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions. Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.}
-  \label{fig:region_shear_bulk}
-\end{figure*}
-
 \section{summary}
 \label{sec:summary}
 
@@ -911,20 +952,11 @@ We estimate the MAP parameters for the posterior in Fig.~\ref{fig:posterior} and
   The authors thank ...
 \end{acknowledgments}
 
+\bibliography{substructure}
 \appendix
 
 \section{Event-by-event grid resizing}
 \label{app:adaptive_grid}
-
-\begin{figure}
-  \begin{tikzpicture}
-    \draw [black, thin, step=0.3cm] (0.9, 0.9) grid +(4.5, 4.5);
-    \draw [gray, thin, step=0.9cm] (0, 0) grid +(6.3, 6.3);
-    \draw [theblue] (3.15, 3.15) circle (2.25cm);
-  \end{tikzpicture}
-  \caption{Diagram of the adaptive grid resizing algorithm (not drawn to scale). Each initial condition event is first run on a very large coarse-grained mesh (large gray grid) of one-third the spatial resolution otherwise required to measure hydrodynamic observables. We then measure the maximum transverse radius $R_\text{max}$ (blue circle) of the hypersurface defined by the temperature isotherm $T = T(e_\text{min})$, where $e_\text{min}$ is the largest energy density which can be truncated without modifying the hydrodynamic observables calculated from the event. Finally, the initial condition event is rerun on a smaller and finer mesh (smaller black grid) with three-times the cell density of the pre-run event and a smaller transverse extent $-R_\text{max} < x < R_\text{max}$.}
-  \label{fig:adaptive_grid}
-\end{figure}
 
 The boost-invariant \textsc{VISH2+1} hydrodynamics code used in this work \cite{Song:2007ux, Shen:2014vra} runs on a Cartesian transverse grid specified by a maximum grid size $x_\text{max}$ and grid step width $dx$ which fix the transverse grid extent ${-x_\text{max} < x < x_\text{max}}$ and number of grid cells along each dimension ${n_x = 2\, x_\text{max} / dx}$.
 In general, the maximum grid size $x_\text{max}$ should be set large enough to contain the full spacetime evolution of the event.
@@ -940,6 +972,16 @@ See Fig.~\ref{fig:adaptive_grid} for a simple diagram of the procedure.
 In practice, we find that event-by-event grid resizing leads to a massive speed increase for minimum bias events compared to using a single fixed grid for the entire minimum bias sample.
 This is because the maximum transverse size of each event varies dramatically, from a few fm in peripheral Pb-Pb collisions to 50 fm or more in central Pb-Pb collisions.
 The procedure should generalize to other hydrodynamic codes, including those with $3+1$ spacetime dimensions, where the time savings could be even more pronounced.
+
+\begin{figure}
+  \begin{tikzpicture}
+    \draw [black, thin, step=0.3cm] (0.9, 0.9) grid +(4.5, 4.5);
+    \draw [gray, thin, step=0.9cm] (0, 0) grid +(6.3, 6.3);
+    \draw [theblue] (3.15, 3.15) circle (2.25cm);
+  \end{tikzpicture}
+  \caption{Diagram of the adaptive grid resizing algorithm (not drawn to scale). Each initial condition event is first run on a very large coarse-grained mesh (large gray grid) of one-third the spatial resolution otherwise required to measure hydrodynamic observables. We then measure the maximum transverse radius $R_\text{max}$ (blue circle) of the hypersurface defined by the temperature isotherm $T = T(e_\text{min})$, where $e_\text{min}$ is the largest energy density which can be truncated without modifying the hydrodynamic observables calculated from the event. Finally, the initial condition event is rerun on a smaller and finer mesh (smaller black grid) with three-times the cell density of the pre-run event and a smaller transverse extent $-R_\text{max} < x < R_\text{max}$.}
+  \label{fig:adaptive_grid}
+\end{figure}
 
 \section{Emulator validation}
 \label{app:validation}
@@ -990,18 +1032,12 @@ The bottom row of each figure shows the root-mean-square value of $\hat{z}$.
 We see that $\text{RMS}\{\hat{z}\}$ ranges from a few percent for most observables to a maximum value of 15\% for the $p$-Pb triangular flow $v_3\{2\}$ in the lowest multiplicity bin.
 This suggests that the present analysis would benefit the most from more $p$-Pb events, in particular, from more multiplicity triggered events which are used to calculate the flows.
 
+\begin{fullpage}
 \begin{figure*}
   \includegraphics{validation_PbPb5020}
-  \caption{}
-  \label{fig:validation_PbPb5020}
-\end{figure*}
-
-\begin{figure*}
   \includegraphics{validation_pPb5020}
-  \caption{}
-  \label{fig:validation_pPb5020}
+  \caption{\label{fig:val_pbpb} Emulator validation for the Pb-Pb collision system (top) and $p$-Pb collision system (bottom) at $\sqrts=5.02$~TeV. The ``piano keys'' in the top row of each figure are horizontally stacked box plots for the normalized residuals of each model observable. The boxes are 50\% interquartile ranges and whiskers are the 90\% interquantiles.}
 \end{figure*}
-
-\bibliography{substructure}
+\end{fullpage}
 
 \end{document}

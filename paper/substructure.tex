@@ -246,7 +246,7 @@ For certain discrete values of $p$, it reduces to well known functional forms su
     2\, T_A T_B/(T_A + T_B) & p = -1, \hfill \text{ (harmonic)} \\[\extraspace]
     \min(T_A, T_B) & p \rightarrow -\infty.
   \end{cases}
-  \label{eq:gmean}
+  \label{eq:trento_p}
 \end{equation}
 Conveniently, it has been shown that the generalized mean ansatz is able to mimic the scaling behavior of certain saturation based initial condition models \cite{Bernhard:2016tnd}, and hence it should serve as a reasonable parametric form for exploring QGP entropy deposition, assuming imperfect knowledge of saturation effects in nature.
 Of course the model is \emph{not} a substitute for first principle theory calculations, and it may fail to reproduce nuanced features of \emph{ab initio} models such as the existence of short-range gluon field fluctuations \cite{Schenke:2012wb}.
@@ -816,7 +816,7 @@ For example, $x=2.45_{-0.15}^{+0.20}$ corresponds to a posterior median $\tilde{
 \captionof{figure}{\label{fig:posterior} Bayesian posterior distribution of the model input parameters. The diagonal panels show the marginalized distributions of individual model parameters, while off-diagonal panels show the joint distributions for pairs of model parameters, visualizing their correlations. The marginalized distribution medians and 90\% credible intervals are annotated along the diagonal.}
 \end{fullpage}
 
-\subsection{Initial condition parameters}
+\subsection{Initial condition properties}
 
 \begin{figure}
   \includegraphics[width=\columnwidth]{posterior_proton_shape}
@@ -830,8 +830,8 @@ While it would not be surprising, for example, to fit one or two of these observ
 For example, consider the ratio of the $p$-Pb yield over the Pb-Pb yield, which imposes a strong constraint on physically reasonable initial condition models.
 As the entropy deposition parameter $p$ trends toward positive (negative) infinity, particle production scales like the local maximum (minimum) of the nuclear overlap density.
 The parameter $p$ thus strongly affects the $p$-Pb and Pb-Pb yield ratio.
-It just so happens that the small range of $p$-values needed to describe this yield ratio are the same values needed to describe all of the calibration observables in the present study, \emph{and} numerous Pb-Pb observables at $\sqrts=2.76$~TeV \note.
-This work thus reaffirms an empirical scaling law reported in several previous studies \note, that entropy deposition at midrapidity in ultrarelativistic nuclear collisions scales approximately as
+It just so happens that the small range of $p$-values needed to describe this yield ratio are the same values needed to describe all of the calibration observables in the present study, \emph{and} numerous Pb-Pb observables at $\sqrts=2.76$~TeV \cite{Bernhard:2018hnz}.
+This work thus reaffirms an empirical scaling law reported in several previous studies \cite{Moreland:2014oya, Bernhard:2016tnd, Ke:2016jrd, Bernhard:2018hnz}, that entropy deposition at midrapidity in ultrarelativistic nuclear collisions scales approximately as
 \begin{equation}
   \label{eq:geometric_mean}
   \frac{dS}{dy}\bigg\vert_{y=0} \propto \sqrt{\T_A \T_B},
@@ -855,12 +855,12 @@ The corresponding RMS nucleon radius for these parameters is $R_n = 0.86$~fm, co
 This is perhaps the single largest difference between our work and the conclusions of recent saturation-based calculations which constrained the event-by-event fluctuations of the proton using a color-dipole picture of vector meson production \cite{Mantysaari:2016ykx, Mantysaari:2016jaz}.
 Those studies find that the measured coherent and incoherent $J/\Psi$ spectra at HERA prefer a compact gluon distribution inside each nucleon, with an RMS radius $R_g \approx 0.4$~fm, which is roughly \emph{half} the analogous RMS nucleon width preferred by our analysis.
 
-Meanwhile, the posterior on the constituent number $n_c$ is not sharply peaked.
+Meanwhile, our posterior on the constituent number $n_c$ is not sharply peaked.
 We therefore refrain from quoting a distribution median and 90\% credible interval, although we do note that the distribution clearly favors $n_c > 1$ constituents.
 This is not surprising.
-The \trento\ model mimics saturation-based initial condition models, and saturation models tend to produce ``proton-sized'' fireballs in $p$-Pb collisions \note.
+The \trento\ model mimics saturation-based initial condition models \cite{Bernhard:2016tnd}, and saturation models tend to produce ``proton-sized'' fireballs in $p$-Pb collisions \cite{Bzdak:2013zma}.
 When the proton is spherically symmetric, the resulting proton-sized QGP is also largely symmetric and thus produces very little flow.
-Saturation-based models are therefore unable to describe the significant flow measured in high-multiplicity $p$-Pb collisions without nucleon substructure, or alternatively, some other source of additional correlations \note.
+Saturation-based models are therefore unable to describe the significant flow measured in high-multiplicity $p$-Pb collisions without nucleon substructure, or alternatively, some other source of additional correlations \cite{Schenke:2017bog}.
 
 The posterior on the nucleon substructure parameter $\X=0.34_{-0.17}^{+0.22}$, on the other hand, is particularly sharply peaked.
 Recall that this parameter, defined in Eqn.~\eqref{eq:struct_param}, interpolates between the minimum and maximum widths of each constituent and hence
@@ -896,42 +896,35 @@ The $p$-Pb data, meanwhile, does not appear to provide any unique viscous constr
 
 \subsection{Verification of high-probability parameters}
 
-The full posterior in Fig.~\ref{fig:posterior} is the distribution of true parameter values, given the assumptions of our model and the evidence provided by the experimental data.
-Correspondingly, the probability of nature ``choosing'' any specific set of parameter values is \emph{zero}; we can only assign a probability to a finite region of parameter space.
-Nevertheless, we can define the \emph{maximum a posteriori probability} (MAP) estimate as the single most probable neighborhood (i.e.\ point) in parameter space, equal to the mode of the distribution.
+In this section we select a single set of high-probability model parameters
 
-We list the posterior MAP parameters in Tbl.~\ref{tab:map_param}.
-The values are estimated using a m
-
-and run \order{6} events minimum-bias and multiplicity triggered $p$-Pb and Pb-Pb events at $\sqrts=5.02$~TeV.
+We verify the emulator predictions and model accuracy by running a large number of $p$-Pb and Pb-Pb events using a single set of high-probability parameters selected from the mode of the posterior distribution.
+These parameters approximate the ``best fit'' values
 We then calculate all of the model observables listed in Sec.~\ref{sec:observables}.
-These ``best fit'' model predictions are plotted in Fig.~\ref{fig:obs_map} alongside the experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
-They are explicit model calculations; \emph{there is no emulator}.
+%These ``best fit'' model predictions are plotted in Fig.~\ref{fig:obs_map} alongside the experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
+%They are explicit model calculations; \emph{there is no emulator}.
+%
 
 \begin{table}[t]
-  \caption{Maximum a posteriori (MAP) parameters.}
+  \caption{
+    \label{tab:mode_params}
+    High-probability parameters selected from the posterior distribution and used to generate Fig.~\ref{fig:obs_map}.
+    The posterior distribution on the particlization temperature $T_\text{switch}$ is flat (agnostic), so we fix it's value using Ref.~\cite{Bernhard:2018hnz}.
+  }
   \begin{ruledtabular}
-  \begin{tabular}{lll}
-    Parameter         & Description                        & Value\\
-    \paddedhline
-    Norm              & Normalization factor                 & 20.            \\
-    $p$               & Entropy deposition parameter         & 0.0            \\
-    $k$               & Constituent gamma fluct.\ shape      & 0.19           \\
-    $w$               & Nucleon width parameter              & 0.92 fm        \\
-    $n_c$             & Number of nucleon constituents       & 6              \\
-    $v$               & Constituent width                    & 0.43 fm        \\
-    $\dmin$           & Minimum inter-nucleon distance       & 0.81 fm        \\
-    $\taufs$          & Free-streaming time                  & 0.37 fm/$c$    \\
-    $\eta/s$ min      & Minimum value of $\eta/s$ (at $T_c$) & 0.11           \\
-    $\eta/s$ slope    & Slope of $\eta/s$ above $T_c$        & 1.6 GeV$^{-1}$ \\
-    $\eta/s$ crv      & Curvature of $\eta/s$ above $T_c$    & -0.29          \\
-    $\zeta/s$ max     & Maximum value of $\zeta/s$           & 0.032          \\
-    $\zeta/s$ width   & Width of $\zeta/s$ peak              & 0.024 GeV      \\
-    $\zeta/s$ $T_0$   & Temperature of $\zeta/s$ maximum     & 175 MeV        \\
-    $T_\text{switch}$ & Switching/particlization temp.       & 151 MeV        \\
-  \end{tabular}
+    \begin{tabular}{ll@{\hspace{2em}}ll}
+      \multicolumn{2}{c}{Initial condition} & \multicolumn{2}{c}{QGP medium} \\
+      \paddedhline
+      Norm     & 20.            & $\eta/s$ min      & 0.11           \\
+      $p$      & 0.0            & $\eta/s$ slope    & 1.6 GeV$^{-1}$ \\
+      $k$      & 0.19           & $\eta/s$ curv     & -0.29          \\
+      $n_c$    & 6              & $\zeta/s$ max     & 0.032          \\
+      $w$      & 0.92 fm        & $\zeta/s$ width   & 0.024 GeV      \\
+      $v$      & 0.43 fm        & $\zeta/s$ $T_0$   & 175 MeV        \\
+      $\dmin$  & 0.81 fm        & $T_\text{switch}$ & 151 MeV        \\
+      $\taufs$ & 0.37 fm/$c$
+    \end{tabular}
   \end{ruledtabular}
-  \label{tab:map_param}
 \end{table}
 
 \begin{fullpage}
@@ -947,6 +940,20 @@ They are explicit model calculations; \emph{there is no emulator}.
 
 \section{summary}
 \label{sec:summary}
+
+In this work, we constructed a multi-stage hybrid transport model for relativistic nuclear collisions and calibrated free parameters of the model using Bayesian parameter estimation.
+Specifically, we focused on improving the model's description of small collision systems by investigating the effect of nucleon substructure on bulk observables in $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV.
+
+The analysis was performed using a parametric data-driven approach to account for theoretical uncertainty (variability) in the QGP initial conditions and hydrodynamic transport coefficients using a handful of equally uncertain model parametersi.
+We marginalized over the theoretical uncertainty in the parameter using a handful of equally uncertain model parameters to vary the size and shape of the nucleon, the scaling behavior of initial QGP entropy deposition, the duration of pre-equilibrium dynamics, and the temperature dependence of the hydrodynamic shear and bulk viscosities.
+
+We placed a conservative prior on the ``true'' value of each parameter, and calculated a global likelihood
+
+varied each parameter within its design range to explored the full 15-dimensional parameter space of our model.
+
+constructed an emulator to interpolate the predictions of our model at arbitrary regions of parameter space.
+
+Bayesian inference was then used to compare the predictions of the model to experimental data from CMS and ALICE, in order to quantify the posterior probability that a given set of model parameters describes the experimental data
 
 \begin{acknowledgments}
   The authors thank ...

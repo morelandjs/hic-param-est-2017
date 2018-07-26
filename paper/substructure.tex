@@ -896,14 +896,24 @@ The $p$-Pb data, meanwhile, does not appear to provide any unique viscous constr
 
 \subsection{Verification of high-probability parameters}
 
-In this section we select a single set of high-probability model parameters
+We verified the emulator and tested the accuracy of our physics model framework using a single set of high-probability parameters selected from the Bayesian posterior.
+These parameters, listed in Tbl.~\ref{tab:mode_params}, are the approximate ``best fit'' values of the calibrated model, and are commonly referred to as the distribution's \emph{maximum a posteriori} (MAP) estimate.
 
-We verify the emulator predictions and model accuracy by running a large number of $p$-Pb and Pb-Pb events using a single set of high-probability parameters selected from the mode of the posterior distribution.
-These parameters approximate the ``best fit'' values
-We then calculate all of the model observables listed in Sec.~\ref{sec:observables}.
-%These ``best fit'' model predictions are plotted in Fig.~\ref{fig:obs_map} alongside the experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
-%They are explicit model calculations; \emph{there is no emulator}.
-%
+We ran \order{6} minimum-bias and multiplicity triggered events using the MAP estimate and computed all of the model observables listed in Sec.~\ref{sec:observables}.
+The MAP model calculations are plotted in Fig.~\ref{fig:obs_map} and compared to experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla} where available.
+The left and right columns show the results for the $p$-Pb and Pb-Pb collision systems respectively, and each row shows a different observable type.
+
+The global agreement of the MAP model calculations with the experimental data is very good.
+The largest discrepancy seems to be the gap between the $p$-Pb two-particle cumulants $\vnk{2}{2}$ and $\vnk{3}{2}$, although even that tension is only about 10--15\%.
+Quite remarkably, the model perfectly describes the shape of the $p$-Pb and Pb-Pb two-particle correlations which is strong evidence that these correlations are hydrodynamic in origin.
+
+We also point to the simultaneous description of the $p$-Pb and Pb-Pb charged-particle yields using a single initial condition normalization and a single entropy deposition factor $p=0$.
+This is the \emph{exact same} generalized mean $p$-value supported by multiple previous studies \note.
+Evidently, the geometric mean scaling in Eqn.~\ref{eq:geometric_mean} appears to be general property of relativistic nuclear collisions.
+
+Similarly, we obtain an excellent description of the \mbox{$p$-Pb} mean $p_T$, although this fit is somewhat less meaningful since we are unable to calibrate on the Pb-Pb mean $p_T$ simultaneously.
+It would also be nice to compare to the mean $p_T$ fluctuations at $\sqrts=5.02$~TeV which have been predicted in this study.
+It was suggested that nucleon substructure may
 
 \begin{table}[t]
   \caption{

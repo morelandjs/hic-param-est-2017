@@ -124,13 +124,14 @@ def plot(f):
     return wrapper
 
 
-def figsize(relwidth=1, aspect=.618, refwidth=6.6):
+def figsize(relwidth=1, aspect=.618, refwidth=6.5):
     """
     Return figure dimensions from a relative width (to a reference width) and
     aspect ratio (default: 1/golden ratio).
 
     """
     width = relwidth * refwidth
+
     return width, width*aspect
 
 
@@ -275,7 +276,6 @@ def viscosity_dof():
 
         ax.set_xlim(150, 300)
         ax.set_ylim(*ylim)
-        #ax.set_title(title, y=1, va='top')
 
     set_tight(h_pad=.5)
 

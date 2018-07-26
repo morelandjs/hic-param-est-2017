@@ -819,9 +819,17 @@ For example, $x=2.45_{-0.15}^{+0.20}$ corresponds to a posterior median $\tilde{
 \subsection{Initial condition properties}
 
 \begin{figure}
-  \includegraphics[width=\columnwidth]{posterior_proton_shape}
-  \caption{Posterior distribution for the nucleon width $w$ and constituent width $v$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $w$ and $v$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $v > w$. The posterior distribution, shown in blue, indicates the preferred values for $w$ and $v$ determined by the analysis.}
-  \label{fig:posterior_proton_shape}
+  \includegraphics{posterior_proton_shape}
+  \caption{\label{fig:posterior_proton_shape}
+  Posterior distribution for the nucleon width $w$ and constituent width $v$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $w$ and $v$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $v > w$. The posterior distribution, shown in blue, indicates the preferred values for $w$ and $v$ determined by the analysis.}
+\end{figure}
+
+\begin{figure}[b]
+  \includegraphics{posterior_parton_number}
+  \caption{\label{fig:posterior_parton_number}
+    Posterior distribution for the number of nucleon constituents $n_c$ determined by the analysis.
+    The parameter $n_c$ is an integer (discrete) variable at every design point, but the emulator interpolation produces a posterior distribution which is continuous.
+  }
 \end{figure}
 
 The \trento\ normalization factor ${\text{Norm} = 20.3^{+2.2}_{-2.2}}$ and generalized mean parameter $p=0.018^{+0.146}_{-0.159}$ are well constrained by the present analysis.
@@ -842,7 +850,7 @@ For instance, a generalized mean described by $p=0.05$ is well within our 90\% c
 This approximate form nevertheless has been shown to mimic the scaling behavior of several saturation-based theory calculations in high-energy QCD \cite{Bernhard:2016tnd}, and thus appears consistent with theoretical expectations.
 
 \begin{figure*}
-  \includegraphics[width=\textwidth]{region_shear_bulk}
+  \includegraphics{region_shear_bulk}
   \caption{Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \cite{Bernhard:2018hnz}. The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions. Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.}
   \label{fig:region_shear_bulk}
 \end{figure*}
@@ -896,25 +904,6 @@ The $p$-Pb data, meanwhile, does not appear to provide any unique viscous constr
 
 \subsection{Verification of high-probability parameters}
 
-We verified the emulator and tested the accuracy of our physics model framework using a single set of high-probability parameters selected from the Bayesian posterior.
-These parameters, listed in Tbl.~\ref{tab:mode_params}, are the approximate ``best fit'' values of the calibrated model, and are commonly referred to as the distribution's \emph{maximum a posteriori} (MAP) estimate.
-
-We ran \order{6} minimum-bias and multiplicity triggered events using the MAP estimate and computed all of the model observables listed in Sec.~\ref{sec:observables}.
-The MAP model calculations are plotted in Fig.~\ref{fig:obs_map} and compared to experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla} where available.
-The left and right columns show the results for the $p$-Pb and Pb-Pb collision systems respectively, and each row shows a different observable type.
-
-The global agreement of the MAP model calculations with the experimental data is very good.
-The largest discrepancy seems to be the gap between the $p$-Pb two-particle cumulants $\vnk{2}{2}$ and $\vnk{3}{2}$, although even that tension is only about 10--15\%.
-Quite remarkably, the model perfectly describes the shape of the $p$-Pb and Pb-Pb two-particle correlations which is strong evidence that these correlations are hydrodynamic in origin.
-
-We also point to the simultaneous description of the $p$-Pb and Pb-Pb charged-particle yields using a single initial condition normalization and a single entropy deposition factor $p=0$.
-This is the \emph{exact same} generalized mean $p$-value supported by multiple previous studies \note.
-Evidently, the geometric mean scaling in Eqn.~\ref{eq:geometric_mean} appears to be general property of relativistic nuclear collisions.
-
-Similarly, we obtain an excellent description of the \mbox{$p$-Pb} mean $p_T$, although this fit is somewhat less meaningful since we are unable to calibrate on the Pb-Pb mean $p_T$ simultaneously.
-It would also be nice to compare to the mean $p_T$ fluctuations at $\sqrts=5.02$~TeV which have been predicted in this study.
-It was suggested that nucleon substructure may
-
 \begin{table}[t]
   \caption{
     \label{tab:mode_params}
@@ -937,10 +926,59 @@ It was suggested that nucleon substructure may
   \end{ruledtabular}
 \end{table}
 
+We verified the emulator and tested the accuracy of our physics model framework using a single set of high-probability parameters selected from the Bayesian posterior.
+These parameters, listed in Tbl.~\ref{tab:mode_params}, are the approximate ``best fit'' values of the calibrated model, commonly referred to as the \emph{maximum a posteriori} (MAP) estimate:
+\begin{equation}
+  \x_\mathrm{MAP} \equiv \operatorname*{arg\, max}_{\x} P(H_\x | E).
+\end{equation}
+We then ran \order{6} minimum-bias and multiplicity triggered events using the MAP estimate and computed all of the model observables listed in Sec.~\ref{sec:observables}.
+The resulting model calculations are shown in Fig.~\ref{fig:obs_map} alongside experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
+The left and right columns show the results for the $p$-Pb and Pb-Pb collision systems respectively, and each row shows a different group of related observables.
+
+The global agreement of the MAP model calculations with the experimental data is very good.
+The largest tension is observed in the two-particle cumulants $\vnk{2}{2}$ and $\vnk{3}{2}$ of the $p$-Pb system, although even that tension is only about 10--15\%.
+Quite remarkably, the model perfectly describes the shape of the $p$-Pb and Pb-Pb two-particle correlations which is strong evidence that these correlations are hydrodynamic in origin.
+Moreover, we obtain an excellent description of the \mbox{$p$-Pb} mean $p_T$, although this fit is somewhat less meaningful since we are unable to calibrate on the Pb-Pb mean $p_T$ simultaneously (data is not yet available).
+Additionally, note that the model provides a simultaneous description of the \mbox{$p$-Pb} and Pb-Pb charged-particle yields using a single entropy deposition parameter $p=0$.
+This is the \emph{exact same} generalized mean $p$-value supported by multiple previous studies \cite{Moreland:2014oya, Bernhard:2016tnd, Ke:2016jrd, Bernhard:2018hnz}.
+Evidently, this scaling continues to hold for initial conditions with sizable nucleon substructure.
+
+We also present calculations for several observables which were omitted from the calibration due to the statistical limitations of our training data.
+Here our MAP event sample is several orders-of-magnitude larger so the statistics are no issue.
+The bottom-right panel of Fig.~\ref{fig:obs_map} shows our model calculation for the four-particle elliptic flow cumultant $\vnk{2}{4}$ along with the measured data points from \mbox{ALICE} \cite{Adam:2016izf}.
+We see that the MAP estimate nicely describes the measured $\vnk{2}{4}$ data which is encouraging since this particular observable was never used to calibrate the posterior.
+
+
+The relative mean $p_T$ fluctuation $\delta p_T / \langle p_T \rangle$ is another important bulk observable to test the predictions of the calibrated model.
+It measures the \emph{dynamical} component of event-by-event mean $p_T$ fluctuations, quantified by the two-particle correlator
+\begin{equation}
+  (\delta p_T)^2 = \langle \langle (p_{T,i} - \langle p_T \rangle) (p_{T,j} - \langle p_T \rangle) \rangle \rangle.
+  \label{eq:mean_pT_corr}
+\end{equation}
+The inner-average in Eqn.~\ref{eq:mean_pT_corr} runs over all pairs of particles $i,j$ in the same event, the outer average runs over all events in a given bin (centrality or multiplicity), and the symbol $\langle p_T \rangle$ denotes the usual mean transverse momentum of particles in the bin.
+The observable is typically presented in terms of the dimensionless ratio $\delta p_T / \langle p_T \rangle$, which quantifies the strength of the dynamical fluctuations in units of the average transverse momentum $\langle p_T \rangle$.
+
+We show the MAP estimate predictions for the $p$-Pb and Pb-Pb relative mean $p_T$ fluctuations $\delta p_T / \langle p_T \rangle$ at $\sqrts=5.02$~TeV in the third row of Fig.~\ref{fig:obs_map}.
+For the Pb-Pb system, we use centrality bins and for the $p$-Pb system we use the same relative multiplicity bins used for two-particle flows.
+The relative mean $p_T$ fluctuations were shown to be particularly sensitive to the existence of nucleon substructure \cite{Bozek:2017elk}, and thus it would be interesting to ultimately include the observable in the calibration when the data becomes available.
+
 \begin{fullpage}
 {\centering\includegraphics{observables_map}\par}
 \captionof{figure}{\label{fig:obs_map} Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment. Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}. The sub-axes show the ratio of model over data where available with gray bands indicating $\pm 10\%$.}
 \end{fullpage}
+
+Finally, we compute model predictions for the symmetric cumulants $\mathrm{SC}(m,n)$, which quantify correlations between event-by-event fluctuations of the flow harmonics $v_m$ and $v_n$ \cite{Bilandzic:2013kga, ALICE:2016kpq},
+\begin{align}
+  \mathrm{SC}(m, n) &= \langle\langle \cos[m(\phi_1 - \phi_3) + n(\phi_2-\phi_4)]\rangle\rangle \nonumber \\
+\nonumber &- \langle\langle\cos[m(\phi_1-\phi_2)]\rangle\rangle\langle\langle\cos[n(\phi_1-\phi_2)]\rangle\rangle \label{eq:scmn}\\
+&\approx \langle v_m^2 v_n^2 \rangle - \langle v_m^2\rangle\langle v_n^2\rangle.
+\end{align}
+We show these model prediction in Fig.~\ref{fig:flow_corr} along with the \emph{normalized} symmetric cumulants
+
+\begin{equation}
+  \mathrm{NSC}(m,n) = SC(m,n)/\langle v_m^2\rangle\langle v_n^2\rangle,
+\end{equation}
+which are expected to be less sensitive to the medium response and more sensitive to the properties of the initial state.
 
 \begin{figure}
   \includegraphics{flow_corr}
@@ -965,8 +1003,22 @@ constructed an emulator to interpolate the predictions of our model at arbitrary
 
 Bayesian inference was then used to compare the predictions of the model to experimental data from CMS and ALICE, in order to quantify the posterior probability that a given set of model parameters describes the experimental data
 
+\medskip
+
+All software used in this work is open source:
+\begin{itemize}[leftmargin=2\parindent, itemsep=0pt, topsep=5pt]
+  \item \trento\ initial conditions \note
+  \item Pre-equilibrium free-streaming \note
+  \item VISH2+1 hydrodynamics \note
+  \item FRZOUT particle sample \note
+  \item UrQMD microscopic transport model \note
+  \item Collision event generator (wrapper) \note
+\end{itemize}
+
 \begin{acknowledgments}
-  The authors thank ...
+  JSM thanks Weiyao Ke, Bj\"orn Schenke and Heikki M\"antysaari for helpful discussions and clarifying comments.
+  This research was completed using 6 million CPU hours provided by the National Energy Research Scientific Computing Center (NERSC), a U.S. Department of Energy Office of Science User Facility operated under Contract No. DE-AC02-05CH11231.
+  JSM, JEB and SAB acknowledge support by ...
 \end{acknowledgments}
 
 \bibliography{substructure}

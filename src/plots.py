@@ -154,13 +154,15 @@ def plot(f):
     return wrapper
 
 
-def figsize(relwidth=1, aspect=.618, refwidth=6):
+
+def figsize(relwidth=1, aspect=.618, refwidth=6.5):
     """
     Return figure dimensions from a relative width (to a reference width) and
     aspect ratio (default: 1/golden ratio).
 
     """
     width = relwidth * refwidth
+
     return width, width*aspect
 
 
@@ -442,7 +444,7 @@ def observables(system):
 
     fig, axes = plt.subplots(
         nrows=2, ncols=len(plots),
-        figsize=figsize(1.1, aspect=.6),
+        figsize=figsize(1, aspect=.6),
     )
 
     for (posterior, plot), ax in zip(
@@ -565,7 +567,7 @@ def observables_map():
                 ],
                 legend=True
             )
-    fig = plt.figure(figsize=figsize(0.955, 1.5))
+    fig = plt.figure(figsize=figsize(0.88, 1.5))
 
     yields, mean_pT, mean_pT_fluct, flows = [
         gridspec.GridSpecFromSubplotSpec(
@@ -680,7 +682,7 @@ def observables_map():
     set_tight(fig, h_pad=.5, rect=[0, 0, .97, 1])
 
 
-@plot
+#@plot
 def find_map():
     """
     Find the maximum a posteriori (MAP) point and compare emulator predictions
@@ -1047,7 +1049,7 @@ def posterior_p():
     Distribution of trento p parameter with annotations for other models.
 
     """
-    plt.figure(figsize=figsize(.6, .5))
+    plt.figure(figsize=figsize(.5, .5))
     ax = plt.axes()
 
     data = mcmc.Chain().load('trento_p').ravel()
@@ -1222,7 +1224,7 @@ def region_shear():
     Region plot for eta/s.
     """
     chain = mcmc.Chain()
-    fig, ax = plt.subplots(figsize=figsize(.6, .65))
+    fig, ax = plt.subplots(figsize=figsize(.5, .65))
     _region(ax, 'shear', chain, legend='upper left')
     set_tight(fig)
 
@@ -1233,7 +1235,7 @@ def region_bulk():
     Region plot for zeta/s.
     """
     chain = mcmc.Chain()
-    fig, ax = plt.subplots(figsize=figsize(.6, .65))
+    fig, ax = plt.subplots(figsize=figsize(.5, .65))
     _region(ax, 'bulk', chain, legend='upper right')
     set_tight(fig)
 
@@ -1245,7 +1247,7 @@ def region_shear_bulk(cmap=plt.cm.Blues):
     temperature-dependent shear and bulk viscosity.
 
     """
-    fig, axes = plt.subplots(ncols=2, figsize=figsize(1.1, .4))
+    fig, axes = plt.subplots(ncols=2, figsize=figsize(1, .4))
     ax_shear, ax_bulk = axes
 
     Tmin, Tmax = .150, .300
@@ -1437,7 +1439,7 @@ def gp():
 
 @plot
 def pca():
-    fig = plt.figure(figsize=figsize(.6, aspect=1))
+    fig = plt.figure(figsize=figsize(.5, aspect=1))
     ratio = 5
     gs = plt.GridSpec(ratio + 1, ratio + 1)
 
@@ -1685,7 +1687,7 @@ def validation_all(system):
 
     """
     fig, (ax_box, ax_rms) = plt.subplots(
-        nrows=2, figsize=figsize(1.25, aspect=.4),
+        nrows=2, figsize=figsize(1, aspect=.4),
         gridspec_kw=dict(height_ratios=[1.5, 1])
     )
 
@@ -1799,7 +1801,7 @@ def validation_example(
 
     """
     fig, axes = plt.subplots(
-        ncols=2, figsize=figsize(.9, aspect=.6),
+        ncols=2, figsize=figsize(1, aspect=.6),
         gridspec_kw=dict(width_ratios=[3, 1])
     )
 
@@ -1915,7 +1917,7 @@ def correlation_matrices(system=default_system):
     emu_cov = emu.predict(X, return_cov=True)[1].array[0]
 
     fig, axes = plt.subplots(
-        ncols=3, figsize=figsize(1.1, .47),
+        ncols=3, figsize=figsize(1, .47),
         gridspec_kw=dict(width_ratios=[1, 1, .02])
     )
 

@@ -346,7 +346,7 @@ def _data(system, dataset='main'):
         empty = obs_like(data['mean_pT'][None])
     else:
         empty = obs_like(data['vnk'][(2, 2)])
-        data = dict({'mean_pT': {s: empty for s in species}}, **data)
+        data = dict({'mean_pT': {None: empty}}, **data)
 
     data = dict({'iden_mean_pT': {s: empty for s in species}}, **data)
     data = dict({'pT_fluct': {None: empty}}, **data)

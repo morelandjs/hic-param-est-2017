@@ -103,6 +103,7 @@ class Emulator:
         for obs, subobslist in self.observables:
             self._slices[obs] = {}
             for subobs in subobslist:
+                print(system, obs, subobs)
                 Y.append(model.data[system][obs][subobs]['Y'])
                 n = Y[-1].shape[1]
                 self._slices[obs][subobs] = slice(nobs, nobs + n)

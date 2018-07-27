@@ -469,7 +469,8 @@ def observables(system):
                 Y = Y*scale
 
             for y in Y:
-                ax.plot(x, y, color=color, alpha=.2, lw=.3)
+                alpha = .2 if system == 'pPb5020' else 0.1
+                ax.plot(x, y, color=color, alpha=alpha, lw=.3)
 
             try:
                 dset = expt.data[system][obs][subobs]
@@ -846,11 +847,11 @@ def flow_corr():
     """
     fig, axes = plt.subplots(
         figsize=figsize(0.5, 1.2), sharex=True,
-        nrows=2, ncols=1
+        nrows=2, gridspec_kw=dict(height_ratios=[4, 5])
     )
 
     observables = ['sc', 'sc_normed']
-    ylims = [(-2.5e-6, 2.5e-6), (-0.3, 0.8)]
+    ylims = [(-2.5e-6, 2.5e-6), (-.8, .8)]
     labels = ['(4,2)', '(3,2)']
     system = 'PbPb5020'
 
@@ -865,11 +866,7 @@ def flow_corr():
             x = model.map_data[system][obs][mn]['x']
             y = model.map_data[system][obs][mn]['Y']
 
-            ax.plot(
-                x, y, lw=.75,
-                color=getattr(plt.cm, cmap)(.7),
-            )
-
+            ax.plot(x, y, color=getattr(plt.cm, cmap)(.7))
             ax.text(1.02*x[-1], y[-1], lbl, va='center', ha='left')
 
         ax.axhline(
@@ -880,7 +877,7 @@ def flow_corr():
         ax.set_xlim(0, 80)
         ax.set_ylim(*ylim)
 
-        auto_ticks(ax, nbins=6, minor=2)
+        auto_ticks(ax, nbins=7, minor=2)
 
         if ax.is_first_col():
             ax.set_ylabel(label('m', 'n', normed='normed' in obs))
@@ -889,6 +886,46 @@ def flow_corr():
             ax.set_title('Pb-Pb 5.02 TeV')
         else:
             ax.set_xlabel('Centrality %')
+
+
+    # MAP estimate for Pb-Pb collisions at 5.02 TeV, calibrated to Pb-Pb
+    # data at 2.76 and 5.02 TeV using a model without nucleon substructure.
+
+    # symmetric cumulants
+    SC = np.array([
+        [2.5e+00, 5.8591e-09,  5.9204e-09],
+        [7.5e+00, 2.1582e-08, -2.1367e-08],
+        [1.5e+01, 1.2228e-07, -1.3942e-07],
+        [2.5e+01, 4.3989e-07, -5.4267e-07],
+        [3.5e+01, 9.4414e-07, -1.0677e-06],
+        [4.5e+01, 1.4138e-06, -1.4616e-06],
+        [5.5e+01, 1.4456e-06, -1.2317e-06],
+        [6.5e+01, 7.3726e-07, -3.3222e-07],
+    ])
+
+    # normalized symmetric cumulants
+    NSC = np.array([
+        [2.5e+00, 7.3202e-02,  2.1091e-02],
+        [7.5e+00, 7.6282e-02, -2.0918e-02],
+        [1.5e+01, 1.5216e-01, -4.7261e-02],
+        [2.5e+01, 2.4814e-01, -8.6423e-02],
+        [3.5e+01, 3.4423e-01, -1.1640e-01],
+        [4.5e+01, 4.5614e-01, -1.4251e-01],
+        [5.5e+01, 6.1072e-01, -1.5021e-01],
+    ])
+
+    for ax, obs in zip(axes, [SC, NSC]):
+        x, y42, y32 = obs.T
+        ax.plot(x, y42, color=plt.cm.Blues(.7), linestyle='dashed')
+        ax.plot(x, y32, color=plt.cm.Oranges(.7), linestyle='dashed')
+
+    solid_line = lines.Line2D([], [], color=offblack)
+    dashed_line = lines.Line2D([], [], linestyle='dashed', color=offblack)
+
+    handles = [solid_line, dashed_line]
+    labels = ["p-Pb, Pb-Pb 5.02 TeV", "Pb-Pb 2.76, 5.02 TeV"]
+
+    plt.legend(handles, labels, loc=8)
 
     set_tight(fig)
 
@@ -1703,20 +1740,20 @@ def validation_all(system):
         for (obs, subobs, opts) in plot['subplots']:
             color = obs_color(obs, subobs)
 
-            # model data
             try:
+                # model data
                 Y = model_data[obs][subobs]['Y']
+
+                # emulator predictions
+                Y_ = np.concatenate(
+                    [mean[obs][subobs] for mean in mean_folds], axis=0
+                )
+                S_ = np.concatenate(
+                    [np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal())
+                    for cov in cov_folds], axis=0
+                )
             except KeyError:
                 continue
-
-            # emulator predictions
-            Y_ = np.concatenate(
-                [mean[obs][subobs] for mean in mean_folds], axis=0
-            )
-            S_ = np.concatenate(
-                [np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal())
-                 for cov in cov_folds], axis=0
-            )
 
             Z = (Y_ - Y)/S_
 
@@ -2382,7 +2419,7 @@ def trim_design_points():
     prior range.
 
     """
-    plots = _observables_plots()
+    emu_obs = [Emulator.pPb5020, Emulator.PbPb5020]
 
     def bad(obs, y):
         """
@@ -2400,11 +2437,12 @@ def trim_design_points():
 
     bad_points = set()
 
-    for system in systems:
+    for system, obs_data in zip(systems, emu_obs):
         model_data = model._data(system)
-        for obs, obs_data in model_data.items():
-            for subobs, subobs_data in obs_data.items():
-                for point, y in enumerate(subobs_data['Y']):
+        for obs, subobs_data in obs_data:
+            for subobs in subobs_data:
+                Y = model_data[obs][subobs]['Y']
+                for point, y in enumerate(Y):
                     if bad(obs, y):
                         bad_points.add(point)
 

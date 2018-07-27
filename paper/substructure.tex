@@ -551,20 +551,20 @@ Several of the model parameters require special care and are reparametrized acco
     \label{eq:nucleon_width}
     w = \sqrt{r^2 + v^2},
   \end{equation}
-  which approximates the RMS radius of the nucleon when the number of sampled constituents is large (see Fig.~\ref{fig:nucleon_schematic} for an example).
+  which approximates the RMS radius of the nucleon when the number of sampled constituents is large (see Fig.~\ref{fig:nucleon_schematic} for an example proton).
   We thus call $w$ a nucleon ``width'', although for smaller numbers of constituents, the \emph{actual} RMS radius of our sampled nucleons can be significantly smaller than our width parameter $w$ due to fluctuations in the nucleon's center of mass, and hence one should account for the difference when discussing the nucleon's posterior RMS radius.
 
 \begin{figure}[t]
   \begin{tikzpicture}
     \draw[dashed] (0,0) circle (1.6cm);
     \foreach \theta in {60, 180, 300}{
-      \draw ({\theta}:.8) circle (.65cm);
+      \draw ({\theta}:.85) circle (.73cm);
     }
     \coordinate (a) at (0, 0);
     \coordinate (b) at (.8, 1.385);
-    \coordinate (c) at (.4, -.693);
-    \coordinate (d) at (-1.45, 0);
-    \coordinate (e) at (-.8, 0);
+    \coordinate (c) at (.425, -.736);
+    \coordinate (d) at (-1.58, 0);
+    \coordinate (e) at (-.85, 0);
     \draw[<->] (a) -- (b) node[midway, xshift=-1ex, yshift=.8ex]{$w$};
     \draw[<->] (a) -- (c) node[midway, xshift=1ex, yshift=.8ex]{$r$};
     \draw[<->] (d) -- (e) node[midway, yshift=1ex]{$v$};
@@ -616,8 +616,8 @@ We calculate for each set of model parameters the following observables at midra
   \item Charged particle mean transverse momentum $\langle p_T \rangle$ ($0.15 < p_T < 10$~GeV).
   \item Identified particle mean transverse momentum $\langle p_T \rangle$ of pions, kaons and protons.
   \item Mean transverse momentum fluctuations $\delta p_T / \langle p_T \rangle$ (charged particles, $0.15 < p_T < 2.0$~GeV).
-  \item Two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3,4$\\ (charged particles, $0.2 < p_T < 5.0$~GeV, and \\$0.3 < p_T < 3.0$~GeV).
-  \item Four-particle flow cumulant $\vnk{2}{4}$ \\(charged particles, $0.2 < p_T < 5.0$).
+  \item Two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3,4$\\ (charged particles, $0.2 < p_T < 5.0$~GeV for ALICE, and $0.3 < p_T < 3.0$~GeV for CMS).
+  \item Four-particle flow cumulant $\vnk{2}{4}$ \\(charged particles, $0.2 < p_T < 5.0$~GeV).
   \item Symmetric cumulants $\mathrm{SC}(4, 2)$ and $\mathrm{SC}(3,2)$.
 \end{itemize}
 Each observable is calculated from the list of final state particles produced by \textsc{UrQMD} using the same methods applied by experiment.
@@ -726,6 +726,8 @@ We use for this purpose a specific type of emulator known as a Gaussian process 
 The advantage of using GPE's is that they provide an estimate of their own uncertainty which allows us to account for this uncertainty when constructing the covariance matrix $\Sigma$ in Eqn.~\eqref{eq:likelihood}.
 One quirk of GPE's is that they are restricted to scalar-valued functions, i.e.\ functions of one output, whereas we require an emulator for vector-valued functions with multiple outputs.
 This restriction is commonly circumvented using principal component analysis (PCA): a general procedure which transforms a set of correlated variables $\y = (y_1, y_2, \dots, y_m)$ into a new basis representation $\z = (z_1, z_2, \dots, z_m)$ where the linear correlations between $z_i$, $z_j$ vanish for all $i\ne j \in m$ \cite{Tipping:1999}.
+Independent GPE's can then be used to emulate each $z \in \z$ since the variables $(z_1, \dots, z_m)$ are linearly uncorrelated.
+The emulated vector $\z$ is then easily reexpressed in the basis of $\y$ through its inverse transformation.
 
 We first preprocess our model observables by centering and scaling each column of $Y$ (single observable) to zero mean and unit variance to generate a standardized observable matrix $\tilde{Y}$.
 PCA is then used to reexpress each row-vector $\tilde{\y}$ of $\tilde{Y}$ (all standardized observables at a single design point) in the new principal component basis:
@@ -735,7 +737,7 @@ PCA is then used to reexpress each row-vector $\tilde{\y}$ of $\tilde{Y}$ (all s
 where $\tilde{\y}_i$ are the standardized observables of the $i$-th row-vector (design point) of matrix $\tilde{Y}$, and $z_{ij}$ and $\mathbf{v}_j$ are the coefficients and corresponding vectors of its $j$-th principal component.
 
 The principal components are reported in order of explained variance, with the first principal component vector $\mathbf{v}_1$ accounting for the most variance in $\tilde{Y}$, and the last principal component vector $\mathbf{v}_m$ accounting for the least.
-We then train a set of independent GPE's $z_i = \mathrm{gp}_i(\x)$ for $i=1$ to $k$ to predict the principal components $(z_1, \dots, z_k)$ of the first $k$ principal component vectors as a function of the model parameters $\x$ which vary across the design $X$.
+We then train a set of independent GPE's $\{z_i=\mathrm{gp}_i(\x)\}$ to predict the first $k$ principal components $(z_1, \dots, z_k)$ as a function of the model parameters $\x$ which vary across the design $X$.
 For the present study, we use $k=7$ principal components when emulating the $p$-Pb system and $k=8$ principal components when emulating Pb-Pb, chosen to describe 99.5\% of the total observed variance of each system.
 
 The GPE's are essentially fancy interpolators applied to the model's training points and PCA transformed observables.
@@ -779,7 +781,7 @@ For this we use an affine-invariant ensemble sampler which uses a large ensemble
 \section{Results}
 \label{sec:results}
 
-We show simulated and emulated model observables (thin colored lines) for Pb-Pb collisions (Fig.~\ref{fig:obs_pbpb}) and \mbox{$p$-Pb} collisions (Fig.~\ref{fig:obs_ppb}) at $\sqrts=5.02$~TeV compared to experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
+We show the simulated and emulated model observables (thin colored lines) for Pb-Pb collisions in Fig.~\ref{fig:obs_pbpb} and for \mbox{$p$-Pb} collisions in Fig.~\ref{fig:obs_ppb} at $\sqrts=5.02$~TeV compared to experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
 The top row of each figure shows explicit model calculations at each of the $d=500$ design points (training data), while the bottom row shows emulator predictions for $n=100$ random parameter samples drawn from the Bayesian posterior (sampled from the MCMC chain).
 Each column shows a different class of observable.
 The charged-particle yield $d\nch/d\eta$ is shown on the left, mean $p_T$ is in the middle, and two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3,4$ are on the right.
@@ -792,7 +794,7 @@ The $p$-Pb yields, mean $p_T$ and flow cumulants all vary wildly within the chos
 For instance, we can turn the $p$-Pb flows completely \emph{off} with suitably chosen parameters which is not possible in the Pb-Pb system.
 Evidently the $p$-Pb model predictions are far more sensitive to modeling uncertainties.
 
-Conversely, the calibrated emulator predictions (bottom row of Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb}) are far better constrained and nicely track the experimental data points.
+Conversely, the calibrated (posterior sampled) emulator predictions (bottom row of Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb}) are far better constrained and nicely track the experimental data points.
 We emphasize here that the posterior parameter values are obtained from a \emph{simultaneous} calibration to $p$-Pb and Pb-Pb data, and thus they are self-consistent between the two systems.
 The spread in the posterior samples reflects different sources of model and experimental uncertainty as well as tension in the optimal fit parameters which describe each observable.
 We demonstrate later in the text that a single set of model parameters well describes all of the calibration data, and thus we believe that much of the spread in the posterior samples is uncertainty contributed by our emulator.
@@ -808,7 +810,7 @@ Each diagonal panel is the distribution of a \emph{single} model parameter (marg
 The posterior in Fig.~\ref{fig:posterior} includes a wealth of information.
 Here we focus on its most important features, starting with the top-left corner of the figure and working our way to the bottom-right.
 We report posterior estimates for individual parameters using their (marginalized) distribution medians and 90\% credible intervals.
-For example, $x=2.45_{-0.15}^{+0.20}$ corresponds to a posterior median $\tilde{x}=2.45$ and 90\% credible interval $x \in (2.30, 2.65)$.
+For example, the estimate $x=2.45_{-0.15}^{+0.20}$ denotes a median value $\tilde{x}=2.45$ and 90\% credible interval $2.30 < x < 2.65$.
 
 \begin{fullpage}
 \begin{figure}
@@ -818,20 +820,6 @@ For example, $x=2.45_{-0.15}^{+0.20}$ corresponds to a posterior median $\tilde{
 \end{fullpage}
 
 \subsection{Initial condition properties}
-
-\begin{figure}
-  \includegraphics{posterior_proton_shape}
-  \caption{\label{fig:posterior_proton_shape}
-  Posterior distribution for the nucleon width $w$ and constituent width $v$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $w$ and $v$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $v > w$. The posterior distribution, shown in blue, indicates the preferred values for $w$ and $v$ determined by the analysis.}
-\end{figure}
-
-\begin{figure}[b]
-  \includegraphics{posterior_parton_number}
-  \caption{\label{fig:posterior_parton_number}
-    Posterior distribution for the number of nucleon constituents $n_c$ determined by the analysis.
-    The parameter $n_c$ is an integer (discrete) variable at every design point, but the emulator interpolation produces a posterior distribution which is continuous.
-  }
-\end{figure}
 
 The \trento\ normalization factor ${\text{Norm} = 20.3^{+2.2}_{-2.2}}$ and generalized mean parameter $p=0.018^{+0.146}_{-0.159}$ are well constrained by the present analysis.
 Moreover, their posterior values nicely describe the $p$-Pb and Pb-Pb calibration observables in Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb}.
@@ -850,41 +838,55 @@ We emphasize that this specific analytic form should not be interpreted too lite
 For instance, a generalized mean described by $p=0.05$ is well within our 90\% credible interval, but it is not equal to the geometric mean in Eqn.~\ref{eq:geometric_mean}.
 This approximate form nevertheless has been shown to mimic the scaling behavior of several saturation-based theory calculations in high-energy QCD \cite{Bernhard:2016tnd}, and thus appears consistent with theoretical expectations.
 
-\begin{figure*}
-  \includegraphics{region_shear_bulk}
-  \caption{Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \cite{Bernhard:2018hnz}. The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions. Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.}
-  \label{fig:region_shear_bulk}
-\end{figure*}
-
 Continuing down the diagonal in Fig.~\ref{fig:posterior}, we see that the nucleon width parameter $w=0.97_{-0.17}^{+0.19}$~fm.
-We caution that this parameter $w$ is \emph{not} the RMS radius of our nucleons due to idiosyncrasies of the constituent sampling procedure.
+We caution that this parameter $w$ is \emph{not} the RMS radius of our nucleons due to idiosyncrasies of our constituent sampling procedure.
 We can, however, easily calculate the RMS radius for a specific nucleon width $w$, constituent width $v$ and constituent number $n_c$.
 For example, the single highest posterior probability region of the parameter space prefers a nucleon width $w=0.92$~fm, constituent width $v=0.43$~fm and constituent number $n_c=6$.
 The corresponding RMS nucleon radius for these parameters is $R_n = 0.86$~fm, conspicuously close the proton's RMS electric charge radius $R_p = 0.879(8)$~fm \cite{Bernauer:2010wm}.
 This is perhaps the single largest difference between our work and the conclusions of recent saturation-based calculations which constrained the event-by-event fluctuations of the proton using a color-dipole picture of vector meson production \cite{Mantysaari:2016ykx, Mantysaari:2016jaz}.
 Those studies find that the measured coherent and incoherent $J/\Psi$ spectra at HERA prefer a compact gluon distribution inside each nucleon, with an RMS radius $R_g \approx 0.4$~fm, which is roughly \emph{half} the analogous RMS nucleon width preferred by our analysis.
 
-Meanwhile, our posterior on the constituent number $n_c$ is not sharply peaked.
+Meanwhile, our posterior on the constituent number $n_c$, shown enlarged in Fig.~\ref{fig:posterior_parton_number}, is not sharply peaked.
 We therefore refrain from quoting a distribution median and 90\% credible interval, although we do note that the distribution clearly favors $n_c > 1$ constituents.
 This is not surprising.
 The \trento\ model mimics saturation-based initial condition models \cite{Bernhard:2016tnd}, and saturation models tend to produce ``proton-sized'' fireballs in $p$-Pb collisions \cite{Bzdak:2013zma}.
 When the proton is spherically symmetric, the resulting proton-sized QGP is also largely symmetric and thus produces very little flow.
 Saturation-based models are therefore unable to describe the significant flow measured in high-multiplicity $p$-Pb collisions without nucleon substructure, or alternatively, some other source of additional correlations \cite{Schenke:2017bog}.
 
+\begin{figure}[t]
+  \includegraphics{posterior_parton_number}
+  \caption{\label{fig:posterior_parton_number}
+    Posterior distribution for the number of nucleon constituents $n_c$ determined by the analysis.
+    The parameter $n_c$ is an integer (discrete) variable at every design point, but the emulator interpolation produces a posterior distribution which is continuous.
+  }
+\end{figure}
+
 The posterior on the nucleon substructure parameter $\X=0.34_{-0.17}^{+0.22}$, on the other hand, is particularly sharply peaked.
 Recall that this parameter, defined in Eqn.~\eqref{eq:struct_param}, interpolates between the minimum and maximum widths of each constituent and hence
 two different limits for the granularity of the nucleon.
 When $\X=0$, the nucleon is populated by $n_c$ small compact hot-spots, and when $\X=1$ the hot-spots are large and fully overlapping, restoring spherical symmetry.
-We use the parameter $\X$ purely for calibration purposes and then transform the variable back to a constituent width $v$ for discussion purposes.
 
-We plot the joint posterior distribution for the nucleon width parameter $w$ and constituent width $v$ in Fig.~\ref{fig:posterior_proton_shape}.
+The nucleon structure parameter $\X$ is somewhat awkward to conceptualize, but we can easily transform its value back into a constituent width $v$.
+Figure~\ref{fig:posterior_proton_shape} shows the resulting joint posterior distribution for the nucleon width parameter $w$ and constituent width $v$.
 The white trapezoidal region in the lower-right is the joint parameter prior, and the gray triangular region in the upper-left where $v > w$ is a region that we exclude from the prior.
 The posterior distribution, shown in blue, is remarkably well constrained.
 We report a posterior estimate for the constituent width $v=0.46_{-0.15}^{+0.21}$~fm which is roughly the same magnitude as the \emph{nucleon} hot-spots used in recent saturation-based substructure studies that employed IP-Glasma initial conditions \note.
 Evidently, it may be necessary to place an informative prior on our nucleon substructure parameters in order to resolve the apparent tension between our parameter values and those needed to describe DIS measurements at HERA.
 Alternatively, it is also possible that the fluctuations probed by coherent and incoherent $J/\Psi$ production are different than those probed by minimum-bias particle production.
 
+\begin{figure}
+  \includegraphics{posterior_proton_shape}
+  \caption{\label{fig:posterior_proton_shape}
+  Posterior distribution for the nucleon width $w$ and constituent width $v$. The white trapezoidal region (lower-right) covers the initial range of allowed values for $w$ and $v$, while the gray triangular region (upper-left) indicates values which are excluded by the prior $v > w$. The posterior distribution, shown in blue, indicates the preferred values for $w$ and $v$ determined by the analysis.}
+\end{figure}
+
 \subsection{Transport properties}
+
+\begin{figure*}
+  \includegraphics{region_shear_bulk}
+  \caption{Left figure: estimated temperature dependence of the QGP specific shear viscosity $(\eta/s)(T)$ determined by the present Bayesian analysis of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV (orange line/band) compared to a previous Bayesian analysis of Pb-Pb collisions at $\sqrts=2.76$ and 5.02~TeV (blue line/band) \cite{Bernhard:2018hnz}. The lines are the medians of each posterior distribution, and the bands are their 90\% credible regions. Right figure: same as before, but for the temperature dependence of the QGP specific bulk viscosity $(\zeta/s)(T)$.}
+  \label{fig:region_shear_bulk}
+\end{figure*}
 
 In this section, we compare several of our posterior estimates to those obtained from a similar Bayesian analysis \cite{Bernhard:2018hnz} which used an (almost) identical version of the present physics model.
 The only modeling difference is the inclusion of nucleon substructure in this work which was absent in Ref.~\cite{Bernhard:2018hnz}.
@@ -904,28 +906,6 @@ The $p$-Pb data, meanwhile, does not appear to provide any unique viscous constr
 
 
 \subsection{Verification of high-probability parameters}
-
-\begin{table}[t]
-  \caption{
-    \label{tab:mode_params}
-    High-probability parameters selected from the posterior distribution and used to generate Fig.~\ref{fig:obs_map}.
-    The posterior distribution on the particlization temperature $T_\text{switch}$ is flat (agnostic), so we fix it's value using Ref.~\cite{Bernhard:2018hnz}.
-  }
-  \begin{ruledtabular}
-    \begin{tabular}{ll@{\hspace{2em}}ll}
-      \multicolumn{2}{c}{Initial condition} & \multicolumn{2}{c}{QGP medium} \\
-      \paddedhline
-      Norm     & 20.            & $\eta/s$ min      & 0.11           \\
-      $p$      & 0.0            & $\eta/s$ slope    & 1.6 GeV$^{-1}$ \\
-      $k$      & 0.19           & $\eta/s$ curv     & -0.29          \\
-      $n_c$    & 6              & $\zeta/s$ max     & 0.032          \\
-      $w$      & 0.92 fm        & $\zeta/s$ width   & 0.024 GeV      \\
-      $v$      & 0.43 fm        & $\zeta/s$ $T_0$   & 175 MeV        \\
-      $\dmin$  & 0.81 fm        & $T_\text{switch}$ & 151 MeV        \\
-      $\taufs$ & 0.37 fm/$c$
-    \end{tabular}
-  \end{ruledtabular}
-\end{table}
 
 We verified the emulator and tested the accuracy of our physics model framework using a single set of high-probability parameters selected from the Bayesian posterior.
 These parameters, listed in Tbl.~\ref{tab:mode_params}, are the approximate ``best fit'' values of the calibrated model, commonly referred to as the \emph{maximum a posteriori} (MAP) estimate:
@@ -962,13 +942,34 @@ We show the MAP estimate predictions for the $p$-Pb and Pb-Pb relative mean $p_T
 For the Pb-Pb system, we use centrality bins and for the $p$-Pb system we use the same relative multiplicity bins used for two-particle flows.
 The relative mean $p_T$ fluctuations were shown to be particularly sensitive to the existence of nucleon substructure \cite{Bozek:2017elk}, and thus it would be interesting to ultimately include this observable in the calibration when the data becomes available.
 
+\begin{table}[b]
+  \caption{
+    \label{tab:mode_params}
+    High-probability parameters selected from the posterior distribution and used to generate Fig.~\ref{fig:obs_map}.
+    The posterior distribution on the particlization temperature $T_\text{switch}$ is flat (agnostic), so we fix it's value using Ref.~\cite{Bernhard:2018hnz}.
+  }
+  \begin{ruledtabular}
+    \begin{tabular}{ll@{\hspace{2em}}ll}
+      \multicolumn{2}{c}{Initial condition} & \multicolumn{2}{c}{QGP medium} \\
+      \paddedhline
+      Norm     & 20.            & $\eta/s$ min      & 0.11           \\
+      $p$      & 0.0            & $\eta/s$ slope    & 1.6 GeV$^{-1}$ \\
+      $k$      & 0.19           & $\eta/s$ curv     & -0.29          \\
+      $n_c$    & 6              & $\zeta/s$ max     & 0.032          \\
+      $w$      & 0.92 fm        & $\zeta/s$ width   & 0.024 GeV      \\
+      $v$      & 0.43 fm        & $\zeta/s$ $T_0$   & 175 MeV        \\
+      $\dmin$  & 0.81 fm        & $T_\text{switch}$ & 151 MeV        \\
+      $\taufs$ & 0.37 fm/$c$
+    \end{tabular}
+  \end{ruledtabular}
+\end{table}
+
 \begin{fullpage}
 {\centering\includegraphics{observables_map}\par}
 \captionof{figure}{\label{fig:obs_map} Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment. Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}. The sub-axes show the ratio of model over data where available with gray bands indicating $\pm 10\%$.}
 \end{fullpage}
 
-As a final check, we compute the symmetric cumulants $\mathrm{SC}(m,n)$ for the Pb-Pb collision system at $\sqrts=5.02$~TeV.
-The symmetric cumulants quantify correlations between event-by-event fluctuations of the flow harmonics of order $v_m$ and $v_n$ \cite{Bilandzic:2013kga, ALICE:2016kpq},
+Lastly, we compute the symmetric cumulants $\mathrm{SC}(m,n)$ for the Pb-Pb collision system at $\sqrts=5.02$~TeV which quantify correlations between event-by-event fluctuations of the flow harmonics of order $v_m$ and $v_n$ \cite{Bilandzic:2013kga, ALICE:2016kpq},
 \begin{align}
   \mathrm{SC}(m, n) &= \langle\langle \cos[m(\phi_1 - \phi_3) + n(\phi_2-\phi_4)]\rangle\rangle \nonumber \\
 \nonumber &- \langle\langle\cos[m(\phi_1-\phi_2)]\rangle\rangle\langle\langle\cos[n(\phi_1-\phi_2)]\rangle\rangle \label{eq:scmn}\\
@@ -985,7 +986,7 @@ This may alleviate a common problem
 
 \begin{figure}
   \includegraphics{flow_corr}
-  \caption{Model calculations of the symmetric cumulants (top) and normalized symmetric cumulants (bottom) for Pb-Pb collisions at $\sqrts=5.02$~TeV using the \emph{maximum a posteriori} (MAP) parameters. The solid lines are the MAP estimate of the present analysis (with nucleon substructure), and the dashed lines are the MAP estimate of Ref.~\note\ (without nucleon substructure). In general, most model parameters are somewhat different between the two studies.}
+  \caption{Model calculations of the symmetric cumulants (top) and normalized symmetric cumulants (bottom) for Pb-Pb collisions at $\sqrts=5.02$~TeV using the \emph{maximum a posteriori} (MAP) parameters. The solid lines are the MAP estimate of the present analysis (with nucleon substructure), and the dashed lines are the MAP estimate of Ref.~\cite{Bernhard:2018hnz} (without nucleon substructure). In general, most model parameters are different between the two studies.}
   \label{fig:flow_corr}
 \end{figure}
 
@@ -1041,7 +1042,7 @@ All software used in this work is open source:
 \end{figure}
 
 \begin{figure*}
-  \includegraphics[width=.6\textwidth]{validation_example}
+  \includegraphics{validation_example}
   \caption{Example emulator validation for one observable, the Pb-Pb charged particle yield $d\nch/d\eta$ in the 20-30\% centrality class. We use the k-fold cross validation method (explained in the text) to partition the model inputs $X$ and outputs $Y$ into training and validation data. The scatterplot on the left shows the emulator predictions and one sigma error bars (x-axis) against explicit model calculations (y-axis). Perfect emulator/model agreement is indicated by the black like $y_\text{pred}=y_\text{obs}$. The histogram on the right shows that the errors are properly accounted for, i.e.\ the normalized residuals follow a normal distribution with unit variance and zero mean.
   }
   \label{fig:validation_example}

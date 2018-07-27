@@ -301,8 +301,7 @@ def _data(system, dataset='main'):
         if dataset == 'map' else
         [
             Path(workdir, 'model_output', dataset, system, '{}.dat'.format(p))
-            for p in
-            Design(system, validation=(dataset == 'validation')).points
+            for p in Design(system, validation=(dataset == 'validation')).points
         ]
     )
 

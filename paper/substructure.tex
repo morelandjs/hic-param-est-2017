@@ -20,6 +20,7 @@
 }
 
 \usepackage{tikz}
+\usepackage[leftcaption]{sidecap}
 
 \usepackage{graphicx}
 \graphicspath{{../plots/}{./fig/}}
@@ -931,7 +932,7 @@ These parameters, listed in Tbl.~\ref{tab:mode_params}, are the approximate ``be
 \begin{equation}
   \x_\mathrm{MAP} \equiv \operatorname*{arg\, max}_{\x} P(H_\x | E).
 \end{equation}
-We then ran \order{6} minimum-bias and multiplicity triggered events using the MAP estimate and computed all of the model observables listed in Sec.~\ref{sec:observables}.
+We then ran \order{6} minimum-bias and multiplicity triggered events using the MAP estimate $\x_\mathrm{MAP}$ and computed all of the model observables listed in Sec.~\ref{sec:observables}.
 The resulting model calculations are shown in Fig.~\ref{fig:obs_map} alongside experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
 The left and right columns show the results for the $p$-Pb and Pb-Pb collision systems respectively, and each row shows a different group of related observables.
 
@@ -939,7 +940,7 @@ The global agreement of the MAP model calculations with the experimental data is
 The largest tension is observed in the two-particle cumulants $\vnk{2}{2}$ and $\vnk{3}{2}$ of the $p$-Pb system, although even that tension is only about 10--15\%.
 Quite remarkably, the model perfectly describes the shape of the $p$-Pb and Pb-Pb two-particle correlations which is strong evidence that these correlations are hydrodynamic in origin.
 Moreover, we obtain an excellent description of the \mbox{$p$-Pb} mean $p_T$, although this fit is somewhat less meaningful since we are unable to calibrate on the Pb-Pb mean $p_T$ simultaneously (data is not yet available).
-Additionally, note that the model provides a simultaneous description of the \mbox{$p$-Pb} and Pb-Pb charged-particle yields using a single entropy deposition parameter $p=0$.
+Additionally, the model provides a simultaneous description of the \mbox{$p$-Pb} and Pb-Pb charged-particle yields using a single entropy deposition parameter $p=0$.
 This is the \emph{exact same} generalized mean $p$-value supported by multiple previous studies \cite{Moreland:2014oya, Bernhard:2016tnd, Ke:2016jrd, Bernhard:2018hnz}.
 Evidently, this scaling continues to hold for initial conditions with sizable nucleon substructure.
 
@@ -947,7 +948,6 @@ We also present calculations for several observables which were omitted from the
 Here our MAP event sample is several orders-of-magnitude larger so the statistics are no issue.
 The bottom-right panel of Fig.~\ref{fig:obs_map} shows our model calculation for the four-particle elliptic flow cumultant $\vnk{2}{4}$ along with the measured data points from \mbox{ALICE} \cite{Adam:2016izf}.
 We see that the MAP estimate nicely describes the measured $\vnk{2}{4}$ data which is encouraging since this particular observable was never used to calibrate the posterior.
-
 
 The relative mean $p_T$ fluctuation $\delta p_T / \langle p_T \rangle$ is another important bulk observable to test the predictions of the calibrated model.
 It measures the \emph{dynamical} component of event-by-event mean $p_T$ fluctuations, quantified by the two-particle correlator
@@ -960,29 +960,32 @@ The observable is typically presented in terms of the dimensionless ratio $\delt
 
 We show the MAP estimate predictions for the $p$-Pb and Pb-Pb relative mean $p_T$ fluctuations $\delta p_T / \langle p_T \rangle$ at $\sqrts=5.02$~TeV in the third row of Fig.~\ref{fig:obs_map}.
 For the Pb-Pb system, we use centrality bins and for the $p$-Pb system we use the same relative multiplicity bins used for two-particle flows.
-The relative mean $p_T$ fluctuations were shown to be particularly sensitive to the existence of nucleon substructure \cite{Bozek:2017elk}, and thus it would be interesting to ultimately include the observable in the calibration when the data becomes available.
+The relative mean $p_T$ fluctuations were shown to be particularly sensitive to the existence of nucleon substructure \cite{Bozek:2017elk}, and thus it would be interesting to ultimately include this observable in the calibration when the data becomes available.
 
 \begin{fullpage}
 {\centering\includegraphics{observables_map}\par}
 \captionof{figure}{\label{fig:obs_map} Model calculations using the \emph{maximum a posterior} (MAP) parameters compared to experiment. Colored lines are model calculations for $p$-Pb collisions (left) and Pb-Pb collisions (right) at $\sqrts=5.02$~TeV. Points with error bars are the experimental data with statistical uncertainties, and gray bands their corresponding systematic uncertainties, from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}. The sub-axes show the ratio of model over data where available with gray bands indicating $\pm 10\%$.}
 \end{fullpage}
 
-Finally, we compute model predictions for the symmetric cumulants $\mathrm{SC}(m,n)$, which quantify correlations between event-by-event fluctuations of the flow harmonics $v_m$ and $v_n$ \cite{Bilandzic:2013kga, ALICE:2016kpq},
+As a final check, we compute the symmetric cumulants $\mathrm{SC}(m,n)$ for the Pb-Pb collision system at $\sqrts=5.02$~TeV.
+The symmetric cumulants quantify correlations between event-by-event fluctuations of the flow harmonics of order $v_m$ and $v_n$ \cite{Bilandzic:2013kga, ALICE:2016kpq},
 \begin{align}
   \mathrm{SC}(m, n) &= \langle\langle \cos[m(\phi_1 - \phi_3) + n(\phi_2-\phi_4)]\rangle\rangle \nonumber \\
 \nonumber &- \langle\langle\cos[m(\phi_1-\phi_2)]\rangle\rangle\langle\langle\cos[n(\phi_1-\phi_2)]\rangle\rangle \label{eq:scmn}\\
 &\approx \langle v_m^2 v_n^2 \rangle - \langle v_m^2\rangle\langle v_n^2\rangle.
 \end{align}
 We show these model prediction in Fig.~\ref{fig:flow_corr} along with the \emph{normalized} symmetric cumulants
-
 \begin{equation}
   \mathrm{NSC}(m,n) = SC(m,n)/\langle v_m^2\rangle\langle v_n^2\rangle,
 \end{equation}
 which are expected to be less sensitive to the medium response and more sensitive to the properties of the initial state.
+The solid lines are model calculations using the MAP parameters from the present analysis and the dashed lines are model calculations using the MAP parameters of Ref.~\note\ which did not include nucleon substructure.
+The gap between $\mathrm{SC}(3,2)$ and $\mathrm{SC}(4,2)$ is generally wider in the present analysis, as is the gap between the normalized symmetric cumulants $\mathrm{NSC}(3,2)$ and $\mathrm{NSC}(4,2)$.
+This may alleviate a common problem
 
 \begin{figure}
   \includegraphics{flow_corr}
-  \caption{Model calculations of the symmetric cumulants for Pb-Pb collisions at $\sqrts=5.02$~TeV using the \emph{maximum a posteriori} (MAP) parameters.}
+  \caption{Model calculations of the symmetric cumulants (top) and normalized symmetric cumulants (bottom) for Pb-Pb collisions at $\sqrts=5.02$~TeV using the \emph{maximum a posteriori} (MAP) parameters. The solid lines are the MAP estimate of the present analysis (with nucleon substructure), and the dashed lines are the MAP estimate of Ref.~\note\ (without nucleon substructure). In general, most model parameters are somewhat different between the two studies.}
   \label{fig:flow_corr}
 \end{figure}
 
@@ -1012,7 +1015,7 @@ All software used in this work is open source:
   \item VISH2+1 hydrodynamics \note
   \item FRZOUT particle sample \note
   \item UrQMD microscopic transport model \note
-  \item Collision event generator (wrapper) \note
+  \item DukeQCD event generator (wrapper) \note
 \end{itemize}
 
 \begin{acknowledgments}
@@ -1026,6 +1029,23 @@ All software used in this work is open source:
 
 \section{Event-by-event grid resizing}
 \label{app:adaptive_grid}
+
+\begin{figure}
+  \begin{tikzpicture}
+    \draw [black, thin, step=0.3cm] (0.9, 0.9) grid +(4.5, 4.5);
+    \draw [gray, thin, step=0.9cm] (0, 0) grid +(6.3, 6.3);
+    \draw [theblue] (3.15, 3.15) circle (2.25cm);
+  \end{tikzpicture}
+  \caption{Diagram of the adaptive grid resizing algorithm (not drawn to scale). Each initial condition event is first run on a very large coarse-grained mesh (large gray grid) of one-third the spatial resolution otherwise required to measure hydrodynamic observables. We then measure the maximum transverse radius $R_\text{max}$ (blue circle) of the hypersurface defined by the temperature isotherm $T = T(e_\text{min})$, where $e_\text{min}$ is the largest energy density which can be truncated without modifying the hydrodynamic observables calculated from the event. Finally, the initial condition event is rerun on a smaller and finer mesh (smaller black grid) with three-times the cell density of the pre-run event and a smaller transverse extent $-R_\text{max} < x < R_\text{max}$.}
+  \label{fig:adaptive_grid}
+\end{figure}
+
+\begin{figure*}
+  \includegraphics[width=.6\textwidth]{validation_example}
+  \caption{Example emulator validation for one observable, the Pb-Pb charged particle yield $d\nch/d\eta$ in the 20-30\% centrality class. We use the k-fold cross validation method (explained in the text) to partition the model inputs $X$ and outputs $Y$ into training and validation data. The scatterplot on the left shows the emulator predictions and one sigma error bars (x-axis) against explicit model calculations (y-axis). Perfect emulator/model agreement is indicated by the black like $y_\text{pred}=y_\text{obs}$. The histogram on the right shows that the errors are properly accounted for, i.e.\ the normalized residuals follow a normal distribution with unit variance and zero mean.
+  }
+  \label{fig:validation_example}
+\end{figure*}
 
 The boost-invariant \textsc{VISH2+1} hydrodynamics code used in this work \cite{Song:2007ux, Shen:2014vra} runs on a Cartesian transverse grid specified by a maximum grid size $x_\text{max}$ and grid step width $dx$ which fix the transverse grid extent ${-x_\text{max} < x < x_\text{max}}$ and number of grid cells along each dimension ${n_x = 2\, x_\text{max} / dx}$.
 In general, the maximum grid size $x_\text{max}$ should be set large enough to contain the full spacetime evolution of the event.
@@ -1042,25 +1062,8 @@ In practice, we find that event-by-event grid resizing leads to a massive speed 
 This is because the maximum transverse size of each event varies dramatically, from a few fm in peripheral Pb-Pb collisions to 50 fm or more in central Pb-Pb collisions.
 The procedure should generalize to other hydrodynamic codes, including those with $3+1$ spacetime dimensions, where the time savings could be even more pronounced.
 
-\begin{figure}
-  \begin{tikzpicture}
-    \draw [black, thin, step=0.3cm] (0.9, 0.9) grid +(4.5, 4.5);
-    \draw [gray, thin, step=0.9cm] (0, 0) grid +(6.3, 6.3);
-    \draw [theblue] (3.15, 3.15) circle (2.25cm);
-  \end{tikzpicture}
-  \caption{Diagram of the adaptive grid resizing algorithm (not drawn to scale). Each initial condition event is first run on a very large coarse-grained mesh (large gray grid) of one-third the spatial resolution otherwise required to measure hydrodynamic observables. We then measure the maximum transverse radius $R_\text{max}$ (blue circle) of the hypersurface defined by the temperature isotherm $T = T(e_\text{min})$, where $e_\text{min}$ is the largest energy density which can be truncated without modifying the hydrodynamic observables calculated from the event. Finally, the initial condition event is rerun on a smaller and finer mesh (smaller black grid) with three-times the cell density of the pre-run event and a smaller transverse extent $-R_\text{max} < x < R_\text{max}$.}
-  \label{fig:adaptive_grid}
-\end{figure}
-
 \section{Emulator validation}
 \label{app:validation}
-
-\begin{figure*}
-  \includegraphics{validation_example}
-  \caption{Example emulator validation for one observable, the Pb-Pb charged particle yield $d\nch/d\eta$ in the 20-30\% centrality class. We use the k-fold cross validation method (explained in the text) to partition the model inputs $X$ and outputs $Y$ into training and validation data. The scatterplot on the left shows the emulator predictions and one sigma error bars (x-axis) against explicit model calculations (y-axis). Perfect emulator/model agreement is indicated by the black like $y_\text{pred}=y_\text{obs}$. The histogram on the right shows that the errors are properly accounted for, i.e.\ the normalized residuals follow a normal distribution with unit variance and zero mean.
-  }
-  \label{fig:validation_example}
-\end{figure*}
 
 The emulator is a surrogate for the full physics simulation which generates probabilistic predictions for the model observables $\y_m$ at a given point $\x$.
 Here we validate these probabilistic predictions using a method known as k-fold cross validation.

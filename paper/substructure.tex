@@ -990,39 +990,40 @@ This may alleviate a common problem
   \label{fig:flow_corr}
 \end{figure}
 
-\section{summary}
+\section{summary and conclusions}
 \label{sec:summary}
 
 Relativistic heavy-ion collisions produce long-range multiparticle correlations which are commonly explained by the existence of hydrodynamic flow \note.
 This narrative is evidenced by the global, self-consistent and highly non-trivial quantitative agreement of hydrodynamic models with a large number of heavy-ion bulk observables \note.
-Naturally, such descriptions rely on the validity of hydrodynamic approximations, and these approximations begin to break down in the dilute particle limit where discrete particle degrees-of-freedom dominate and continuous field descriptions of the medium cease to make sense.
-Thus unlike heavy-ion collisions, small system collisions were not expected to exhibit hydrodynamic behavior.
+Naturally, such descriptions rely on the validity of hydrodynamic approximations, and these approximations begin to break down in the so-called dilute limit where discrete particle degrees-of-freedom dominate and continuous field descriptions of the medium cease to make sense.
+Tell-tale signatures of hydrodynamic collectivity were thus always expected to vanish in smaller nuclear collision systems, e.g.\ $p$-$p$ and $p$-Pb collisions, where the number of produced particles is orders of magnitude smaller than a typical Pb-Pb collision.
 
-%Unlike heavy-ion collisions, small system collisions , were not expected
+These expectations were upended, however, when long-range multiparticle correlations were detected in high-multiplicity $p$-Pb collisions and found to be similar in magnitude to those observed in Pb-Pb collisions \note.
+Nuclear collision systems which were previously thought to be too small for hydrodynamic flow, were subsequently found to generate the same collectivity used to justify hydrodynamic flow in heavy-ion collisions.
+It is thus natural to wonder if a single unified hydrodynamic framework might be able to describe $p$-Pb and Pb-Pb bulk observables simultaneously.
+
+In this work, we performed a semi-exhaustive search for a unified description of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV using Bayesian methods to rigorously calibrate and constrain free parameters of a flexible nuclear collision model based on viscous hydrodynamics.
+The goal of our study was two fold.
+First, we aimed to establish whether or not our hydrodynamic framework was able to describe $p$-Pb and Pb-Pb bulk observables at $\sqrts=5.02$~TeV simultaneously, i.e.\ we attempted to falsify the framework.
+And second, given that the former is true, we wished to obtain estimates for the \emph{true} model parameters given the assumptions of our model and the evidence provided by the experimental data.
+
+Perhaps the most important difference between the present study and previous Bayesian analyses of heavy-ion collision models \note\ is the inclusion of variable nucleon substructure.
+We described the QGP initial state using a modified version of the parametric \trento\ model, with new parameters to vary the fluctuating size and shape of each nucleon.
+The nucleon was modeled as a cluster of $n_c$ Gaussian constituents (hot spots), and each constituent was described by a Gaussian density profile of width $v$.
+We also varied a parameter $w$ which controlled the sampling radius of the constituent positions inside each nucleon and hence the resulting RMS width of the ensemble averaged nucleon density.
+
+The transport dynamics were simulated using an event-by-event multi-stage nuclear collision model described by a pre-equilibrium free-streaming stage coupled to boost-invariant viscous hydrodynamics for the early hot and dense regions of the collision, and a microscopic hadronic afterburner to simulate hadronic interactions .
+We parametrized various sources of uncertainty including the duration of the pre-equilibrium free-streaming stage, the temperature dependence of the QGP shear and bulk viscosities, and the switching or particlization temperature where the medium description switches from hydrodynamics to microscopic Boltzmann transport.
+
+%Unfortunately, validating (or invalidating) a hydrodynamic picture of $p$-Pb and Pb-Pb collisions is not as simple as comparing a single model calculation to experimental data.
+%Hydrodynamic simulations typically include a number of free parameters which quantify uncertainties in the initial conditions and QGP medium, and these parameters can dramatically affect model predictions.
+%It's thus imperative to test all possible combinations of parameters in order to compare the full landscape of physically reasonable model calculations to experimental data.
+%If all possible combinations of model parameters fail to describe both collision systems simultaneously, then it's probably safe to say that the underlying assumptions of the chosen framework are either incomplete or invalid.
+%Similarly, if a single set of model parameters describes $p$-Pb and Pb-Pb bulk observables simultaneously, then it's compelling evidence that the hydrodynamic framework generalizes to small collision systems.
 %
-%Generally speaking, hydrodynamic flow signals were not expected to be observed
-%
-%
-%Recent measurements measurements of multiparticle correlations in $p$-Pb collisions are surprisingly similar to those measured in Pb-Pb collisions.
-%
-%The hydrodynamic framework, however, is naturally expected to break down in the dilute limit where discrete particle degrees of freedom dominate and continuous field descriptions of the medium cease to make sense.
-%It thus came somewhat as a surprise when high-multiplicity $p$-Pb collisions were found to produce long-range multiparticle correlations similar in magnitude to those observed in Pb-Pb collisions.
-%The observation challenged preconceived notions of hydrodynamic applicability and suggested that even proton-lead collisions produce small droplets of QGP liquid which evolve hydrodynamically.
-%
-%The potential for a unified hydrodynamic description of small and large collision systems is of course very appealing, although it is by no means given.
-%Multiple alternative explanations for the observed correlations have been proposed in the literature, and these mechanisms may contribute to the observed correlations in part or in full.
-%
-%Relativistic Au-Au and Pb-Pb collisions at RHIC and the LHC produce long-range multiparticle correlations which are commonly explained by the existence of hydrodynamic flow \note.
-%Perhaps the strongest evidence for this claim has been the overwhelming success of hydrodynamic models in describing (and even predicting) a large number of soft-sector observables in relativistic heavy-ion collisions \note.
-%
-%The hydrodynamic framework, however, is naturally expected to break down in the dilute limit where discrete particle degrees of freedom dominate and continuous field descriptions of the medium cease to make sense.
-%It thus came somewhat as a surprise when high-multiplicity $p$-Pb collisions were found to produce long-range multiparticle correlations similar in magnitude to those observed in Pb-Pb collisions.
-%The observation challenged preconceived notions of hydrodynamic applicability and suggested that even proton-lead collisions produce small droplets of QGP liquid which evolve hydrodynamically.
-%
-%The potential for a unified hydrodynamic description of small and large collision systems is of course very appealing, although it is by no means given.
-%Multiple alternative explanations for the observed correlations have been proposed in the literature, and these mechanisms may contribute to the observed correlations in part or in full.
-%
-\medskip
+%There is also much more that can be learned about a model by testing all possible parameter combinations as opposed to a single set of values.
+%If the model works exceptionally well, but only for a certain range of parameter values, it's evidence that those parameter values are somehow constrained by the data.
+%Moreover, rigorous statistical methods may then be used to report parameter estimates with meaningful uncertainties which account for the accuracy of the chosen framework and the resolving power of the experimental data.
 
 All software used in this work is open source:
 \begin{itemize}[leftmargin=2\parindent, itemsep=0pt, topsep=5pt]

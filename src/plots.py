@@ -37,7 +37,7 @@ from matplotlib import ticker
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from scipy import special
-from scipy.interpolate import PchipInterpolator, interp2d
+from scipy.interpolate import PchipInterpolator, UnivariateSpline, interp2d
 from scipy.optimize import curve_fit
 from sklearn.decomposition import PCA
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
@@ -851,7 +851,7 @@ def flow_corr():
     )
 
     observables = ['sc', 'sc_normed']
-    ylims = [(-2.5e-6, 2.5e-6), (-.8, .8)]
+    ylims = [(-2.5e-6, 2.5e-6), (-.9, .8)]
     labels = ['(4,2)', '(3,2)']
     system = 'PbPb5020'
 
@@ -925,7 +925,7 @@ def flow_corr():
     handles = [solid_line, dashed_line]
     labels = ["p-Pb, Pb-Pb 5.02 TeV", "Pb-Pb 2.76, 5.02 TeV"]
 
-    plt.legend(handles, labels, loc=8)
+    plt.legend(handles, labels, loc=8, title='Bayesian calibration on:')
 
     set_tight(fig)
 
@@ -1142,7 +1142,7 @@ def posterior_p():
     set_tight(pad=0)
 
 
-def posterior_parameter(parameter, label, xticks):
+def posterior_parameter(parameter, label, xticks, bins=50):
     """
     Marginal distribution of a single parameter.
 
@@ -1152,11 +1152,11 @@ def posterior_parameter(parameter, label, xticks):
 
     data = mcmc.Chain().load(parameter).ravel()
 
-    counts, edges = np.histogram(data, bins=50)
+    counts, edges = np.histogram(data, bins=bins)
     x = (edges[1:] + edges[:-1]) / 2
     y = counts / counts.max()
     interp = PchipInterpolator(x, y)
-    x = np.linspace(x[0], x[-1], 10*x.size)
+    x = np.linspace(x[0], x[-1], 100*x.size)
     y = interp(x)
     ax.plot(x, y, color=plt.cm.Blues(0.8))
     ax.fill_between(x, y, color=plt.cm.Blues(0.15), zorder=-10)
@@ -1172,17 +1172,57 @@ def posterior_parameter(parameter, label, xticks):
 
 @plot
 def posterior_parton_number():
-    posterior_parameter('parton_number', 'Constituent number', [1, 3, 5, 7, 9])
+    """
+    Posterior distribution on the number of constituents.
+
+    """
+    plt.figure(figsize=figsize(.5, .75))
+    ax = plt.axes()
+
+    data = mcmc.Chain().load('parton_number').ravel()
+
+    counts, edges = np.histogram(data, bins=50)
+    x = (edges[1:] + edges[:-1]) / 2
+    y = counts / counts.max()
+
+    spline = UnivariateSpline(x, y, s=1e-3)
+    x = np.linspace(data.min(), data.max(), 1000)
+    y = spline(x)
+
+    plt.plot([x[0], x[0]], [0, y[0]], linestyle='dashed',
+             color=offblack, clip_on=False)
+
+    plt.plot([x[-1], x[-1]], [0, y[-1]], linestyle='dashed',
+             color=offblack, clip_on=False)
+
+    ax.plot(x, y, color=plt.cm.Blues(0.8))
+    ax.fill_between(x, y, color=plt.cm.Blues(0.15), zorder=-10)
+    ax.spines['left'].set_visible(False)
+
+    ax.set_xlabel('Constituent number')
+    ax.set_xticks([1, 3, 5, 7, 9])
+    ax.set_yticks([])
+    ax.set_ylim(0, 1.01*y.max())
+
+    set_tight(pad=0)
 
 
 @plot
 def posterior_freestreaming():
-    posterior_parameter('tau_fs', 'Free streaming time [fm/$c$]', [.1, .8, 1.5])
+    posterior_parameter(
+        'tau_fs',
+        'Free streaming time [fm/$c$]',
+        [.1, .8, 1.5]
+    )
 
 
 @plot
 def posterior_structure():
-    posterior_parameter('parton_struct', '$\chi_\mathrm{struct}$', [0, .5, 1])
+    posterior_parameter(
+        'parton_struct',
+        '$\chi_\mathrm{struct}$',
+        [0, .5, 1]
+    )
 
 
 def _region(ax, name, chain, cmap=plt.cm.Blues, legend=False, title=False):
@@ -1355,7 +1395,10 @@ def region_shear_bulk(cmap=plt.cm.Blues):
     band = patches.Patch(color='.85', label='90% credible region')
     ax_shear.legend(handles=[band, line], loc='upper left')
     labels = ["p-Pb, Pb-Pb 5.02 TeV", "Pb-Pb 2.76, 5.02 TeV"]
-    ax_bulk.legend(handles, labels, loc='upper right', markerfirst=False)
+    ax_bulk.legend(
+        handles, labels, loc='upper right', markerfirst=False,
+        bbox_to_anchor=(1, 1.05), title='Bayesian calibration on:'
+    )
 
     set_tight(w_pad=.2)
 
@@ -2345,31 +2388,30 @@ def posterior_proton_shape():
     logging.info(parton_width_est)
 
     fig = plt.figure(figsize=figsize(.5, aspect=1.25))
+    ax = plt.gca()
 
-    cdict = plt.cm.Blues._segmentdata.copy()
-    cdict['red'][0] = (0, 1, 1)
-    cdict['blue'][0] = (0, 1, 1)
-    cdict['green'][0] = (0, 1, 1)
-    cmap = LinearSegmentedColormap('Blues', cdict)
+    plt.hist2d(nucleon_radius, parton_width, bins=100, cmap=plt.cm.Blues)
 
-    plt.hist2d(
-        nucleon_radius, parton_width, bins=100, cmap=cmap
-    )
+    plt.fill_between([.4, 1.2], [.4, 1.2], [1.2, 1.2], color='white')
 
-    plt.fill_between(
-        [.4, 1.2], [.4, 1.2], [1.2, 1.2],
-        color='.9', edgecolor=None
-    )
+    plt.plot([.4, .4], [.2, .4], linestyle='dashed', clip_on=False, color=offblack)
+    plt.plot([.4, 1.2], [.4, 1.2], linestyle='dashed', color=offblack)
+
     plt.annotate(
-        r'constit. width > nucleon width', xy=(.45, 1.15), xycoords='data',
-        ha='left', va='top', color=offblack
+        r'prior range', xy=(.5, .45), xycoords='data',
+        ha='center', va='center', color=offblack, rotation=45
     )
 
     plt.xticks([.4, .6, .8, 1, 1.2])
     plt.yticks([.2, .4, .6, .8, 1, 1.2])
     plt.xlabel('Nucleon width [fm]')
-    plt.ylabel('Constituent width [fm]')
-    plt.gca().set_aspect('equal')
+    plt.ylabel('Constituent width [fm]', rotation=-90, labelpad=15)
+
+    ax.set_aspect('equal')
+    ax.spines['left'].set_visible(False)
+    ax.spines['right'].set_visible(True)
+    ax.yaxis.set_label_position('right')
+    ax.yaxis.tick_right()
 
     set_tight(fig, pad=.2)
 

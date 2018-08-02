@@ -99,7 +99,7 @@ plt.rcParams.update({
     'lines.markersize': 3,
     'lines.markeredgewidth': 0,
     'patch.linewidth': .8,
-    'hatch.linewidth': .6,
+    'hatch.linewidth': .8,
     'axes.linewidth': .6,
     'xtick.major.width': .6,
     'ytick.major.width': .6,
@@ -1847,7 +1847,7 @@ def validation_all(system):
     ax_rms.set_xticks([])
     ax_rms.set_yticks(np.arange(0, 21, 5))
     ax_rms.set_ylim(0, 20)
-    ax_rms.set_ylabel('Fractional error')
+    ax_rms.set_ylabel('Frac. error')
 
     for y in ax_rms.get_yticks():
         ax_rms.axhline(y, color='.5', zorder=-10)
@@ -1881,7 +1881,7 @@ def validation_example(
 
     """
     fig, axes = plt.subplots(
-        ncols=2, figsize=figsize(1, aspect=.6),
+        ncols=2, figsize=figsize(.8, aspect=.6),
         gridspec_kw=dict(width_ratios=[3, 1])
     )
 
@@ -1975,6 +1975,8 @@ def validation_example(
         fontdict=dict(rotation=-90),
         labelpad=4*plt.rcParams['axes.labelpad']
     )
+
+    set_tight(fig, rect=[.02, 0, 1, 1])
 
 
 @plot

@@ -1688,7 +1688,7 @@ def pca_vectors_variance(system=default_system):
 def boxplot(
         ax, percentiles, x=0, y=0, box_width=1,
         line_width=plt.rcParams['lines.linewidth'],
-        color=(0, 0, 0), alpha=.6, zorder=10
+        color=(0, 0, 0), alpha=.6, zorder=10, vert=True
 ):
     """
     Draw a minimal boxplot.
@@ -1977,6 +1977,134 @@ def validation_example(
     )
 
     set_tight(fig, rect=[.02, 0, 1, 1])
+
+
+@plot
+def validation_example_vert(
+        system='PbPb5020',
+        obs='dNch_deta', subobs=None,
+        label=r'$dN_\mathrm{ch}/d\eta$',
+        cent=(20, 30)
+):
+    """
+    Example of emulator validation for a single observable.  Scatterplot of
+    model calculations vs emulator predictions with histogram and boxplot of
+    normalized residuals.
+
+    """
+    fig, axes = plt.subplots(
+        nrows=2, figsize=figsize(.5, aspect=1.3),
+        gridspec_kw=dict(height_ratios=[1, 3]),
+    )
+
+    ax_hist, ax_scatter = axes
+
+    # model data
+    model_data  = model.data[system]
+    vdata = model_data[obs][subobs]
+    cent_slc = (slice(None), vdata['cent'].index(cent))
+    y = vdata['Y'][cent_slc]
+
+    # emulator predictions
+    mean_folds, cov_folds = validation_data(system)
+    y_ = np.concatenate(
+        [mean[obs][subobs][cent_slc] for mean in mean_folds], axis=0
+    )
+    std_ = np.concatenate(
+        [np.sqrt(cov[(obs, subobs), (obs, subobs)].T.diagonal()[cent_slc])
+            for cov in cov_folds], axis=0
+    )
+
+    color = obs_color(obs, subobs)
+    alpha = .6
+
+    ax_scatter.set_aspect('equal')
+    ax_scatter.errorbar(
+        y_, y, xerr=std_,
+        fmt='o', mew=.2, mec='white',
+        color=color, alpha=alpha
+    )
+    dy = .03*y.ptp()
+    x = [y.min() - dy, y.max() + dy]
+    ax_scatter.plot(x, x, color='.4')
+    ax_scatter.set_xlabel('Emulator prediction')
+    ax_scatter.set_ylabel('Model calculation')
+    ax_scatter.text(
+        .96, .06, '{} {}–{}%'.format(label, *cent),
+        horizontalalignment='right', verticalalignment='bottom',
+        transform=ax_scatter.transAxes
+    )
+
+    zmax = 3.5
+    zrange = (-zmax, zmax)
+
+    z = (y_ - y)/std_
+
+    ax_hist.hist(
+        z, bins=30, range=zrange, density=True, histtype='stepfilled',
+        color=color, alpha=alpha
+    )
+    x = np.linspace(-zmax, zmax, 1000)
+    ax_hist.plot(x, np.exp(-.5*x*x)/np.sqrt(2*np.pi), color='.25')
+
+    box_y = .75
+    box_width = .1
+
+    # percentiles
+    pl, q1, q2, q3, ph = np.percentile(z, [10, 25, 50, 75, 90])
+
+    # IQR box
+    ax_hist.add_patch(patches.Rectangle(
+        xy=(q1, box_y - .5*box_width),
+        width=(q3 - q1), height=box_width,
+        color=color, alpha=alpha, lw=0, zorder=1
+    ))
+
+    # median line
+    ax_hist.plot(
+        2*[q2], [box_y - .5*box_width, box_y + .5*box_width],
+        lw=2*plt.rcParams['lines.linewidth'], solid_capstyle='butt',
+        color=color, zorder=2
+    )
+
+    # whisker lines
+    for x in [[pl, q1], [q3, ph]]:
+        ax_hist.plot(
+            x, 2*[box_y], lw=2*plt.rcParams['lines.linewidth'],
+            solid_capstyle='butt', color=color, alpha=alpha, zorder=1
+        )
+
+    guide_width = 2.5*box_width
+
+    q, p = np.sqrt(2) * special.erfinv(2*np.array([.75, .90]) - 1)
+    ax_hist.add_patch(patches.Rectangle(
+        xy=(-q, box_y - .5*guide_width),
+        width=2*q, height=guide_width,
+        color='.85', zorder=-20
+    ))
+    for s in [-1, 0, 1]:
+        ax_hist.plot(
+           2*[s*p], [box_y - .5*guide_width, box_y + .5*guide_width],
+            color='.5', zorder=-10
+        )
+
+    ax_hist.set_xlim(zrange)
+    ax_hist.spines['left'].set_visible(False)
+    ax_hist.tick_params('y', left=False, labelleft=False)
+    ax_hist.set_xlabel('Normalized residuals')
+
+    ax_q = ax_hist.twiny()
+    ax_q.spines['left'].set_visible(False)
+    ax_q.set_xlim(ax_hist.get_xlim())
+    ax_q.set_xticks([-p, -q, 0, q, p])
+    ax_q.set_xticklabels([10, 25, 50, 75, 90])
+    ax_q.tick_params('x', top=False)
+    ax_q.set_xlabel(
+        'Normal quantiles',
+        labelpad=2*plt.rcParams['axes.labelpad']
+    )
+
+    set_tight(fig)
 
 
 @plot

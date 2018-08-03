@@ -9,6 +9,7 @@
 \graphicspath{{../plots/}{./fig/}}
 
 \usepackage{tikz}
+\usepackage{subcaption}
 
 \usepackage{color}
 \definecolor{theblue}{RGB}{0,50,230}
@@ -146,9 +147,9 @@ Generally speaking, the initial three-dimensional distribution of matter produce
 Nevertheless, boost-invariance has been shown to be a good approximation for both large and small collision systems when hydrodynamic observables are calculated from particles that are detected close to midrapidity \cite{Shen:2016zpp}.
 
 The \trento\ model operates in the ultrarelativistic limit with a Lorentz factor $\gamma \gg 1$ such that each nucleus appears as a thin sheet of nuclear density in the laboratory frame.
-The sheets of colliding nuclear density penetrate and pass through each other in time $\Delta t = D_\text{nucl} / \sqrt{\gamma^2 - 1}$ in the laboratory frame, where $D_\text{nucl}$ is the diameter of the nucleus in its rest frame and $\gamma$ is the usual Lorentz factor of the accelerated ions.
-The resulting nuclear overlap time $\Delta t \lesssim 0.1$~fm/$c$ at top RHIC and LHC energies is thus sufficiently short to neglect initial transverse dynamics which occur while the nuclei pass through each other.
-We therefore assume that the collision produces all secondary particles at uniform proper time $\tau = 0^+$~fm/$c$, and that it deposits entropy (energy) at midrapidity which is a function of the locally varying beam integrated density of each nucleus.
+The sheets of colliding nuclear density penetrate and pass through each other in proper time $\Delta \tau \approx D_\text{nucl} / (\gamma\, \beta_z)$ in the laboratory frame, where $D_\text{nucl}$ is the diameter of the nucleus in its rest frame, $\gamma$ is the usual Lorentz factor of the accelerated ions, and $\beta_z$ is their velocity along the beam axis.
+The resulting nuclear overlap time $\Delta \tau \lesssim 0.1\ \fmc$ at top RHIC and LHC energies is thus sufficiently short to neglect initial transverse dynamics which occur while the nuclei pass through each other.
+We therefore assume that the collision produces all secondary particles at uniform proper time $\tau = 0^+\ \fmc$, and that it deposits entropy (energy) at midrapidity which is a function of the locally varying beam integrated density of each nucleus.
 
 Consider the collision of two protons $A$, $B$ with three-dimensional densities $\rho_{A,B}$ in their local rest frames.
 The proton-proton overlap function
@@ -228,7 +229,7 @@ Assuming our two protons collide at the sampled impact parameter $\mathbf{b}$, w
 equal to the beam-integrated proton density in Eqn.~\eqref{eq:rho}, with each constituent shifted by the appropriate impact parameter offset, and multiplied by a gamma random variable $\gamma_i$ with unit mean and variance $1/k$.
 These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their exact physical origin is not well understood.
 
-Within the eikonal approximation, the initial entropy deposited at midrapidity at proper time $\tau=0^+$~fm/$c$ can be represented by some mapping ${f(\T_A, \T_B) \mapsto dS/dy}$.
+Within the eikonal approximation, the initial entropy deposited at midrapidity at proper time $\tau=0^+\ \fmc$ can be represented by some mapping ${f(\T_A, \T_B) \mapsto dS/dy}$.
 A natural first guess for the mapping is the arithmetic mean
 \begin{equation}
   \frac{dS}{dy}\bigg\vert_{y=0} \propto \frac{\T_A + \T_B}{2}
@@ -293,7 +294,7 @@ Similar methods could be used to model correlations between individual constitue
 There are of course two limiting cases for the strength of interactions inside the QGP medium immediately at the collision: infinitely weak coupling where the secondary partons free-stream without interacting, and infinitely strong coupling where the fluid's inter-particle mean free path effectively vanishes.
 Realistically, one expects the initial parton interactions to lie somewhere between these two extremes.
 We therefore choose to model the QGP's initial off-equilibrium dynamics using a simple step-function approximation, depicted in Fig.~\ref{fig:coupling}, which free-streams the initial state for proper time $\taufs$ (zero coupling) before instantaneously switching to viscous hydrodynamics (strong coupling) \cite{Liu:2015nwa, Broniowski:2008qk}.
-The free parameter $\taufs$ allows us to parametrically vary the \emph{time averaged} coupling strength in the approximate window $0 < \taufs \lesssim1$~fm/$c$.
+The free parameter $\taufs$ allows us to parametrically vary the \emph{time averaged} coupling strength in the approximate window $0 < \taufs \lesssim1\ \fmc$.
 
 The parametric entropy deposition ansatz in Eqn.~\eqref{eq:gmean} does not provide any information about the initial masses or momenta of particles produced in the collision.
 In general, these details will affect the dynamics predicted by the collisionless Boltzmann equation
@@ -305,7 +306,7 @@ through its dependence on the underlying distribution function $f(x, p)$, and he
 Equation~\eqref{freestream}, however, simplifies for massless partons with momentum distributions that are locally isotropic.
 Under this assumption, it was shown in Refs.~\cite{Broniowski:2008qk, Liu:2015nwa} that the energy-momentum tensor $T^{\mu\nu}$ of partons at midrapidity and time $\tau$ only depends on its spatial distribution at some earlier time $\tau_0$, but not its $p_\perp$-distribution, which could vary as a function of position.
 
-We thus follow the procedure of the authors and reinterpret our initial transverse entropy density at midrapidity $s(\mathbf{x_\perp}, \tau_0)\vert_{\eta=0}$ as a transverse density of noninteracting massless partons $n(\mathbf{x}, \tau_0)\vert_{\eta=0}$.
+We thus follow the procedure of the authors and reinterpret our parametrization for the initial transverse entropy density at midrapidity $s(\mathbf{x_\perp}, \tau_0)\vert_{\eta=0}$ as a parametrization for the initial transverse density of massless noninteracting partons $n(\mathbf{x}, \tau_0)\vert_{\eta=0}$.
 The free-streamed energy-momentum tensor $T^{\mu\nu}(x, y, \eta, \tau)$ at transverse coordinate $(x, y)$, midrapidity $\eta=0$, and proper time $\tau > \tau_0$ is then given by
 \begin{multline}
   \label{energy-momentum}
@@ -517,7 +518,7 @@ where $\Delta\y = \y_m(\x) - \y_e$ is the discrepancy of the model and experimen
     $n_c$             & Number of nucleon constituents       & 1--9            \\
     $\X$              & Nucleon structure parameter          & 0--1            \\
     $\dmin$           & Minimum inter-nucleon distance       & 0--1.7 fm       \\
-    $\taufs$          & Free-streaming time                  & 0.1--1.5 fm/$c$ \\
+    $\taufs$          & Free-streaming time                  & 0.1--1.5 \fmc   \\
     $\eta/s$ min      & Minimum value of $\eta/s$ (at $T_c$) & 0--0.2          \\
     $\eta/s$ slope    & Slope of $\eta/s$ above $T_c$        & 0--8 GeV$^{-1}$ \\
     $\eta/s$ crv      & Curvature of $\eta/s$ above $T_c$    & $-1$ to $+1$    \\
@@ -830,7 +831,7 @@ The uncertainty in the posterior distribution could thus be improved by running 
 We now direct our attention to Fig.~\ref{fig:posterior} which shows the main result of this work, the posterior distribution of the model input parameters.
 Recall that the posterior $P(H_\x | E)$ is the probability that our hypothesis $H_\x$ for the true model parameters $\x_\star$ is correct, given the evidence $E$ provided by experiment.
 The present posterior has 15 dimensions, one for each parameter listed in Tbl.~\ref{tab:design}, and thus its joint distribution cannot be summarized by one figure alone.
-We thus sample the distribution and histogram the samples to project the distribution onto one or two dimensions at a time.
+We therefore sample the distribution and histogram the samples to project the distribution onto one or two dimensions at a time.
 Each diagonal panel is the distribution of a \emph{single} model parameter (marginalized over all others), and each lower-diagonal panel is the joint distribution of a \emph{pair} of model parameters (marginalized over all others).
 We also report numeric estimates for each model parameter along the distribution diagonal.
 These estimates describe the marginalized distribution median and 90\% credible interval for each parameter.
@@ -887,8 +888,7 @@ For example, consider the ratio of the $p$-Pb yield over the Pb-Pb yield, which 
 As the entropy deposition parameter $p$ trends toward positive (negative) infinity, particle production scales like the local maximum (minimum) of the nuclear overlap density.
 The parameter $p$ thus strongly affects the $p$-Pb and Pb-Pb yield ratio.
 It just so happens that the small range of $p$-values needed to describe this yield ratio are the same values needed to describe all of the calibration observables in the present study, \emph{and} numerous Pb-Pb observables at $\sqrts=2.76$~TeV \cite{Bernhard:2018hnz}.
-This work thus reaffirms an empirical scaling law reported in several previous studies \cite{Moreland:2014oya, Bernhard:2016tnd, Ke:2016jrd, Bernhard:2018hnz},
-that ultrarelativistic nuclear collisions deposit entropy at midrapidity approximated by
+This work thus reaffirms an empirical scaling law reported by several previous studies \cite{Moreland:2014oya, Bernhard:2016tnd, Ke:2016jrd, Bernhard:2018hnz} for the initial transverse entropy density (or massless parton density) of an ultrarelativistic nuclear collision, given by
 \begin{equation}
   \label{eq:geometric_mean}
   \frac{dS}{dy}\bigg\vert_{y=0} \propto \sqrt{\T_A \T_B},
@@ -925,7 +925,7 @@ Those studies find that the measured coherent and incoherent $J/\Psi$ spectra at
   }
 \end{figure}
 
-Meanwhile, our posterior on the constituent number $n_c$, shown enlarged in Fig.~\ref{fig:posterior_parton_number}, is not sharply peaked.
+The posterior on the constituent number $n_c$, shown enlarged in Fig.~\ref{fig:posterior_parton_number}, is not sharply peaked.
 We therefore refrain from quoting a distribution median and 90\% credible interval, although we do note that the distribution clearly favors $n_c > 1$ constituents.
 This is not surprising.
 The \trento\ model mimics saturation-based initial condition models \cite{Bernhard:2016tnd}, and saturation models tend to produce ``proton-sized'' fireballs in $p$-Pb collisions \cite{Bzdak:2013zma}.
@@ -961,7 +961,7 @@ The only modeling difference between the two studies is the inclusion of nucleon
 Several calibration details, however, are different as well.
 The present work uses a much smaller number of $p$-Pb and Pb-Pb observables at $\sqrts=5.02$~TeV (limited by availability), whereas Ref.~\cite{Bernhard:2018hnz} used a larger cross section of Pb-Pb experimental data at $\sqrts=2.76$ and 5.02~TeV.
 
-The posterior free-streaming time $\taufs=0.37_{-0.27}^{+0.34}$~fm/$c$ obtained in this work is significantly smaller than our previous estimate $\taufs=1.16_{-0.25}^{+0.29}$~fm/$c$ in Ref.~\cite{Bernhard:2018hnz}.
+The posterior free-streaming time $\taufs=0.37_{-0.27}^{+0.34}\ \fmc$ obtained in this work is significantly smaller than our previous estimate $\taufs=1.16_{-0.25}^{+0.29}\ \fmc$ in Ref.~\cite{Bernhard:2018hnz}.
 We point out that the present study is missing several important observables which could affect the estimated free-streaming time, e.g.\ the Pb-Pb mean $p_T$ and mean $p_T$ fluctuations at $\sqrts=5.02$~TeV.
 Nevertheless, it appears that the inclusion of nucleon substructure significantly reduces the maximum allowed free-streaming time, although more work is needed to establish if this is indeed the case.
 
@@ -1006,8 +1006,8 @@ The inner-average in Eqn.~\ref{eq:mean_pT_corr} runs over all pairs of particles
 The observable is typically presented in terms of the dimensionless ratio $\delta p_T / \langle p_T \rangle$, which quantifies the strength of the dynamical fluctuations in units of the average transverse momentum $\langle p_T \rangle$.
 
 We show the MAP estimate predictions for the $p$-Pb and Pb-Pb relative mean $p_T$ fluctuations $\delta p_T / \langle p_T \rangle$ at $\sqrts=5.02$~TeV in the third row of Fig.~\ref{fig:obs_map}.
-For the Pb-Pb system, we use centrality bins and for the $p$-Pb system we use the same relative multiplicity bins used for two-particle flows.
-The relative mean $p_T$ fluctuations were shown to be particularly sensitive to the existence of nucleon substructure \cite{Bozek:2017elk}, and thus it would be interesting to ultimately include this observable in the calibration when the data becomes available.
+For the Pb-Pb system, we use centrality bins and for the $p$-Pb system we use the same relative multiplicity bins used for the $p$-Pb charged-particle mean $p_T$.
+The relative mean $p_T$ fluctuations have been shown to be particularly sensitive to the existence of nucleon substructure \cite{Bozek:2017elk}, and thus it would be interesting to ultimately include this observable in the calibration when the data becomes available.
 
 \begin{fullpage}
   {\centering\includegraphics{observables_map}\par}
@@ -1037,7 +1037,7 @@ The relative mean $p_T$ fluctuations were shown to be particularly sensitive to 
       $w$      & 0.92 fm        & $\zeta/s$ width   & 0.024 GeV      \\
       $v$      & 0.43 fm        & $\zeta/s$ $T_0$   & 175 MeV        \\
       $\dmin$  & 0.81 fm        & $T_\text{switch}$ & 151 MeV        \\
-      $\taufs$ & 0.37 fm/$c$
+      $\taufs$ & 0.37 \fmc
     \end{tabular}
   \end{ruledtabular}
 \end{table}
@@ -1048,7 +1048,7 @@ Lastly, we compute the symmetric cumulants $\SC(m,n)$ for the Pb-Pb collision sy
   \nonumber &- \langle\langle\cos[m(\phi_1-\phi_2)]\rangle\rangle\langle\langle\cos[n(\phi_1-\phi_2)]\rangle\rangle \label{eq:scmn}\\
   &\approx \langle v_m^2 v_n^2 \rangle - \langle v_m^2\rangle\langle v_n^2\rangle.
 \end{align}
-We show these model prediction in Fig.~\ref{fig:flow_corr} along with the \emph{normalized} symmetric cumulants
+We show these model predictions in Fig.~\ref{fig:flow_corr} along with the \emph{normalized} symmetric cumulants
 \begin{equation}
   \NSC(m,n) = \SC(m,n)/\langle v_m^2\rangle\langle v_n^2\rangle,
 \end{equation}
@@ -1119,31 +1119,31 @@ Here we summarize our key findings about the model:
   \item
     Bulk observables in $p$-Pb and Pb-Pb collisions prefer larger nucleons, similar in size to the proton's RMS electric charge radius.
     This agrees with a similar Bayesian analysis which was calibrated to Pb-Pb bulk observables at $\sqrts=2.76$ and 5.02~TeV using a hybrid model without nucleon substructure \cite{Bernhard:2018hnz}.
-    We also note that our result is in significant tension with an estimate for the effective nucleon width based on the gluon distribution extracted from HERA data \cite{Rezaeian:2012ji}.
+    We note that our result is in significant tension with an estimate for the effective nucleon width based on the gluon distribution extracted from HERA data \cite{Rezaeian:2012ji}.
   \item
     We obtain an estimate $v=0.46_{-0.15}^{+0.21}$~fm for the Gaussian width of the constituent hot spots inside each nucleon.
     This is significantly larger than the length scales typically associated with nucleon substructure, and it may help explain the seemingly unreasonable success of hydrodynamics in small collision systems.
   \item
-    Our posterior estimate for the pre-equilibrium free-streaming time is $\taufs=0.37_{-0.27}^{+0.34}$~fm/$c$.
-    This is significantly shorter than the estimate obtained from a similar Bayesian study in Ref.~\cite{Bernhard:2018hnz}, which reported $\taufs=1.16_{-0.25}^{+0.29}$~fm/$c$.
+    Our posterior estimate for the pre-equilibrium free-streaming time is $\taufs=0.37_{-0.27}^{+0.34}\ \fmc$.
+    This is significantly shorter than the estimate obtained from a similar Bayesian study in Ref.~\cite{Bernhard:2018hnz}, which reported $\taufs=1.16_{-0.25}^{+0.29}\ \fmc$.
     It is not clear whether the difference is a result of nucleon substructure or the different observables used to calibrate each analysis.
   \item
     We compare in Fig.~\ref{fig:region_shear_bulk} our estimate for the temperature dependence of the QGP specific shear and bulk viscosities to those of Ref.~\cite{Bernhard:2018hnz}, which performed a Bayesian calibration to Pb-Pb bulk observables at $\sqrts=2.76$ and 5.02~TeV using a physics model without nucleon substructure.
-    The two studies are in good agreement, although Ref.~\cite{Bernhard:2018hnz} obtains a more precise estimate for $(\eta/s)(T)$, likely due to the additional beam energies and observables included, and the enhanced sensitivity of larger collision systems to the QGP viscosity.
+    The two studies are in good agreement, although Ref.~\cite{Bernhard:2018hnz} obtains a more precise estimate for $(\eta/s)(T)$, likely due to the additional beam energies and observables included, and an enhanced sensitivity of larger collision systems to the QGP viscosity.
   \item
-    We make predictions in Fig.~\ref{fig:obs_map} for several quantities which were not included in the model calibration, including the identified yields, transverse energy, symmetric cumulants, and mean $p_T$ fluctuations at $\sqrts=5.02$~TeV.
+    We make predictions in Figs.~\ref{fig:obs_map} and \ref{fig:flow_corr} for several quantities which were not included in the model calibration, including the identified yields, transverse energy, symmetric cumulants, and mean $p_T$ fluctuations at $\sqrts=5.02$~TeV.
     Interestingly, our MAP estimate for the Pb-Pb symmetric cumulants at $\sqrts=5.02$~TeV are significantly different than those estimated in Ref.~\cite{Bernhard:2018hnz}.
-    This could be a direct or indirect result of including nucleon substructure in the model calibration.
+    This could be a direct (or indirect) result of including nucleon substructure in the model calibration.
 \end{enumerate}
 
 The present study would benefit from a number of improvements.
 Perhaps the most obvious target for improvement is the absence of several important experimental datasets.
 Specifically, we are missing the transverse energy, identified particle yields, and the mean $p_T$ fluctuations of both collision systems, as well the charged-particle mean $p_T$ for the Pb-Pb system.
-These observables would certainly influence the quality of the combined fit and correspondingly our estimates for the posterior model parameters.
+These observables would certainly influence the quality of the combined fit and correspondingly our estimates for the model parameters.
 
 Similarly, the results would greatly benefit from additional beam energies and collision systems.
-Notably absent is data from RHIC which includes measurement for $p$-Au, $d$-Au, $^3$He-Au, Cu-Cu, Cu-Au, Au-Au and U-U collision systems at $\sqrts=200$~GeV.
-This data would provide an additional constraint on the model parameters and would enable more stringent tests of the calibrated model predictions.
+Notably absent is data from RHIC which includes measurements for $p$-Au, $d$-Au, $^3$He-Au, Cu-Cu, Cu-Au, Au-Au and \mbox{U-U} collision systems at $\sqrts=200$~GeV.
+This data would undoubtedly provide an additional constraint on the model parameters and would enable more stringent tests of the calibrated model predictions.
 The RHIC data may also help elucidate the beam-energy dependence of the model parameters which would be worth investigating.
 We leave these improvements for future studies.
 
@@ -1163,7 +1163,7 @@ All software used in this work is open source:
 \medskip
 
 \begin{acknowledgments}
-  JSM thanks Weiyao Ke, Bj\"orn Schenke and Heikki M\"antysaari for helpful discussions and clarifying comments.
+  JSM thanks Berndt M\"uller, Weiyao Ke, Bj\"orn Schenke, and Heikki M\"antysaari for helpful discussions and clarifying comments.
   This research was completed using 6 million CPU hours provided by the National Energy Research Scientific Computing Center (NERSC), a U.S. Department of Energy Office of Science User Facility operated under Contract No. DE-AC02-05CH11231.
   JSM and SAB are supported by the U.S.\ Department of Energy Grant No.\ DE-FG02-05ER41367 and JEB by NSF Grant No.\ NSF-ACI-1550225.
 \end{acknowledgments}
@@ -1176,7 +1176,7 @@ All software used in this work is open source:
 \label{app:adaptive_grid}
 
 \begin{figure}
-  \begin{tikzpicture}
+  \begin{tikzpicture}[scale=.9]
     \draw [black, thin, step=0.3cm] (0.9, 0.9) grid +(4.5, 4.5);
     \draw [gray, thin, step=0.9cm] (0, 0) grid +(6.3, 6.3);
     \draw [theblue] (3.15, 3.15) circle (2.25cm);
@@ -1190,8 +1190,8 @@ All software used in this work is open source:
   }
 \end{figure}
 
-\begin{figure*}
-  \includegraphics{validation_example}
+\begin{figure}[b]
+  \includegraphics{validation_example_vert}
   \caption{
     \label{fig:validation_example}
     Example emulator validation for one observable, the Pb-Pb charged particle yield $d\nch/d\eta$ in the 20-30\% centrality class.
@@ -1200,7 +1200,7 @@ All software used in this work is open source:
     Perfect emulator/model agreement is indicated by the black like $y_\text{pred}=y_\text{obs}$.
     The histogram on the right shows that the errors are properly accounted for, i.e.\ the normalized residuals follow a normal distribution with unit variance and zero mean.
   }
-\end{figure*}
+\end{figure}
 
 The boost-invariant VISH2+1 hydrodynamics code used in this work \cite{Song:2007ux, Shen:2014vra} runs on a Cartesian transverse grid specified by a maximum grid size $x_\text{max}$ and grid step width $dx$ which fix the transverse grid extent ${-x_\text{max} < x < x_\text{max}}$ and number of grid cells along each dimension ${n_x = 2\, x_\text{max} / dx}$.
 In general, the maximum grid size $x_\text{max}$ should be set large enough to contain the full spacetime evolution of the event.
@@ -1221,6 +1221,18 @@ The procedure should generalize to other hydrodynamic codes, including those wit
 \section{Emulator validation}
 \label{app:validation}
 
+\begin{figure*}
+  \includegraphics{validation_PbPb5020}\\
+  \includegraphics{validation_pPb5020}
+  \caption{
+    \label{fig:validation_all}
+    Emulator validation for the Pb-Pb collision system (top) and $p$-Pb collision system (bottom) at $\sqrts=5.02$~TeV.
+    The ``piano keys'' in the top row of each figure are horizontally stacked box plots for the normalized residuals of each model observable.
+    The boxes are 50\% interquartile ranges and whiskers are the 90\% interquantiles.
+    The bottom row of each figure is the RMS fractional error defined by Eqn.~\eqref{eq:frac_error}.
+  }
+\end{figure*}
+
 The emulator is a surrogate for the full physics simulation which generates probabilistic predictions for the model observables $\y_m$ at a given point $\x$.
 Here we validate these probabilistic predictions using a method known as k-fold cross validation.
 We first randomly partition our $d=500$ training points into $k=20$ equal sized subsamples or ``folds''.
@@ -1231,6 +1243,7 @@ Figure~\ref{fig:validation_example} shows a scatterplot of the emulator predicti
 Perfect emulator and model agreement is indicated by the black line $y_\text{pred} = y_\text{obs}$.
 If the emulator errors are properly accounted for, then the normalized residuals ${z=(y_\text{pred} - y_\text{obs})/\sigma_\text{pred}}$ sample a unit normal distribution:
 \begin{equation}
+  \label{eq:frac_error}
   P(z) \sim \mathcal{N}(\mu=0,\sigma=1).
 \end{equation}
 
@@ -1259,16 +1272,5 @@ Thus $\hat{z}$ can be thought of as a fractional emulator error relative to the 
 The bottom row of each figure shows the root-mean-square value of $\hat{z}$.
 We see that $\text{RMS}\{\hat{z}\}$ ranges from a few percent for most observables to a maximum value of 15\% for the $p$-Pb triangular flow $v_3\{2\}$ in the lowest multiplicity bin.
 This suggests that the present analysis would benefit the most from more $p$-Pb events, in particular, from more multiplicity triggered events which are used to calculate the flows.
-
-\begin{figure*}
-  \includegraphics{validation_PbPb5020}\\
-  \includegraphics{validation_pPb5020}
-  \caption{
-    \label{fig:validation_all}
-    Emulator validation for the Pb-Pb collision system (top) and $p$-Pb collision system (bottom) at $\sqrts=5.02$~TeV.
-    The ``piano keys'' in the top row of each figure are horizontally stacked box plots for the normalized residuals of each model observable.
-    The boxes are 50\% interquartile ranges and whiskers are the 90\% interquantiles.
-  }
-\end{figure*}
 
 \end{document}

@@ -2163,7 +2163,7 @@ def correlation_matrices(system=default_system):
         for s in ax.spines.values():
             s.set_visible(False)
 
-    axes[0].tick_params(labelleft=False)
+    axes[0].tick_params(labelleft=True)
     for t in axes[1].get_yticklabels():
         t.set_horizontalalignment('center')
         t.set_x(-.05)

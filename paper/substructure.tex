@@ -229,7 +229,7 @@ Assuming our two protons collide at the sampled impact parameter $\mathbf{b}$, w
 equal to the beam-integrated proton density in Eqn.~\eqref{eq:rho}, with each constituent shifted by the appropriate impact parameter offset, and multiplied by a gamma random variable $\gamma_i$ with unit mean and variance $1/k$.
 These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their exact physical origin is not well understood.
 
-Within the eikonal approximation, the initial entropy deposited at midrapidity at proper time $\tau=0^+\ \fmc$ can be represented by some mapping ${f(\T_A, \T_B) \mapsto dS/dy}$.
+Within the eikonal approximation, the initial entropy deposited at midrapidity at proper time $\tau=0^+\ \fmc$ can be represented by some mapping ${f: \T_A, \T_B \mapsto dS/dy}$.
 A natural first guess for the mapping is the arithmetic mean
 \begin{equation}
   \frac{dS}{dy}\bigg\vert_{y=0} \propto \frac{\T_A + \T_B}{2}
@@ -865,14 +865,14 @@ These posterior parameter estimates are also listed in Tbl.~\ref{tab:post_param}
       \multicolumn{2}{c}{Initial condition / Pre-eq}     & \multicolumn{2}{c}{QGP medium}              \\
       \cmidrule(r){1-2}                                    \cmidrule(l){3-4}
       \addlinespace[.4ex]
-      Norm       & \est{20.3}{2.2}{2.2}          & $\eta/s$ min     & \est{0.10}{0.07}{0.07}            \\[1.1ex]
-      $p$        & \est{0.018}{0.159}{0.146}     & $\eta/s$ slope   & \est{1.16}{1.16}{1.55} GeV$^{-1}$ \\[1.1ex]
-      $\sigmaf$  & \est{0.93}{0.27}{0.27}        & $\eta/s$ crv     & \est{-0.21}{0.79}{0.85}           \\[1.1ex]
-      $w$        & \est{0.97}{0.17}{0.19} fm     & $\zeta/s$ max    & \est{0.027}{0.027}{0.034}         \\[1.1ex]
-      $n_c$      & \est{6.2}{3.1}{2.8}           & $\zeta/s$ width  & \est{0.032}{0.032}{0.047} GeV     \\[1.1ex]
-      $\X$       & \est{0.34}{0.17}{0.22}        & $\zeta/s$ $T_0$  & \est{0.176}{0.020}{0.024} GeV     \\[1.1ex]
-      $\dmin$    & \est{1.12}{0.50}{0.56} fm     & $\Tsw$           & \est{0.150}{0.012}{0.015} GeV     \\[1.1ex]
-      $\taufs$   & \est{0.37}{0.27}{0.34} \fmc   & \\
+      Norm       & \est{20.2}{2.2}{2.2}          & $\eta/s$ min     & \est{0.10}{0.07}{0.07}            \\[1.1ex]
+      $p$        & \est{0.013}{0.155}{0.144}     & $\eta/s$ slope   & \est{1.11}{1.11}{1.42} GeV$^{-1}$ \\[1.1ex]
+      $\sigmaf$  & \est{0.93}{0.27}{0.26}        & $\eta/s$ crv     & \est{-0.14}{0.86}{0.81}           \\[1.1ex]
+      $w$        & \est{0.98}{0.17}{0.18} fm     & $\zeta/s$ max    & \est{0.026}{0.026}{0.033}         \\[1.1ex]
+      $n_c$      & \est{6.3}{3.1}{2.7}           & $\zeta/s$ width  & \est{0.033}{0.033}{0.048} GeV     \\[1.1ex]
+      $\X$       & \est{0.35}{0.17}{0.22}        & $\zeta/s$ $T_0$  & \est{0.176}{0.020}{0.024} GeV     \\[1.1ex]
+      $\dmin$    & \est{1.13}{0.51}{0.55} fm     & $\Tsw$           & \est{0.149}{0.013}{0.014} GeV     \\[1.1ex]
+      $\taufs$   & \est{0.37}{0.27}{0.33} \fmc   & \\
       \addlinespace[.4ex]
       \bottomrule
     \end{tabular}
@@ -881,7 +881,7 @@ These posterior parameter estimates are also listed in Tbl.~\ref{tab:post_param}
 
 \subsection{Initial condition properties}
 
-The \trento\ normalization factor ${\text{Norm} = 20.3^{+2.2}_{-2.2}}$ and generalized mean parameter $p=0.018^{+0.146}_{-0.159}$ are well constrained by the present analysis.
+The \trento\ normalization factor ${\text{Norm} = 20.2^{+2.2}_{-2.2}}$ and generalized mean parameter $p=0.013^{+0.144}_{-0.155}$ are well constrained by the present analysis.
 Moreover, their posterior values nicely describe the $p$-Pb and Pb-Pb calibration observables in Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb}.
 While it would not be surprising, for example, to fit one or two of these observables using such a narrow range of values, the quality of the combined fit (more on this later) and the number of observables described is highly non-trivial.
 For example, consider the ratio of the $p$-Pb yield over the Pb-Pb yield, which imposes a strong constraint on physically reasonable initial condition models.
@@ -907,7 +907,7 @@ This approximate form nevertheless has been shown to mimic the scaling behavior 
   }
 \end{figure}
 
-Continuing down the diagonal in Fig.~\ref{fig:posterior}, we see that the nucleon width parameter $w=0.97_{-0.17}^{+0.19}$~fm.
+Continuing down the diagonal in Fig.~\ref{fig:posterior}, we see that the nucleon width parameter $w=0.98_{-0.17}^{+0.18}$~fm.
 We caution that this parameter $w$ is \emph{not} the RMS radius of our nucleons due to idiosyncrasies of our constituent sampling procedure.
 We can, however, easily calculate the RMS radius for a specific nucleon width $w$, constituent width $v$ and constituent number $n_c$.
 For example, the single highest posterior probability region of the parameter space prefers a nucleon width $w=0.92$~fm, constituent width $v=0.43$~fm and constituent number $n_c=6$.
@@ -932,7 +932,7 @@ The \trento\ model mimics saturation-based initial condition models \cite{Bernha
 When the proton is spherically symmetric, the resulting proton-sized QGP is also largely symmetric and thus produces very little flow.
 Saturation-based models are therefore unable to describe the significant flow measured in high-multiplicity $p$-Pb collisions without nucleon substructure, or alternatively, some other source of additional correlations \cite{Schenke:2017bog}.
 
-The posterior on the nucleon substructure parameter $\X=0.34_{-0.17}^{+0.22}$, on the other hand, is particularly sharply peaked.
+The posterior on the nucleon substructure parameter $\X=0.35_{-0.17}^{+0.22}$, on the other hand, is particularly sharply peaked.
 Recall that this parameter, defined in Eqn.~\eqref{eq:struct_param}, interpolates between the minimum and maximum widths of each constituent and hence
 two different limits for the granularity of the nucleon.
 When $\X=0$, the nucleon is populated by $n_c$ small compact hot-spots, and when $\X=1$ the hot-spots are large and fully overlapping, restoring spherical symmetry.
@@ -940,7 +940,7 @@ When $\X=0$, the nucleon is populated by $n_c$ small compact hot-spots, and when
 The nucleon structure parameter $\X$ is somewhat awkward to conceptualize, but we can easily transform its value back into a constituent width $v$.
 Figure~\ref{fig:posterior_proton_shape} shows the resulting joint posterior distribution for the nucleon width parameter $w$ and constituent width $v$.
 The posterior distribution, shown in blue, is remarkably well constrained.
-We report a posterior estimate for the constituent width $v=0.46_{-0.15}^{+0.21}$~fm which is roughly the same magnitude as the \emph{nucleon} hot-spots used in recent saturation-based substructure studies that employed IP-Glasma initial conditions \cite{Schenke:2018fci}.
+We report a posterior estimate for the constituent width $v=0.47_{-0.15}^{+0.20}$~fm which is roughly the same magnitude as the \emph{nucleon} hot-spots used in recent saturation-based substructure studies that employed IP-Glasma initial conditions \cite{Schenke:2018fci}.
 Evidently, it may be necessary to place an informative prior on our nucleon substructure parameters in order to resolve the apparent tension between our parameter values and those needed to describe DIS measurements at HERA.
 Alternatively, it is also possible that the fluctuations probed by coherent and incoherent $J/\Psi$ production are different than those probed by minimum-bias particle production.
 
@@ -961,7 +961,7 @@ The only modeling difference between the two studies is the inclusion of nucleon
 Several calibration details, however, are different as well.
 The present work uses a much smaller number of $p$-Pb and Pb-Pb observables at $\sqrts=5.02$~TeV (limited by availability), whereas Ref.~\cite{Bernhard:2018hnz} used a larger cross section of Pb-Pb experimental data at $\sqrts=2.76$ and 5.02~TeV.
 
-The posterior free-streaming time $\taufs=0.37_{-0.27}^{+0.34}\ \fmc$ obtained in this work is significantly smaller than our previous estimate $\taufs=1.16_{-0.25}^{+0.29}\ \fmc$ in Ref.~\cite{Bernhard:2018hnz}.
+The posterior free-streaming time $\taufs=0.37_{-0.27}^{+0.33}\ \fmc$ obtained in this work is significantly smaller than our previous estimate $\taufs=1.16_{-0.25}^{+0.29}\ \fmc$ in Ref.~\cite{Bernhard:2018hnz}.
 We point out that the present study is missing several important observables which could affect the estimated free-streaming time, e.g.\ the Pb-Pb mean $p_T$ and mean $p_T$ fluctuations at $\sqrts=5.02$~TeV.
 Nevertheless, it appears that the inclusion of nucleon substructure significantly reduces the maximum allowed free-streaming time, although more work is needed to establish if this is indeed the case.
 
@@ -1121,10 +1121,10 @@ Here we summarize our key findings about the model:
     This agrees with a similar Bayesian analysis which was calibrated to Pb-Pb bulk observables at $\sqrts=2.76$ and 5.02~TeV using a hybrid model without nucleon substructure \cite{Bernhard:2018hnz}.
     We note that our result is in significant tension with an estimate for the effective nucleon width based on the gluon distribution extracted from HERA data \cite{Rezaeian:2012ji}.
   \item
-    We obtain an estimate $v=0.46_{-0.15}^{+0.21}$~fm for the Gaussian width of the constituent hot spots inside each nucleon.
+    We obtain an estimate $v=0.47_{-0.15}^{+0.20}$~fm for the Gaussian width of the constituent hot spots inside each nucleon.
     This is significantly larger than the length scales typically associated with nucleon substructure, and it may help explain the seemingly unreasonable success of hydrodynamics in small collision systems.
   \item
-    Our posterior estimate for the pre-equilibrium free-streaming time is $\taufs=0.37_{-0.27}^{+0.34}\ \fmc$.
+    Our posterior estimate for the pre-equilibrium free-streaming time is $\taufs=0.37_{-0.27}^{+0.33}\ \fmc$.
     This is significantly shorter than the estimate obtained from a similar Bayesian study in Ref.~\cite{Bernhard:2018hnz}, which reported $\taufs=1.16_{-0.25}^{+0.29}\ \fmc$.
     It is not clear whether the difference is a result of nucleon substructure or the different observables used to calibrate each analysis.
   \item

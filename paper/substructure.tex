@@ -82,7 +82,7 @@
 
 \begin{abstract}
 We posit a unified hydrodynamic and microscopic description of the quark-gluon plasma (QGP) produced in ultrarelativistic $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV and evaluate our assertion using Bayesian inference. Specifically, we model the dynamics of both collision systems using initial conditions with parametric nucleon substructure, a pre-equilibrium free-streaming stage, event-by-event viscous hydrodynamics, and a microscopic hadronic afterburner.
-Free parameters of the model which describe the initial state and QGP medium are then simultaneously calibrated to fit charged particle yields, mean $p_T$ and flow cumulants.
+Free parameters of the model which describe the initial state and QGP medium are then simultaneously calibrated to fit charged particle yields, mean $p_T$, and flow cumulants.
 We argue that the global agreement of the calibrated model with the experimental data strongly supports the existence of hydrodynamic flow in small collision systems at ultrarelativistic energies, and that the flow produced develops at length scales smaller than a single proton.
 Posterior estimates for the model's input parameters are obtained, and new insights into the temperature dependence of the QGP transport coefficients and event-by-event structure of the proton are discussed.
 \end{abstract}
@@ -128,7 +128,7 @@ It is thus import to look at the experimental data holistically, and to use mode
 
 With these considerations in mind, we present progress towards a fully global analysis of $p$-Pb and Pb-Pb bulk observables at $\sqrts=5.02$~TeV using a model calibration framework known as Bayesian parameter estimation.
 We begin, in Sec.~\ref{sec:model}, by constructing a nuclear collision model for $p$-Pb and Pb-Pb collisions using initial conditions with parametric nucleon substructure, and transport dynamics described by a pre-equilibrium free-streaming stage, viscous hydrodynamics and microscopic Boltzmann transport.
-In Sec.~\ref{sec:calibration}, we calibrate free parameters of the model to fit charged particle yields, mean $p_T$ and anisotropic flow cumulants of \emph{both} collision systems at $\sqrts=5.02$~TeV, and finally, in Secs.~\ref{sec:results} and \ref{sec:summary}, we present posterior results for the model input parameters and comment on the implications for hydrodynamic descriptions of small collision systems.
+In Sec.~\ref{sec:calibration}, we calibrate free parameters of the model to fit charged particle yields, mean $p_T$, and anisotropic flow cumulants of \emph{both} collision systems at $\sqrts=5.02$~TeV, and finally, in Secs.~\ref{sec:results} and \ref{sec:summary}, we present posterior results for the model input parameters and comment on the implications for hydrodynamic descriptions of small collision systems.
 
 
 \section{Nuclear collision model}
@@ -157,7 +157,7 @@ The proton-proton overlap function
   \label{eq:tpp}
   T_{pp}(b) \equiv \int dx\, dy \int dz\, \rho_A(\x) \int dz\, \rho_B(\x + \mathbf{b}),
 \end{equation}
-describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$ where coordinates $(x, y)$ lie in the transverse plane and $z$ is parallel to the beam axis.
+describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$, where coordinates $(x, y)$ lie in the transverse plane, and $z$ is parallel to the beam axis.
 Here we assume that each proton is comprised of smaller constituents---e.g.\ valence quarks, sea quarks, and small-x gluons---which may collide to produce secondary particles and contribute to the observed inelastic proton-proton cross section.
 
 Within a picture of independent pairwise collisions between the constituents, a Glauber model model may be used to calculate the probability $P_\mathrm{coll}$ that the two protons collide inelastically at impact parameter $b$. In the limit when the number of constituents is large, it yields the particularly simple form
@@ -259,7 +259,7 @@ A simple remedy is to replace the arithmetic mean of the wounded nucleon model w
 \end{equation}
 based on a family of functions known as the generalized mean(s).
 This parametrization introduces a dimensionless parameter $p$ which varies the scaling behavior of initial entropy deposition at midrapidity.
-For certain discrete values of $p$, it reduces to well known functional forms such as the arithmetic, geometric and harmonic means:
+For certain discrete values of $p$, it reduces to well known functional forms such as the arithmetic, geometric, and harmonic means:
 \begin{equation}
   \newlength{\extraspace}
   \setlength{\extraspace}{0.5ex}
@@ -343,7 +343,7 @@ The initial bulk and shear corrections are finally solved for by subtracting the
   \pi^{\mu\nu} &= T^{\mu\nu} - e u^\mu u^\nu + (P + \Pi) \Delta^{\mu\nu}.
 \end{align}
 
-This procedure provides initial values for $T^{\mu\nu}$, $u^\mu$, $\Pi$ and $\pi^{\mu\nu}$ which conserve energy and are consistent with the underlying hydrodynamic equation of state.
+This procedure provides initial values for $T^{\mu\nu}$, $u^\mu$, $\Pi$, and $\pi^{\mu\nu}$ which conserve energy and are consistent with the underlying hydrodynamic equation of state.
 We therefore expect it to provide a more realistic description of the initial stages of the collision as compared to a previous study using the \trento\ initial condition model which set $\Pi$, $\pi^{\mu\nu}$ and $u^\mu$ initially to zero \cite{Bernhard:2016tnd}.
 
 \subsection{Hydrodynamics}
@@ -390,7 +390,7 @@ For the specific shear viscosity $\eta/s$, we use a modified linear ansatz
   \label{eq:shear_viscosity}
   (\eta/s)(T) = (\eta/s)_\mathrm{min} + (\eta/s)_\mathrm{slope}\cdot(T - T_c)\cdot(T/T_c)^{(\eta/s)_\mathrm{crv}},
 \end{equation}
-where $\eta/s$ min, slope and curvature are tunable parameters and $T_c=0.154$~GeV is the pseudocritical transition temperature of the HotQCD EoS.
+where $\eta/s$ min, slope, and curvature are tunable parameters, and $T_c=0.154$~GeV is the pseudocritical transition temperature of the HotQCD EoS.
 While for the specific bulk viscosity $\zeta/s$, we use an unnormalized Cauchy distribution
 \begin{equation}
   \label{eq:bulk_viscosity}
@@ -428,11 +428,11 @@ where $\mathcal{P}(m)$ is modeled by a Breit-Wigner distribution
 \begin{equation}
   \mathcal{P}(m) \propto \frac{\Gamma(m)}{(m - m_0)^2 + \Gamma(m)^2/4}.
 \end{equation}
-Here $m_0$ is the resonance's Breit-Wigner mass and $\Gamma(m)$ is its mass-dependent width, for which we use a simple form:
+Here $m_0$ is the resonance's Breit-Wigner mass, and $\Gamma(m)$ is its mass-dependent width, for which we use a simple form:
 \begin{equation}
   \Gamma(m) = \Gamma_0 \sqrt{\frac{m - m_\mathrm{min}}{m_0 - m_\mathrm{min}}},
 \end{equation}
-where $\Gamma_0$ is the usual Breit-Wigner width and $m_\mathrm{min}$ is a production threshold equal to the total mass of the lightest decay products.
+where $\Gamma_0$ is the usual Breit-Wigner width, and $m_\mathrm{min}$ is a production threshold equal to the total mass of the lightest decay products.
 We tabulate the values of $\{\Gamma_0, m_0, m_\mathrm{min}\}$ for all particles and sample the masses of each particle during particlization \cite{PDG:2017}.
 The resonances are then passed to a hadronic transport model, described shortly, which simulates subsequent scatterings and decays.
 
@@ -585,7 +585,7 @@ Several of the model parameters require special care and are reparametrized acco
   \end{tikzpicture}
   \caption{
     \label{fig:nucleon_schematic}
-    Schematic illustrating the constituent sampling radius $r$, constituent width $v$ and nucleon width parameter $w = \sqrt{r^2 + v^2}$ for a nucleon with $n_c=3$ constituents.
+    Schematic illustrating the constituent sampling radius $r$, constituent width $v$, and nucleon width parameter $w = \sqrt{r^2 + v^2}$ for a nucleon with $n_c=3$ constituents.
   }
 \end{figure}
 
@@ -639,7 +639,7 @@ We calculate for each set of model parameters the following observables at midra
   \item Identified particle yields $dN/dy$ of pions, kaons, and protons.
   \item Transverse energy production $dE_T/d\eta$.
   \item Charged particle mean transverse momentum $\langle p_T \rangle$ ($0.15 < p_T < 10$~GeV).
-  \item Identified particle mean transverse momentum $\langle p_T \rangle$ of pions, kaons and protons.
+  \item Identified particle mean transverse momentum $\langle p_T \rangle$ of pions, kaons, and protons.
   \item Mean transverse momentum fluctuations $\delta p_T / \langle p_T \rangle$ (charged particles, $0.15 < p_T < 2.0$~GeV).
   \item Two-particle flow cumulants $\vnk{n}{2}$ for $n=2,3,4$\\ (charged particles, $0.2 < p_T < 5.0$~GeV for ALICE, and $0.3 < p_T < 3.0$~GeV for CMS).
   \item Four-particle flow cumulant $\vnk{2}{4}$ \\(charged particles, $0.2 < p_T < 5.0$~GeV).
@@ -701,7 +701,7 @@ The experimental contribution to the covariance $\Sigma_e$ is further broken dow
 \begin{equation}
   \Sigma_e = \Sigma_e^\text{stat} + \Sigma_e^\text{sys}.
 \end{equation}
-The statistical errors in $\Sigma_e^\text{stat}$ are uncorrelated and thus its covariance matrix is diagonal:
+The statistical errors in $\Sigma_e^\text{stat}$ are uncorrelated, and thus its covariance matrix is diagonal:
 \begin{equation}
   \Sigma_e^\text{stat} = \diag[(\sigma^\text{stat}_1)^2, (\sigma^\text{stat}_2)^2, \dots (\sigma^\text{stat}_m)^2 ],
 \end{equation}
@@ -724,7 +724,7 @@ For the correlation structure between different observable bins, we assert a sim
   \label{eq:corr}
   \rho_{ij}^\text{sys} = \exp \left[ -\frac{1}{2} \left(\frac{b_i - b_j}{l} \right)^2 \right],
 \end{equation}
-where $b_i$ and $b_j$ are the midpoints of two observable bins of a single type (centrality or relative multiplicity) and $l$ is a correlation length which describes how quickly the observable bins decorrelate as the distance between the bins increases.
+where $b_i$ and $b_j$ are the midpoints of two observable bins of a single type (centrality or relative multiplicity), and $l$ is a correlation length which describes how quickly the observable bins decorrelate as the distance between the bins increases.
 We use centrality correlation lengths $l=100$ for all of the centrality binned Pb-Pb observables and $l=30$ for the centrality binned $p$-Pb charged particle yield $d\nch/d\eta$.
 The \mbox{$p$-Pb} mean $p_T$ and flow observables, meanwhile, use relative multiplicity bins $\nch / \langle \nch \rangle$ and $\ntrk / \langle \ntrk \rangle$ which necessitate a smaller correlation length $l=5$.
 We show an example correlation matrix
@@ -828,7 +828,7 @@ The Pb-Pb mean $p_T$ and $p$-Pb $\vnk{4}{2}$ datasets are missing and hence are 
 Notice the large spread of the observables calculated at the training points (top row of each figure).
 The design is constructed to vary each parameter across a wide range of values, specified in Table~\ref{tab:design}, and hence the corresponding model calculations are equally uncertain.
 We also point out that there is considerably more variance in the $p$-Pb training data than the Pb-Pb training data.
-The $p$-Pb yields, mean $p_T$ and flow cumulants all vary wildly within the chosen parameter ranges.
+The $p$-Pb yields, mean $p_T$, and flow cumulants all vary wildly within the chosen parameter ranges.
 For instance, we can turn the $p$-Pb flows completely \emph{off} with suitably chosen parameters which is not possible in the Pb-Pb system.
 Evidently the $p$-Pb model predictions are far more sensitive to modeling uncertainties.
 
@@ -918,8 +918,8 @@ This approximate form nevertheless has been shown to mimic the scaling behavior 
 
 Continuing down the diagonal in Fig.~\ref{fig:posterior}, we see that the nucleon width parameter $w=0.98_{-0.17}^{+0.18}$~fm.
 We caution that this parameter $w$ is \emph{not} the RMS radius of our nucleons due to idiosyncrasies of our constituent sampling procedure.
-We can, however, easily calculate the RMS radius for a specific nucleon width $w$, constituent width $v$ and constituent number $n_c$.
-For example, the single highest posterior probability region of the parameter space prefers a nucleon width $w=0.92$~fm, constituent width $v=0.43$~fm and constituent number $n_c=6$.
+We can, however, easily calculate the RMS radius for a specific nucleon width $w$, constituent width $v$, and constituent number $n_c$.
+For example, the single highest posterior probability region of the parameter space prefers a nucleon width $w=0.92$~fm, constituent width $v=0.43$~fm, and constituent number $n_c=6$.
 The corresponding RMS nucleon radius for these parameters is $R_n = 0.86$~fm, conspicuously close the proton's RMS electric charge radius $R_p = 0.879(8)$~fm \cite{Bernauer:2010wm}.
 This is perhaps the single largest difference between our work and the conclusions of recent saturation-based calculations which constrained the event-by-event fluctuations of the proton using a color-dipole picture of vector meson production \cite{Mantysaari:2016ykx, Mantysaari:2016jaz}.
 Those studies find that the measured coherent and incoherent $J/\Psi$ spectra at HERA prefer a compact gluon distribution inside each nucleon, with an RMS radius $R_g \approx 0.4$~fm, which is roughly \emph{half} the analogous RMS nucleon width preferred by our analysis.
@@ -1151,7 +1151,7 @@ Specifically, we are missing the transverse energy, identified particle yields, 
 These observables would certainly influence the quality of the combined fit and correspondingly our estimates for the model parameters.
 
 Similarly, the results would greatly benefit from additional beam energies and collision systems.
-Notably absent is data from RHIC which includes measurements for $p$-Au, $d$-Au, $^3$He-Au, Cu-Cu, Cu-Au, Au-Au and \mbox{U-U} collision systems at $\sqrts=200$~GeV.
+Notably absent is data from RHIC which includes measurements for $p$-Au, $d$-Au, $^3$He-Au, Cu-Cu, Cu-Au, Au-Au, and \mbox{U-U} collision systems at $\sqrts=200$~GeV.
 This data would undoubtedly provide an additional constraint on the model parameters and would enable more stringent tests of the calibrated model predictions.
 The RHIC data may also help elucidate the beam-energy dependence of the model parameters which would be worth investigating.
 We leave these improvements for future studies.

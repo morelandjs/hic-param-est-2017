@@ -29,6 +29,8 @@ import numpy as np
 
 from . import cachedir, parse_system
 
+import matplotlib.pyplot as plt
+
 
 """
 Remove outlier design points. These points are near the edge of the
@@ -171,6 +173,23 @@ class Design:
             npoints=npoints, ndim=self.ndim, seed=seed
         )
 
+        # alter several design properties (revised manuscript)
+        self.array[:, 5] = .2 + self.array[:, 5]*(self.array[:, 3] - .2)
+        self.array[:, 3] = np.sqrt(self.array[:, 3]**2 - self.array[:, 5]**2)
+
+        design_changes = [
+            (3, 'sampling_radius', r'$r\ [\mathrm{fm}]$', (0.0, 1.2)),
+            (5, 'parton_width', r'$v\ [\mathrm{fm}]$', (0.2, 1.2))
+        ]
+
+        for index, key, label, (range_low, range_high) in design_changes:
+            self.keys[index] = key
+            self.labels[index] = label
+            self.range[index] = (range_low, range_high)
+            self.min[index] = range_low
+            self.max[index] = range_high
+
+        # drop bad points
         keep = [n not in bad_points for n in range(npoints)]
         self.array = self.array[keep]
 
@@ -183,7 +202,6 @@ class Design:
         logging.debug(
             'removed outlier design points: {}'.format(bad_points)
         )
-
 
     def __array__(self):
         return self.array
@@ -274,7 +292,8 @@ def main():
     args = parser.parse_args()
 
     for system in systems:
-        Design(system, validation=False).write_files(args.inputs_dir)
+        #Design(system, validation=False).write_files(args.inputs_dir)
+        Design(system, validation=False)
 
     logging.info('wrote all files to %s', args.inputs_dir)
 

@@ -1005,6 +1005,7 @@ def _posterior(
         interp = PchipInterpolator(x, y)
         x = np.linspace(x[0], x[-1], 10*x.size)
         y = interp(x)
+
         ax.plot(x, y, linewidth=1, color=line_color)
         ax.fill_between(x, lim[0], y, color=fill_color, zorder=-10)
 
@@ -1213,15 +1214,6 @@ def posterior_freestreaming():
         'tau_fs',
         'Free streaming time [fm/$c$]',
         [.1, .8, 1.5]
-    )
-
-
-@plot
-def posterior_structure():
-    posterior_parameter(
-        'parton_struct',
-        '$\chi_\mathrm{struct}$',
-        [0, .5, 1]
     )
 
 
@@ -2411,19 +2403,15 @@ def entropy_scaling():
     set_tight(fig)
 
 
-def rms_nucleon_width(args, samples=10**3):
+def rms_nucleon_width(number, radius, width, samples=10**3):
     """
     Find center-of-mass root-mean-square radius for an ensemble of
     sampled protons with nucleon substructure.
 
     """
-    # unpack arguments
-    number, radius, struct = args
-    width = .2 + struct*(radius - .2)
-
     # sample constituent positions
     positions = np.random.normal(
-            scale=np.sqrt(radius**2 - width**2),
+            scale=radius,
             size=2*number*samples
             ).reshape(number, 2, -1)
 
@@ -2444,6 +2432,11 @@ def rms_nucleon_width(args, samples=10**3):
 
     # return rms radius in com frame
     return np.sqrt(np.average(r**2, weights=rho))
+
+@plot
+def rms_width():
+    R = rms_nucleon_width(3, .84, .3)
+    print(R)
 
 
 def correct_widths(number_values, width_values, struct_values):
@@ -2502,47 +2495,23 @@ def posterior_proton_shape():
 
     """
     chain = mcmc.Chain()
-    nucleon_radius, parton_number, parton_struct = chain.load(
-        'nucleon_width', 'parton_number',  'parton_struct'
+    sampling_radius, parton_number, parton_width = chain.load(
+        'sampling_radius', 'parton_number', 'parton_width'
     ).T
 
-    min_width = .2
-    parton_width = min_width + parton_struct*(nucleon_radius - min_width)
-
-    # print parton width 90% credible region
-    median = np.median(parton_width)
-    cred_low, cred_high = mcmc.credible_interval(parton_width)
-    parton_width_est = 'parton width = {:.2f} -{:.2f} +{:.2f} fm'.format(
-        median, median - cred_low, cred_high - median
-    )
-    logging.info(parton_width_est)
-
-    fig = plt.figure(figsize=figsize(.5, aspect=1.25))
+    fig = plt.figure(figsize=figsize(.5, aspect=1))
     ax = plt.gca()
 
-    plt.hist2d(nucleon_radius, parton_width, bins=100, cmap=plt.cm.Blues)
+    plt.hist2d(sampling_radius, parton_width, bins=100, cmap=plt.cm.Blues)
 
-    plt.fill_between([.4, 1.2], [.4, 1.2], [1.2, 1.2], color='white')
-
-    plt.plot([.4, .4], [.2, .4], linestyle='dashed', clip_on=False, color=offblack)
-    plt.plot([.4, 1.2], [.4, 1.2], linestyle='dashed', color=offblack)
-
-    plt.annotate(
-        r'prior range', xy=(.5, .45), xycoords='data',
-        ha='center', va='center', color=offblack, rotation=45
-    )
-
-    plt.xticks([.4, .6, .8, 1, 1.2])
-    plt.yticks([.2, .4, .6, .8, 1, 1.2])
-    plt.xlabel('Nucleon width [fm]')
-    plt.ylabel('Constituent width [fm]', rotation=-90, labelpad=15)
+    #plt.annotate(
+    #    r'prior range', xy=(.5, .45), xycoords='data',
+    #    ha='center', va='center', color=offblack, rotation=45
+    #)
+    plt.xlabel('Constituent sampling radius [fm]')
+    plt.ylabel('Constituent width [fm]')
 
     ax.set_aspect('equal')
-    ax.spines['left'].set_visible(False)
-    ax.spines['right'].set_visible(True)
-    ax.yaxis.set_label_position('right')
-    ax.yaxis.tick_right()
-
     set_tight(fig, pad=.2)
 
 

@@ -244,7 +244,7 @@ class ModelData:
             trigger = events['trigger']
             minbias = (0, float('inf'))
 
-            events = correct_yield(events)
+            #events = correct_yield(events)
 
             if bin_type == 'cent':
                 """

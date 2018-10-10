@@ -67,9 +67,7 @@
 \begin{document}
 
 \title{
-  Estimating initial state and quark-gluon plasma medium properties \\
-  using a hybrid model with nucleon substructure \\
-  calibrated to $\boldsymbol p$-Pb and Pb-Pb collisions at \texorpdfstring{$\mathbf{\sqrts=5.02}$}{}~TeV
+  Bayesian calibration of a hybrid nuclear collision model\\using $\boldsymbol p$-Pb and Pb-Pb data from the LHC
 }
 
 \author{J.\ Scott Moreland}
@@ -142,28 +140,28 @@ Many of the components of the present model have been documented in previous stu
 \subsection{Initial state}
 \label{sec:initial_state}
 
-We model the QGP initial state in $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV using a simple parametric form for boost-invariant entropy deposition employed by the \trento\ model \cite{Moreland:2014oya}.
+We model the initial state of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV using the boost-invariant \trento\ model \cite{Moreland:2014oya}.
 Generally speaking, the initial three-dimensional distribution of matter produced in relativistic nuclear collisions is \emph{not} boost-invariant; longitudinal entropy deposition fluctuates both locally point-to-point in the transverse plane as well as globally event-by-event due to asymmetries in the sampled density of participant matter \cite{Ke:2016jrd, Bozek:2010vz}.
 Nevertheless, boost-invariance has been shown to be a good approximation for both large and small collision systems when hydrodynamic observables are calculated from particles that are detected close to midrapidity \cite{Shen:2016zpp}.
 
 The \trento\ model operates in the ultrarelativistic limit with a Lorentz factor $\gamma \gg 1$ such that each nucleus appears as a thin sheet of nuclear density in the laboratory frame.
-The sheets of colliding nuclear density penetrate and pass through each other in proper time $\Delta \tau \approx D_\text{nucl} / (\gamma\, \beta_z)$ in the laboratory frame, where $D_\text{nucl}$ is the diameter of the nucleus in its rest frame, $\gamma$ is the usual Lorentz factor of the accelerated ions, and $\beta_z$ is their velocity along the beam axis.
-The resulting nuclear overlap time $\Delta \tau \lesssim 0.1\ \fmc$ at top RHIC and LHC energies, and thus it is safe to neglect the initial transverse dynamics which occur while the nuclei pass through each other.
-We therefore assume that the collision produces all secondary particles at uniform proper time $\tau = 0^+\ \fmc$, and that it deposits entropy (energy) at midrapidity which is a function of the locally varying beam integrated density of each nucleus.
+The sheets of colliding nuclear density penetrate and pass through each other in time $\Delta t \approx D_\text{nucl} / (\gamma\, \beta_z)$ in the laboratory frame, where $D_\text{nucl}$ is the diameter of the nucleus in its rest frame, $\gamma$ is the usual Lorentz factor of the accelerated ions, and $\beta_z$ is their velocity along the beam axis.
+The resulting nuclear overlap time $\Delta t \lesssim 0.1\ \fmc$ at top RHIC and LHC energies, and thus it is safe to neglect the initial transverse dynamics which occur while the nuclei pass through each other.
+We therefore assume that the collision produces all secondary particles at uniform proper time $\tau_0 \ll 1~\fmc$, and that it deposits energy at midrapidity which is a function of the locally varying beam integrated density of each nucleus.
 
-Consider the collision of two protons $A$, $B$ with three-dimensional densities $\rho_{A,B}$ in their local rest frames.
+Consider the collision of two protons, labeled $A$ and $B$, with three-dimensional densities $\rho_A$ and $\rho_B$ in their local rest frames.
 The proton-proton overlap function
 \begin{equation}
   \label{eq:tpp}
-  T_{pp}(b) \equiv \int dx\, dy \int dz\, \rho_A(\x) \int dz\, \rho_B(\x + \mathbf{b}),
+  T_{pp}(b) \equiv \int dx\, dy\, dz\, \rho_A(x, y, z)\, \rho_B(x - b, y, z),
 \end{equation}
-describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$, where coordinates $(x, y)$ lie in the transverse plane, and $z$ is parallel to the beam axis.
+describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$, where coordinate $(x, y)$ lies in the transverse plane and $z$ is parallel to the beam axis.
 Here we assume that each proton is comprised of smaller constituents---e.g.\ valence quarks, sea quarks, and small-x gluons---which may collide to produce secondary particles and contribute to the observed inelastic proton-proton cross section.
 
 Within a picture of independent pairwise collisions between the constituents, a Glauber model model may be used to calculate the probability $P_\mathrm{coll}$ that the two protons collide inelastically at impact parameter $b$. In the limit when the number of constituents is large, it yields the particularly simple form
 \begin{equation}
   \label{eq:pcoll}
-  P_\mathrm{coll} = 1 - \exp[-\sigma_\mathrm{eff}\, T_{pp}(b)], \\
+  P_\mathrm{coll}(b) = 1 - \exp[-\sigma_\mathrm{eff}\, T_{pp}(b)], \\
 \end{equation}
 where $\sigma_\mathrm{eff}$ is an effective cross section for pairwise inelastic collisions between the constituents, and $\sigma_{pp}^\mathrm{inel}$ is the total inelastic proton-proton cross section
 \begin{equation}
@@ -176,7 +174,7 @@ Needless to say, such approximations are admittedly crude and may have a signifi
 
 A number of previous studies have investigated the effects of deformed or ``lumpy'' protons.
 One common implementation is a superposition of three valence quarks, typically described by Gaussian or exponential form factors \cite{Welsh:2016siu, Bozek:2017jog, Schenke:2014zha, Schlichting:2014ipa, Adare:2015bua, Broniowski:2016pvx}.
-The corresponding proton density $\rho(\mathbf{x})$ is then assumed to be that of predominantly small-x gluons, seeded by the distribution of color charge in each of the three valence quarks.
+The corresponding proton density is then assumed to be that of predominantly small-x gluons, seeded by the distribution of color charge in each of the three valence quarks.
 
 \begin{figure}
   \begin{tikzpicture}
@@ -201,18 +199,20 @@ The corresponding proton density $\rho(\mathbf{x})$ is then assumed to be that o
 \end{figure}
 
 In this work, we pursue a less restrictive and more parametric description of the proton where the number of substructure degrees of freedom are uncertain as depicted in Fig.~\ref{fig:substructure}.
-We model each nucleon's density $\rho_{A,B}$ as a sum of $n_c$ independent constituents
+We model each nucleon's three-dimensional density $\rho_{A,B}(\x)$ as a weighted sum of $n_c$ independent constituents,
 \begin{equation}
   \label{eq:rho}
-  \rho_{A, B}(\x) = \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \rho_c(\mathbf{x} - \mathbf{x_i}),
+  \rho_{A, B}(\x) = \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \frac{\gamma_i}{(2 \pi v^2)^{3/2}} \exp\left(-\frac{|\x - \x_i|^2}{2 v^2}\right),
 \end{equation}
-where each constituent density $\rho_c$ is described by a Gaussian distribution of width $v$
+where each constituent density is assumed to be a Gaussian of width $v$, weighted by a gamma random variable $\gamma_i$ with unit mean and variance $1/k$.
+These \emph{ad hoc} gamma random weights introduce additional multiplicity fluctuations in order to reproduce the large fluctuations observed in experimental proton-proton collisions.
+We sample the constituent positions $\x_i$ independently (ignoring correlations) from a Gaussian radial distribution,
 \begin{equation}
-  \label{eq:constituent_density}
-  \rho_c(\mathbf{x}) = \frac{1}{(2\pi v^2)^{3/2}} \exp\left(-\frac{\x^2}{2 v^2}\right),
+  \label{eq:radial_dist}
+  P(\x_i) = \frac{1}{(2\pi r^2)^{3/2}} \exp\left(-\frac{|\x_i|^2}{2 r^2}\right),
 \end{equation}
-and each constituent's position $\mathbf{x_i}$ in Eq.~\eqref{eq:rho} is sampled from a Gaussian radial distribution with standard deviation $r$.
-The effect of this additional nucleon substructure on the nuclear thickness functions is visible in Fig.~\ref{fig:thickness}
+parametrized by a sampling radius $r$ which varies the average separation of the constituents.
+Figure~\ref{fig:thickness} shows the effect of this additional nucleon substructure on the nuclear thickness functions.
 
 \begin{figure}
   \begin{tikzpicture}
@@ -239,14 +239,14 @@ Assuming our two protons collide at the sampled impact parameter $\mathbf{b}$, w
 equal to the beam-integrated proton density in Eq.~\eqref{eq:rho}, with each constituent shifted by the appropriate impact parameter offset, and multiplied by a gamma random variable $\gamma_i$ with unit mean and variance $1/k$.
 These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their exact physical origin is not well understood.
 
-Within the eikonal approximation, the initial entropy deposited at midrapidity and proper time $\tau=0^+\ \fmc$ is some function
+The initial energy density $e$ deposited at midrapidity and proper time $\tau_0 \approx 0~\fmc$ is some function
 \begin{equation}
-  f: \T_A, \T_B \mapsto \frac{dS}{d^2x_\perp d\eta} \bigg\vert_{\eta=0},
+  e(\x_\perp, \eta_s=0, \tau_0) = f(\T_A, \T_B)
 \end{equation}
 of the local density of participant matter $\T_A$, $\T_B$ in each nucleus.
 A natural first guess for this mapping is the arithmetic mean
 \begin{equation}
-  \frac{dS}{d^2x_\perp d\eta}\,\bigg\vert_{\eta=0} \propto \frac{\T_A + \T_B}{2},
+  f = \text{const} \times \frac{\T_A + \T_B}{2},
 \end{equation}
 which is simply a wounded nucleon model up to meaningless factor of two in the normalization.
 The wounded nucleon model was in fact one of the first such mappings used as a proxy for initial particle production and entropy deposition in relativistic heavy-ion collisions \cite{Bialas:1976ed}.

@@ -5,3 +5,4 @@ plots
 *.hdf
 *.npy
 *.pyc
+nohup.out

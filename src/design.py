@@ -40,7 +40,7 @@ design and produce far too few particles to be physically reasonable.
 bad_points = [
     129, 392, 143, 273, 401, 276, 405, 153, 156, 285, 414, 159, 162, 418, 163,
     421, 422, 296, 298, 429, 301, 308, 183, 184, 312, 442, 446, 319, 451, 453,
-    326, 199, 457, 330, 459, 460, 461, 334, 203, 464, 466, 83, 211, 338, 471,
+    326, 199, 457, 330, 459, 460, 461, 334, 203, 464, 466,  83, 211, 338, 471,
     472, 473, 346, 223, 355, 357, 360, 234, 363, 492, 107, 236, 367, 235, 498,
     115, 242, 376, 249, 378
 ]
@@ -173,7 +173,10 @@ class Design:
             npoints=npoints, ndim=self.ndim, seed=seed
         )
 
-        # alter several design properties (revised manuscript)
+        # Version 1 of the manuscript parametrized nucleon substructure using
+        # 'nucleon_width' and 'nucleon_structure' parameters. In v2 of the
+        # manuscript, I reverted to a 'sampling_radius' and 'constituent_width'.
+        # These new parameters are more physical and easier to understand.
         self.array[:, 5] = .2 + self.array[:, 5]*(self.array[:, 3] - .2)
         self.array[:, 3] = np.sqrt(self.array[:, 3]**2 - self.array[:, 5]**2)
 

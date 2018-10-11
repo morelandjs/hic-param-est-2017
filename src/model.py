@@ -193,6 +193,7 @@ class ModelData:
             """
             obs_stack = list(keys)
             obs = obs_stack.pop()
+            logging.info('calculating observable: %s', obs)
 
             if obs in ['dNch_deta', 'dET_deta']:
                 return lambda events: events[obs].mean()
@@ -244,7 +245,7 @@ class ModelData:
             trigger = events['trigger']
             minbias = (0, float('inf'))
 
-            #events = correct_yield(events)
+            events = correct_yield(events)
 
             if bin_type == 'cent':
                 """

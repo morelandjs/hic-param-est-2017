@@ -67,7 +67,8 @@
 \begin{document}
 
 \title{
-  Bayesian calibration of a hybrid nuclear collision model\\using $\boldsymbol p$-Pb and Pb-Pb data from the LHC
+  Bayesian calibration of a hybrid nuclear collision model\\
+  using $\boldsymbol p$-Pb and Pb-Pb data from the LHC
 }
 
 \author{J.\ Scott Moreland}
@@ -147,7 +148,7 @@ Nevertheless, boost-invariance has been shown to be a good approximation for bot
 The \trento\ model operates in the ultrarelativistic limit with a Lorentz factor $\gamma \gg 1$ such that each nucleus appears as a thin sheet of nuclear density in the laboratory frame.
 The sheets of colliding nuclear density penetrate and pass through each other in time $\Delta t \approx D_\text{nucl} / (\gamma\, \beta_z)$ in the laboratory frame, where $D_\text{nucl}$ is the diameter of the nucleus in its rest frame, $\gamma$ is the usual Lorentz factor of the accelerated ions, and $\beta_z$ is their velocity along the beam axis.
 The resulting nuclear overlap time $\Delta t \lesssim 0.1\ \fmc$ at top RHIC and LHC energies, and thus it is safe to neglect the initial transverse dynamics which occur while the nuclei pass through each other.
-We therefore assume that the collision produces all secondary particles at uniform proper time $\tau_0 \ll 1~\fmc$, and that it deposits energy at midrapidity which is a function of the locally varying beam integrated density of each nucleus.
+We therefore assume that the collision produces all secondary particles at uniform proper time $\tau_0 \ll 1~\fmc$, and that it deposits energy at midrapidity which is some function of the locally varying beam integrated density of each nucleus.
 
 Consider the collision of two protons, labeled $A$ and $B$, with three-dimensional densities $\rho_A$ and $\rho_B$ in their local rest frames.
 The proton-proton overlap function
@@ -198,21 +199,26 @@ The corresponding proton density is then assumed to be that of predominantly sma
   \label{fig:substructure}
 \end{figure}
 
-In this work, we pursue a less restrictive and more parametric description of the proton where the number of substructure degrees of freedom are uncertain as depicted in Fig.~\ref{fig:substructure}.
-We model each nucleon's three-dimensional density $\rho_{A,B}(\x)$ as a weighted sum of $n_c$ independent constituents,
+In this work, we pursue a less restrictive and more parametric description of the proton where the number of substructure degrees of freedom is uncertain as depicted in Fig.~\ref{fig:substructure}.
+We model each nucleon's three-dimensional density $\rho_{A,B}$ as a sum of $n_c$ independent constituents,
 \begin{equation}
   \label{eq:rho}
-  \rho_{A, B}(\x) = \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \frac{\gamma_i}{(2 \pi v^2)^{3/2}} \exp\left(-\frac{|\x - \x_i|^2}{2 v^2}\right),
+  \rho_{A, B}(\x) = \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \rho_c(\x - \x_i),
 \end{equation}
-where each constituent density is assumed to be a Gaussian of width $v$, weighted by a gamma random variable $\gamma_i$ with unit mean and variance $1/k$.
-These \emph{ad hoc} gamma random weights introduce additional multiplicity fluctuations in order to reproduce the large fluctuations observed in experimental proton-proton collisions.
-We sample the constituent positions $\x_i$ independently (ignoring correlations) from a Gaussian radial distribution,
+where each constituent density $\rho_c$ is described by a Gaussian distribution,
+\begin{equation}
+  \rho_c(\x) = \frac{1}{(2 \pi v^2)^{3/2}} \exp\left(- \frac{|\x|^2}{2 v^2}\right).
+\end{equation}
+of width $v$.
+The constituent positions $\x_i$ are sampled independently (ignoring correlations) from a Gaussian radial distribution,
 \begin{equation}
   \label{eq:radial_dist}
-  P(\x_i) = \frac{1}{(2\pi r^2)^{3/2}} \exp\left(-\frac{|\x_i|^2}{2 r^2}\right),
+  P(\x_i; \x_{A,B}) = \frac{1}{(2\pi r^2)^{3/2}} \exp\left(-\frac{|\x_i - \x_{A,B}|^2}{2 r^2}\right),
 \end{equation}
-parametrized by a sampling radius $r$ which varies the average separation of the constituents.
-Figure~\ref{fig:thickness} shows the effect of this additional nucleon substructure on the nuclear thickness functions.
+where $\x_{A,B}$ is the position of each proton, and $r$ is a parameter which varies the sampling radius of the constituent positions about each proton position.
+As a matter of convenience, we sample the proton positions \emph{before} determining the constituent positions.
+This leads to small discrepancies between the designated proton positions $\x_{A,B}$, and the actual position of each proton's center-of-mass, owing to fluctuations in the constituent positions $\x_i$.
+The sampling radius $r$ should thus be interpreted with care; it is \emph{not} the root-mean-square radius of the sampled nucleons.
 
 \begin{figure}
   \begin{tikzpicture}
@@ -224,20 +230,20 @@ Figure~\ref{fig:thickness} shows the effect of this additional nucleon substruct
   \caption{\label{fig:thickness} Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus. The nucleus on the left has Gaussian nucleons of width $0.8$~fm, while the nucleus on the right has composite nucleons, each containing six constituents of width $0.4$~fm.}
 \end{figure}
 
-The two protons $A$, $B$ are assigned a random impact parameter, and Eq.~\eqref{eq:pcoll} is used to sample their inelastic collision probability $P_\mathrm{coll}(b)$.
-Note that this proton-proton inelastic collision probability has no direct knowledge of the individual constituent degrees of freedom; it is only \emph{indirectly} sensitive through the geometry of $\rho_{A, B}$ which depends on each of the constituent positions.
+We assign the two protons $A$, $B$ a random impact parameter, and sample their inelastic collision probability using Eq.~\eqref{eq:pcoll}.
+Assuming they collide, we assign each proton a fluctuated thickness function,
+\begin{equation}
+  \label{eq:fluctuated_thick}
+  \T_{A, B}(x, y) \equiv \int dz\, \tilde{\rho}_{A,B}(x \pm b/2, y, z),
+\end{equation}
+which projects each fluctuated proton density $\tilde{\rho}_{A,B}$ onto the transverse plane $(x, y)$ centered at $z=0$.
+
+Note, if any part of the proton collides, the entire proton contributes to inelastic particle production.
+There is no concept of individually wounded constituents; the entire proton either collides (or misses) as a singular connected object.
 This is an important distinction between the present model and a similar nucleon substructure implementation known as the participant or ``wounded'' quark model which allows for a subset of quarks (constituents) to participate inside a single nucleon \cite{ANISOVICH1978477, Broniowski:2016pvx}.
 The proton, unlike the nucleus, cannot produce semi-stable spectator fragments in a high-energy collision.
 Any spectator quarks produced by a wounded quark model would be colored objects that necessarily contribute to secondary particle production as they fragment and recombine to form color-neutral hadrons.
 We correspondingly require that the nucleons in Eq.~\eqref{eq:rho} participate as singular objects, such that all spectator matter discarded by the simulation is appropriately color-neutral and inert.
-
-Assuming our two protons collide at the sampled impact parameter $\mathbf{b}$, we assign each a \emph{fluctuated} thickness
-\begin{equation}
-  \label{eq:fluctuated_thick}
-  \T_{A, B}(\x) \equiv \int dz\, \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \gamma_i\, \rho_c \,(\mathbf{x} - \mathbf{x_i} \pm \mathbf{b}/2),
-\end{equation}
-equal to the beam-integrated proton density in Eq.~\eqref{eq:rho}, with each constituent shifted by the appropriate impact parameter offset, and multiplied by a gamma random variable $\gamma_i$ with unit mean and variance $1/k$.
-These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their exact physical origin is not well understood.
 
 The initial energy density $e$ deposited at midrapidity and proper time $\tau_0 \approx 0~\fmc$ is some function
 \begin{equation}
@@ -280,12 +286,14 @@ Equation~\eqref{eq:gmean} is a purely local function of nuclear density in the t
 The model readily generalizes from individual proton-proton collisions to arbitrary nucleus-nucleus collisions by summing the participant thicknesses $\T_{A,B}$ over all nucleons which participate in one or more inelastic collisions.
 The only modeling difference between $p$-$p$, $p$-Pb, and Pb-Pb collisions is the number and the position of the nucleons.
 
-When applying the model to heavy-ions, we sample nucleon positions from a Woods-Saxon density distribution subject to a minimum distance criteria $|\mathbf{x_i} - \mathbf{x_j}| > d_\mathrm{min}$ between all pairs of nucleons $i$, $j$.
+When applying the model to heavy-ions, we sample nucleon positions from a Woods-Saxon density distribution subject to a minimum distance criteria $|\x_i - \x_j| > d_\mathrm{min}$ between all pairs of nucleons $i$, $j$.
 The minimum distance algorithm, first described in Ref.~\cite{Bernhard:2018hnz}, uses a simple trick to resample the nucleon positions without modifying the target Woods-Saxon radial distribution.
 We first presample the radii of all nucleons in a given nucleus and sort them in ascending order.
 We then sample the solid angles of each nucleon one-by-one, starting with the nucleon closest to the center of the nucleus and working our way outwards.
 If a sampled nucleon position is too close to any of its previously placed neighbors, its solid angle is resampled until the minimum distance criteria is satisfied.
 Similar methods could be used to model correlations between individual constituents inside each nucleon, although the numerical implementation would be somewhat tedious.
+
+Figure~\ref{fig:thickness} shows the qualitative effect of nucleon substructure on a generic lead nuclear thickness function.
 
 \subsection{Pre-equilibrium dynamics}
 
@@ -1177,7 +1185,7 @@ All software used in this work is open source:
   JSM and SAB are supported by the U.S.\ Department of Energy Grant No.\ DE-FG02-05ER41367 and JEB by NSF Grant No.\ NSF-ACI-1550225.
 \end{acknowledgments}
 
-\bibliography{substructure}
+\bibliography{references}
 
 \appendix
 

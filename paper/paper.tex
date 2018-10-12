@@ -40,9 +40,10 @@
 \newcommand{\dmin}{d_\text{min}}
 \newcommand{\Tsw}{T_\text{switch}}
 \newcommand{\T}{\tilde{T}}
-\newcommand{\x}{\mathbf x}
-\newcommand{\y}{\mathbf y}
-\newcommand{\z}{\mathbf z}
+\newcommand{\bv}{\mathbf b}
+\newcommand{\xv}{\mathbf x}
+\newcommand{\yv}{\mathbf y}
+\newcommand{\zv}{\mathbf z}
 \newcommand{\paddedhline}{\noalign{\smallskip}\hline\noalign{\smallskip}}
 \newcommand{\order}[1]{$\mathcal O(10^{#1})$}
 \newcommand{\note}{\textcolor{theblue}{[?]}}
@@ -154,7 +155,7 @@ Consider the collision of two protons, labeled $A$ and $B$, with three-dimension
 The proton-proton overlap function
 \begin{equation}
   \label{eq:tpp}
-  T_{pp}(b) \equiv \int dx\, dy\, dz\, \rho_A(x, y, z)\, \rho_B(x - b, y, z),
+  T_{pp}(b) = \int dx\, dy\, dz\, \rho_A(x, y, z)\, \rho_B(x - b, y, z),
 \end{equation}
 describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$, where coordinate $(x, y)$ lies in the transverse plane and $z$ is parallel to the beam axis.
 Here we assume that each proton is comprised of smaller constituents---e.g.\ valence quarks, sea quarks, and small-x gluons---which may collide to produce secondary particles and contribute to the observed inelastic proton-proton cross section.
@@ -169,10 +170,10 @@ where $\sigma_\mathrm{eff}$ is an effective cross section for pairwise inelastic
   \label{eq:sigma_nn}
   \sigma_{pp}^\mathrm{inel} = \int 2 \pi b\, db\, P_\mathrm{coll}(b).
 \end{equation}
+
 The proton densities $\rho_{A,B}$ in Eq.~\eqref{eq:tpp} are commonly modeled using a spherically symmetric distribution.
 For instance, the original implementation of the \trento\ model uses Gaussian protons, largely because it yields a simple analytic solution to Eq.~\eqref{eq:pcoll}.
 Needless to say, such approximations are admittedly crude and may have a significant effect on the dynamics of small collision systems where the proton size is comparable to the size of the produced QGP medium.
-
 A number of previous studies have investigated the effects of deformed or ``lumpy'' protons.
 One common implementation is a superposition of three valence quarks, typically described by Gaussian or exponential form factors \cite{Welsh:2016siu, Bozek:2017jog, Schenke:2014zha, Schlichting:2014ipa, Adare:2015bua, Broniowski:2016pvx}.
 The corresponding proton density is then assumed to be that of predominantly small-x gluons, seeded by the distribution of color charge in each of the three valence quarks.
@@ -203,21 +204,21 @@ In this work, we pursue a less restrictive and more parametric description of th
 We model each nucleon's three-dimensional density $\rho_{A,B}$ as a sum of $n_c$ independent constituents,
 \begin{equation}
   \label{eq:rho}
-  \rho_{A, B}(\x) = \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \rho_c(\x - \x_i),
+  \rho_{A, B}(\xv) = \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \rho_c(\xv - \xv_i),
 \end{equation}
 where each constituent density $\rho_c$ is described by a Gaussian distribution,
 \begin{equation}
-  \rho_c(\x) = \frac{1}{(2 \pi v^2)^{3/2}} \exp\left(- \frac{|\x|^2}{2 v^2}\right).
+  \rho_c(\xv) = \frac{1}{(2 \pi v^2)^{3/2}} \exp\left(- \frac{|\xv|^2}{2 v^2}\right).
 \end{equation}
 of width $v$.
-The constituent positions $\x_i$ are sampled independently (ignoring correlations) from a Gaussian radial distribution,
+The constituent positions $\xv_i$ are sampled independently (ignoring correlations) from a Gaussian radial distribution,
 \begin{equation}
   \label{eq:radial_dist}
-  P(\x_i; \x_{A,B}) = \frac{1}{(2\pi r^2)^{3/2}} \exp\left(-\frac{|\x_i - \x_{A,B}|^2}{2 r^2}\right),
+  P(\xv_i; \xv_{A,B}) = \frac{1}{(2\pi r^2)^{3/2}} \exp\left(-\frac{|\xv_i - \xv_{A,B}|^2}{2 r^2}\right),
 \end{equation}
-where $\x_{A,B}$ is the position of each proton, and $r$ is a parameter which varies the sampling radius of the constituent positions about each proton position.
+where $\xv_{A,B}$ is the position of each proton, and $r$ is a parameter which varies the sampling radius of the constituent positions about each proton position.
 As a matter of convenience, we sample the proton positions \emph{before} determining the constituent positions.
-This leads to small discrepancies between the designated proton positions $\x_{A,B}$, and the actual position of each proton's center-of-mass, owing to fluctuations in the constituent positions $\x_i$.
+This leads to small discrepancies between the designated proton positions $\xv_{A,B}$, and the actual position of each proton's center-of-mass, owing to fluctuations in the constituent positions $\xv_i$.
 The sampling radius $r$ should thus be interpreted with care; it is \emph{not} the root-mean-square radius of the sampled nucleons.
 
 \begin{figure}
@@ -230,55 +231,64 @@ The sampling radius $r$ should thus be interpreted with care; it is \emph{not} t
   \caption{\label{fig:thickness} Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus. The nucleus on the left has Gaussian nucleons of width $0.8$~fm, while the nucleus on the right has composite nucleons, each containing six constituents of width $0.4$~fm.}
 \end{figure}
 
-We assign the two protons $A$, $B$ a random impact parameter, and sample their inelastic collision probability using Eq.~\eqref{eq:pcoll}.
-Assuming they collide, we assign each proton a fluctuated thickness function,
-\begin{equation}
-  \label{eq:fluctuated_thick}
-  \T_{A, B}(x, y) \equiv \int dz\, \tilde{\rho}_{A,B}(x \pm b/2, y, z),
-\end{equation}
-which projects each fluctuated proton density $\tilde{\rho}_{A,B}$ onto the transverse plane $(x, y)$ centered at $z=0$.
-
-Note, if any part of the proton collides, the entire proton contributes to inelastic particle production.
-There is no concept of individually wounded constituents; the entire proton either collides (or misses) as a singular connected object.
+The two protons $A$, $B$ are assigned a random impact parameter, and Eq.~\eqref{eq:pcoll} is used to sample their inelastic collision probability $P_\mathrm{coll}(b)$.
+Note, this proton-proton inelastic collision probability has no direct knowledge of the individual constituent positions; it is only indirectly sensitive to their positions through the density $\rho_{A, B}$.
+The protons in this work are described by a \emph{single} density field.
+The constituents are simply used as a mechanism to generate deformity and fluctuations.
 This is an important distinction between the present model and a similar nucleon substructure implementation known as the participant or ``wounded'' quark model which allows for a subset of quarks (constituents) to participate inside a single nucleon \cite{ANISOVICH1978477, Broniowski:2016pvx}.
 The proton, unlike the nucleus, cannot produce semi-stable spectator fragments in a high-energy collision.
 Any spectator quarks produced by a wounded quark model would be colored objects that necessarily contribute to secondary particle production as they fragment and recombine to form color-neutral hadrons.
 We correspondingly require that the nucleons in Eq.~\eqref{eq:rho} participate as singular objects, such that all spectator matter discarded by the simulation is appropriately color-neutral and inert.
 
-The initial energy density $e$ deposited at midrapidity and proper time $\tau_0 \approx 0~\fmc$ is some function
+Hereafter, we switch to Milne coordinates $(\xv_\perp, \eta_s, \tau)$, where $\xv_\perp$ is a Cartesian coordinate $(x, y)$ in the transverse plane, $\eta_s = \tfrac{1}{2} \log[(t+z)/(t-z)]$ is the system's spacetime rapidity, and $\tau = \sqrt{t^2 - z^2}$ its proper time.
+Assuming our protons collide at the sampled impact parameter $\bv$, we assign each proton a participant thickness,
 \begin{equation}
-  e(\x_\perp, \eta_s=0, \tau_0) = f(\T_A, \T_B)
+  \label{eq:fluctuated_thick}
+  \T_{A, B}(\xv_\perp) \equiv \int dz\, \tilde{\rho}_{A,B}(\xv_\perp \pm \bv/2, z),
 \end{equation}
-of the local density of participant matter $\T_A$, $\T_B$ in each nucleus.
-A natural first guess for this mapping is the arithmetic mean
+which projects its \emph{fluctuated} proton density,
 \begin{equation}
-  f = \text{const} \times \frac{\T_A + \T_B}{2},
+  \tilde{\rho}_{A,B}(\xv) \equiv \frac{1}{n_c} \sum\limits_{i=1}^{n_c} \gamma_i\, \rho_c(\xv - \xv_i),
 \end{equation}
-which is simply a wounded nucleon model up to meaningless factor of two in the normalization.
-The wounded nucleon model was in fact one of the first such mappings used as a proxy for initial particle production and entropy deposition in relativistic heavy-ion collisions \cite{Bialas:1976ed}.
-It was quickly realized, however, that the wounded nucleon model predicts the wrong scaling for charged particle production as a function of collision centrality and hence the wrong scaling for initial entropy deposition as a function of participant thicknesses $\T_A$ and $\T_B$ \cite{Kharzeev:2000ph}.
+onto the transverse plane $\xv_\perp$ centered at $z=0$.
+This fluctuated proton density $\tilde{\rho}_{A,B}$ equals the proton density $\rho_{A,B}(\xv)$ in Eq.~\eqref{eq:rho} with additional weights $\gamma_i$ sampled from a gamma distribution with unit mean and variance $1/k$.
+These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their exact physical origin is not well understood.
+
+The initial energy density $e$ deposited at midrapidity $\eta_s=0$ and proper time $\tau_0 \approx 0~\fmc$ is then some function,
+\begin{equation}
+  e(\xv_\perp, \eta_s=0, \tau_0) = f(\T_A, \T_B),
+\end{equation}
+of the local participant thicknesses $\T_A$, $\T_B$ in each nucleus.
+A natural first guess for this mapping is an arithmetic mean,
+\begin{equation}
+  e(\xv_\perp, \eta_s=0, \tau_0) = \text{const} \times \frac{\T_A + \T_B}{2},
+\end{equation}
+equal to a participant or ``wounded nucleon'' model for initial energy deposition up to meaningless factor of two in the overall normalization constant.
+This wounded nucleon scaling was in fact one of the first such mappings used as a proxy for initial particle production in relativistic heavy-ion collisions \cite{Bialas:1976ed}.
+It was quickly realized, however, that the wounded nucleon model predicts the wrong scaling for charged particle production as a function of collision centrality and hence the wrong scaling for initial energy deposition at midrapidity as a function of participant thicknesses $\T_A$ and $\T_B$ \cite{Kharzeev:2000ph}.
 
 A simple remedy is to replace the arithmetic mean of the wounded nucleon model with a more flexible parametrization
 \begin{equation}
   \label{eq:gmean}
-  \frac{dS}{d^2x_\perp d\eta}\,\bigg\vert_{\eta=0} \propto \bigg( \frac{\T_A^p + \T_B^p}{2} \bigg)^{1/p},
+  e(\xv_\perp, \eta_s=0, \tau_0) = \text{const} \times \bigg( \frac{\T_A^p + \T_B^p}{2} \bigg)^{1/p},
 \end{equation}
-based on a family of functions known as the generalized mean(s).
-This parametrization introduces a dimensionless parameter $p$ which varies the scaling behavior of initial entropy deposition at midrapidity.
+based on a family of functions known as the generalized mean(s)\footnote{Previous applications of the \trento\ model used the generalized mean ansatz to parametrize the initial entropy density $s(\xv_\perp, \eta_s=0, \tau_0)$, noting its approximate linear relation with the final charged particle density $d\nch/d\eta$ \cite{Moreland:2014oya, Bernhard:2016tnd}. In the present framework, the initial energy density $e(\xv_\perp, \eta_s=0, \tau_0)$ is approximately proportional to $d\nch/d\eta$ as well; hence, the generalized mean works equally well as a parametrization for either quantity. Here we use the energy density to make direct contact with the free-streaming equation Eq.~\eqref{energy-momentum}.}.
+This parametrization introduces a dimensionless parameter $p$ which varies the scaling behavior of initial energy deposition at midrapidity.
 For certain discrete values of $p$, it reduces to well known functional forms such as the arithmetic, geometric, and harmonic means:
 \begin{equation}
   \newlength{\extraspace}
   \setlength{\extraspace}{0.5ex}
-  \frac{dS}{d\eta}\bigg\vert_{\eta=0} \propto
+  e \propto
   \begin{cases}
-    \max(T_A, T_B) & p \rightarrow +\infty, \\[\extraspace]
-    (T_A + T_B)/2 & p = +1, \hfill \text{ (arithmetic)} \\[\extraspace]
-    \sqrt{T_A T_B} & p = 0, \hfill \text{ (geometric)} \\[\extraspace]
-    2\, T_A T_B/(T_A + T_B) & p = -1, \hfill \text{ (harmonic)} \\[\extraspace]
-    \min(T_A, T_B) & p \rightarrow -\infty.
+    \max(\T_A, \T_B) & p \rightarrow +\infty, \\[\extraspace]
+    (\T_A + \T_B)/2 & p = +1, \hfill \text{ (arithmetic)} \\[\extraspace]
+    \sqrt{\T_A \T_B} & p = 0, \hfill \text{ (geometric)} \\[\extraspace]
+    2\, \T_A \T_B/(\T_A + \T_B) & p = -1, \hfill \text{ (harmonic)} \\[\extraspace]
+    \min(\T_A, \T_B) & p \rightarrow -\infty.
   \end{cases}
   \label{eq:trento_p}
 \end{equation}
+
 Conveniently, it has been shown that the generalized mean ansatz is able to mimic the scaling behavior of certain saturation based initial condition models \cite{Bernhard:2016tnd}, and hence it should serve as a reasonable parametric form for exploring QGP entropy deposition, assuming imperfect knowledge of saturation effects in nature.
 Of course the model is \emph{not} a substitute for first principle theory calculations, and it may fail to reproduce nuanced features of \emph{ab initio} models such as the existence of short-range gluon field fluctuations \cite{Schenke:2012wb}.
 
@@ -286,7 +296,7 @@ Equation~\eqref{eq:gmean} is a purely local function of nuclear density in the t
 The model readily generalizes from individual proton-proton collisions to arbitrary nucleus-nucleus collisions by summing the participant thicknesses $\T_{A,B}$ over all nucleons which participate in one or more inelastic collisions.
 The only modeling difference between $p$-$p$, $p$-Pb, and Pb-Pb collisions is the number and the position of the nucleons.
 
-When applying the model to heavy-ions, we sample nucleon positions from a Woods-Saxon density distribution subject to a minimum distance criteria $|\x_i - \x_j| > d_\mathrm{min}$ between all pairs of nucleons $i$, $j$.
+When applying the model to heavy-ions, we sample nucleon positions from a Woods-Saxon density distribution subject to a minimum distance criteria $|\xv_i - \xv_j| > d_\mathrm{min}$ between all pairs of nucleons $i$, $j$.
 The minimum distance algorithm, first described in Ref.~\cite{Bernhard:2018hnz}, uses a simple trick to resample the nucleon positions without modifying the target Woods-Saxon radial distribution.
 We first presample the radii of all nucleons in a given nucleus and sort them in ascending order.
 We then sample the solid angles of each nucleon one-by-one, starting with the nucleon closest to the center of the nucleus and working our way outwards.
@@ -492,36 +502,36 @@ This dilute limit is expected to play a significant role in small collision syst
 \section{Parameter estimation}
 \label{sec:calibration}
 
-The nuclear collision model constructed in Sec.~\ref{sec:model} includes a number of free parameters $\x$ which describe the initial state, pre-equilibrium dynamics, and hydrodynamic medium.
-Given values for the parameters $\x$, the model may be used to predict a vector of simulated observables $\y_m$.
-For example, $\y_m$ might be a vector consisting of charged particle yields in different centrality bins.
-The physics model thus represents a vector-valued function $f(\x) = \y_m$ which maps the parameter values $\x$ to the simulated observables $\y_m$.
+The nuclear collision model constructed in Sec.~\ref{sec:model} includes a number of free parameters $\xv$ which describe the initial state, pre-equilibrium dynamics, and hydrodynamic medium.
+Given values for the parameters $\xv$, the model may be used to predict a vector of simulated observables $\yv_m$.
+For example, $\yv_m$ might be a vector consisting of charged particle yields in different centrality bins.
+The physics model thus represents a vector-valued function $f(\xv) = \yv_m$ which maps the parameter values $\xv$ to the simulated observables $\yv_m$.
 
-The goal of this work is to estimate the true model parameters $\x_\star$ provided some evidence that our model predictions $\y_m$ describe experimental measurements $\y_e$.
+The goal of this work is to estimate the true model parameters $\xv_\star$ provided some evidence that our model predictions $\yv_m$ describe experimental measurements $\yv_e$.
 The problem involves three distinct components:
 \begin{enumerate}[itemsep=0pt, leftmargin=2\parindent]
   \item $H_f$: the hypothesis that the nuclear collision model $f$ formulated in this work provides a realistic description of reality,
-  \item $H_\x$: the hypothesis that the model parameters $\x$ are the true model parameters $\x_\star$ of $f$, and
-  \item $E$: the evidence provided by the experimental data $\y_e$ and its corresponding uncertainties.
+  \item $H_\xv$: the hypothesis that the model parameters $\xv$ are the true model parameters $\xv_\star$ of $f$, and
+  \item $E$: the evidence provided by the experimental data $\yv_e$ and its corresponding uncertainties.
 \end{enumerate}
 As a practical matter, we always assume that hypothesis $H_f$ is correct, meaning there are no glaring flaws in our chosen theoretical framework.
 This is a significant assumption; the application of hydrodynamic simulations to small collision systems is speculative, and our conclusions are conditional on the framework making sense.
 
-Subject to this assumption, we can apply Bayes' theorem to evaluate the hypothesis $H_\x$ for the true model parameters,
+Subject to this assumption, we can apply Bayes' theorem to evaluate the hypothesis $H_\xv$ for the true model parameters,
 \begin{equation}
   \label{eq:bayes}
-  P(H_\x | E) \propto P(E | H_\x)\, P(H_\x).
+  P(H_\xv | E) \propto P(E | H_\xv)\, P(H_\xv).
 \end{equation}
-The left-side of this expression is the \emph{posterior}: the probability for hypothesis $H_\x$ given the experimental evidence $E$.
+The left-side of this expression is the \emph{posterior}: the probability for hypothesis $H_\xv$ given the experimental evidence $E$.
 On the right-side there are two separate terms.
-The first term $P(E | H_\x)$ is the \emph{likelihood} function: the probability of observing the experimental evidence $E$ given our model and the hypothesis $H_\x$ for the true model parameters $\x_\star$, and the second term $P(H_\x)$ is the \emph{prior}: an estimate of the probability of hypothesis $H_\x$ in the absence of evidence $E$.
+The first term $P(E | H_\xv)$ is the \emph{likelihood} function: the probability of observing the experimental evidence $E$ given our model and the hypothesis $H_\xv$ for the true model parameters $\xv_\star$, and the second term $P(H_\xv)$ is the \emph{prior}: an estimate of the probability of hypothesis $H_\xv$ in the absence of evidence $E$.
 
 We assume that the likelihood function in Eq.~\eqref{eq:bayes} is described by a multivariate normal distribution
 \begin{equation}
   \label{eq:likelihood}
-  P(E | H_\x) = \frac{1}{\sqrt{(2\pi)^m \det \Sigma}} \exp \left ( -\frac{1}{2}\Delta\y^\intercal \Sigma^{-1} \Delta\y \right ),
+  P(E | H_\xv) = \frac{1}{\sqrt{(2\pi)^m \det \Sigma}} \exp \left ( -\frac{1}{2}\Delta\yv^\intercal \Sigma^{-1} \Delta\yv \right ),
 \end{equation}
-where $\Delta\y = \y_m(\x) - \y_e$ is the discrepancy of the model and experiment, and $\Sigma = \Sigma_m(\x) + \Sigma_e$ is the \emph{total} covariance matrix, equal to the sum of a modeling component $\Sigma_m(\x)$ and an experimental component $\Sigma_e$ which account for all known sources of uncertainty in the simulated and measured observables.
+where $\Delta\yv = \yv_m(\xv) - \yv_e$ is the discrepancy of the model and experiment, and $\Sigma = \Sigma_m(\xv) + \Sigma_e$ is the \emph{total} covariance matrix, equal to the sum of a modeling component $\Sigma_m(\xv)$ and an experimental component $\Sigma_e$ which account for all known sources of uncertainty in the simulated and measured observables.
 
 \begin{table}[t]
   \caption{Input parameter ranges for the physics model.}
@@ -571,7 +581,7 @@ where $\Delta\y = \y_m(\x) - \y_e$ is the discrepancy of the model and experimen
   \end{ruledtabular}
 \end{table*}
 
-For the prior $P(H_\x)$, we specify ranges, i.e.\ minimum and maximum values, for each parameter which are listed in Table~\ref{tab:design}.
+For the prior $P(H_\xv)$, we specify ranges, i.e.\ minimum and maximum values, for each parameter which are listed in Table~\ref{tab:design}.
 We assume the prior distribution is constant and nonzero within each specified range and zero otherwise.
 The selected parameter ranges are intentionally wide to avoid clipping the calibrated posterior; for example, a previous analysis of the \trento\ model \cite{Bernhard:2016tnd} found $p \sim 0$, but we use a prior range $p \in [-1, 1]$ to account for differences in the present model, e.g.\ nucleon substructure, which could modify its posterior.
 Several of the model parameters require special care and are reparametrized accordingly:
@@ -639,7 +649,7 @@ Several of the model parameters require special care and are reparametrized acco
 \subsection{Observables}
 \label{sec:observables}
 
-The likelihood function \eqref{eq:likelihood} provides evidence for \mbox{(or against)} the model parameters $\x$ by comparing the model predictions $\y_m(\x)$ to experimental data $\y_e$.
+The likelihood function \eqref{eq:likelihood} provides evidence for \mbox{(or against)} the model parameters $\xv$ by comparing the model predictions $\yv_m(\xv)$ to experimental data $\yv_e$.
 We focus on simple experimental observables in the present study which are sensitive to the bulk properties of the produced medium.
 We calculate for each set of model parameters the following observables at midrapidity:
 \begin{itemize}[leftmargin=1\parindent, itemsep=0pt]
@@ -682,7 +692,7 @@ We exploit, for this purpose, the approximate correspondence
   \label{eq:bin_equiv}
   \ntrk \sim \nch \propto N_\text{parton}
 \end{equation}
-between each event's initial secondary-parton density ${N_\text{parton} = \int d^2x\,n(\x)}$ in Eq.~\eqref{energy-momentum} and its final-state event activity, characterized by $\nch$ or $\ntrk$ \cite{Abelev:2013bla, Chatrchyan:2013nka}.
+between each event's initial secondary-parton density ${N_\text{parton} = \int d^2x\,n(\xv)}$ in Eq.~\eqref{energy-momentum} and its final-state event activity, characterized by $\nch$ or $\ntrk$ \cite{Abelev:2013bla, Chatrchyan:2013nka}.
 
 Consider, for example, an experimental multiplicity bin $(\nch^\text{low}, \nch^\text{high})$ with some kinematic cuts on $p_T$ and $\eta$.
 We rescale this bin by the average multiplicity $\langle \nch \rangle$ of the corresponding minimum-bias event sample, i.e.\
@@ -713,7 +723,7 @@ The statistical errors in $\Sigma_e^\text{stat}$ are uncorrelated, and thus its 
 \begin{equation}
   \Sigma_e^\text{stat} = \diag[(\sigma^\text{stat}_1)^2, (\sigma^\text{stat}_2)^2, \dots (\sigma^\text{stat}_m)^2 ],
 \end{equation}
-where $\sigma^\text{stat}_i$ is the statistical uncertainty of observable $y_i$ in the experimental observable vector $\y_e = (y_1, \dots, y_m)$.
+where $\sigma^\text{stat}_i$ is the statistical uncertainty of observable $y_i$ in the experimental observable vector $\yv_e = (y_1, \dots, y_m)$.
 The systematic errors, meanwhile, are typically correlated, but the correlation structure is not reported by the experiments so we assert a reasonable form.
 We can expand the systematic covariance matrix as
 \begin{equation}
@@ -740,40 +750,40 @@ We show an example correlation matrix
   \mathrm{corr}(y_i, y_j) = \cov(y_i, y_j)/(\sigma_i \sigma_j)
 \end{equation}
 for the Pb-Pb experimental data constructed using Eq.~\eqref{eq:corr} on the right-side of Fig.~\ref{fig:correlation}.
-Here $y_i$ denotes an element of the experimental data $\y_e$ and $\sigma_i$ its corresponding uncertainty.
+Here $y_i$ denotes an element of the experimental data $\yv_e$ and $\sigma_i$ its corresponding uncertainty.
 The correlation matrix is block diagonal, with each block representing the correlations within a single class of observable.
 
 \subsection{Model emulator}
 
-In principle, one could calculate the likelihood function in Eq.~\eqref{eq:likelihood} directly, e.g.\ by running the model a large number of times at a given parameter point $\x$ to calculate the model observables $\y_m(\x)$ from the ensemble of simulated events, but in practice such a procedure would be intractable.
+In principle, one could calculate the likelihood function in Eq.~\eqref{eq:likelihood} directly, e.g.\ by running the model a large number of times at a given parameter point $\xv$ to calculate the model observables $\yv_m(\xv)$ from the ensemble of simulated events, but in practice such a procedure would be intractable.
 The model is computationally intensive to evaluate, and thousands of events are required to calculate the simplest observables at a single parameter point.
 Moreover, we need to evaluate Eq.~\eqref{eq:likelihood} \emph{numerous} times in order to sample the multidimensional posterior distribution so that the samples may be histogrammed and visualized.
 
 We therefore follow an established framework for computationally intensive models and train an emulator to act as a fast surrogate for the full physics simulation \cite{OHagan:2006ba, Higdon:2008cmc, Higdon:2014tva}.
-The emulator enables essentially instantaneous predictions for $\y_m = f(\x)$ and allows us to sample the posterior distribution millions of times.
+The emulator enables essentially instantaneous predictions for $\yv_m = f(\xv)$ and allows us to sample the posterior distribution millions of times.
 In order to train the emulator, we first generate a scaffolding of the parameter space using a maximin Latin hypercube design \cite{Morris:1995lh} to distribute 500 points uniformly throughout our 15-dimensional parameter space according to the parameter ranges in Table~\ref{tab:design}.
 We then run minimum-bias and multiplicity triggered $p$-Pb and Pb-Pb events at each design point and calculate the model observables from the ensemble of events.
 
-Specifically, let $X$ denote the ${d \times n}$ design matrix of $d=500$ training points, where each training point is a vector $\x = (x_1, x_2, \dots, x_n)$ of the $n=15$ model parameters in Table~\ref{tab:design}.
-Similarly, let $Y$ denote the corresponding ${d \times m}$ observables matrix, where each row of $Y$ is a vector $\y_m = (y_1, y_2, \dots, y_m)$ of $m$ different simulated observables (here we overload our notation so the subscript $m$ means both \emph{model} and \emph{observable number}).
+Specifically, let $X$ denote the ${d \times n}$ design matrix of $d=500$ training points, where each training point is a vector $\xv = (x_1, x_2, \dots, x_n)$ of the $n=15$ model parameters in Table~\ref{tab:design}.
+Similarly, let $Y$ denote the corresponding ${d \times m}$ observables matrix, where each row of $Y$ is a vector $\yv_m = (y_1, y_2, \dots, y_m)$ of $m$ different simulated observables (here we overload our notation so the subscript $m$ means both \emph{model} and \emph{observable number}).
 Our goal is to train an emulator for the physics model $f$ using the discrete observations $f: X \mapsto Y$.
 
 We use for this purpose a specific type of emulator known as a Gaussian process emulator (GPE) \cite{Rasmussen:2006gp}.
 The advantage of using GPE's is that they provide an estimate of their own uncertainty which allows us to account for this uncertainty when constructing the covariance matrix $\Sigma$ in Eq.~\eqref{eq:likelihood}.
 One quirk of GPE's is that they are restricted to scalar-valued functions, i.e.\ functions of one output, whereas we require an emulator for vector-valued functions with multiple outputs.
-This restriction is commonly circumvented using principal component analysis (PCA): a general procedure which transforms a set of correlated variables $\y = (y_1, y_2, \dots, y_m)$ into a new basis representation $\z = (z_1, z_2, \dots, z_m)$ where the linear correlations between $z_i$, $z_j$ vanish for all $i\ne j \in m$ \cite{Tipping:1999}.
-Independent GPE's can then be used to emulate each $z \in \z$ since the variables $(z_1, \dots, z_m)$ are linearly uncorrelated.
-The emulated vector $\z$ is then easily reexpressed in the basis of $\y$ through its inverse transformation.
+This restriction is commonly circumvented using principal component analysis (PCA): a general procedure which transforms a set of correlated variables $\yv = (y_1, y_2, \dots, y_m)$ into a new basis representation $\zv = (z_1, z_2, \dots, z_m)$ where the linear correlations between $z_i$, $z_j$ vanish for all $i\ne j \in m$ \cite{Tipping:1999}.
+Independent GPE's can then be used to emulate each $z \in \zv$ since the variables $(z_1, \dots, z_m)$ are linearly uncorrelated.
+The emulated vector $\zv$ is then easily reexpressed in the basis of $\yv$ through its inverse transformation.
 
 We first preprocess our model observables by centering and scaling each column of $Y$ (single observable) to zero mean and unit variance to generate a standardized observable matrix $\tilde{Y}$.
-PCA is then used to reexpress each row-vector $\tilde{\y}$ of $\tilde{Y}$ (all standardized observables at a single design point) in the new principal component basis:
+PCA is then used to reexpress each row-vector $\tilde{\yv}$ of $\tilde{Y}$ (all standardized observables at a single design point) in the new principal component basis:
 \begin{equation}
-  \tilde{\y}_i = \sum\limits_{j=1}^m z_{ij} \mathbf{v_j},
+  \tilde{\yv}_i = \sum\limits_{j=1}^m z_{ij} \mathbf{v_j},
 \end{equation}
-where $\tilde{\y}_i$ are the standardized observables of the $i$-th row-vector (design point) of matrix $\tilde{Y}$, and $z_{ij}$ and $\mathbf{v}_j$ are the coefficients and vectors of its $j$-th principal component.
+where $\tilde{\yv}_i$ are the standardized observables of the $i$-th row-vector (design point) of matrix $\tilde{Y}$, and $z_{ij}$ and $\mathbf{v}_j$ are the coefficients and vectors of its $j$-th principal component.
 
 The principal components are reported in order of explained variance, with the first principal component vector $\mathbf{v}_1$ accounting for the most variance in $\tilde{Y}$, and the last principal component vector $\mathbf{v}_m$ accounting for the least.
-We then train a set of independent GPE's $\{z_i=\mathrm{gp}_i(\x)\}$ to predict the first $k$ principal components $(z_1, \dots, z_k)$ as a function of the model parameters $\x$ which vary across the design $X$.
+We then train a set of independent GPE's $\{z_i=\mathrm{gp}_i(\xv)\}$ to predict the first $k$ principal components $(z_1, \dots, z_k)$ as a function of the model parameters $\xv$ which vary across the design $X$.
 For the present study, we use $k=7$ principal components when emulating the $p$-Pb system and $k=8$ principal components when emulating Pb-Pb, chosen to describe 99.5\% of the total observed variance of each system.
 
 \begin{fullpage}
@@ -795,21 +805,21 @@ For the present study, we use $k=7$ principal components when emulating the $p$-
 \end{fullpage}
 
 The GPE's are essentially fancy interpolators applied to the model's training points and PCA transformed observables.
-Each GPE reports a mean value $z(\x)$ as well as an estimated error $\delta z(\x)$ which accounts for statistical noise in the training data and interpolation error between the design points.
-Once the GPE's are trained, we can predict the observables $\y_m$ at parameter point $\x$ by transforming the vector of principal components
+Each GPE reports a mean value $z(\xv)$ as well as an estimated error $\delta z(\xv)$ which accounts for statistical noise in the training data and interpolation error between the design points.
+Once the GPE's are trained, we can predict the observables $\yv_m$ at parameter point $\xv$ by transforming the vector of principal components
 \begin{equation}
-  \mathbf{z}(\x) = (z_1(\x), z_2(\x), \dots, z_k(\x))
+  \mathbf{z}(\xv) = (z_1(\xv), z_2(\xv), \dots, z_k(\xv))
 \end{equation}
 \emph{back} to physical space.
 Similarly, we can construct the covariance matrix of the observables in PCA space,
 \begin{equation}
   \cov(z_i, z_j) = \diag[(\delta z_{1})^2, (\delta z_2)^2, \dots, (\delta z_k)^2 ],
 \end{equation}
-and transform it back to physical space as well to obtain the covariance matrix of the model observables $\y_m$ at a given parameter point $\x$.
+and transform it back to physical space as well to obtain the covariance matrix of the model observables $\yv_m$ at a given parameter point $\xv$.
 
-The resulting emulator therefore predicts both a mean prediction $\y_m(\x)$ and an uncertainty covariance matrix $\Sigma_m(\x)$ which accounts for multiple sources of model and emulator uncertainty, including the truncation error expected from using a finite number of principal components $k < m$.
+The resulting emulator therefore predicts both a mean prediction $\yv_m(\xv)$ and an uncertainty covariance matrix $\Sigma_m(\xv)$ which accounts for multiple sources of model and emulator uncertainty, including the truncation error expected from using a finite number of principal components $k < m$.
 The model covariance matrix $\Sigma_m$ includes so-called \emph{known}-unknowns such as statistical error and emulator interpolation error, but not \emph{unknown}-unknowns such as the overall validity of small-system hydrodynamics, i.e.\ things which lack a unified consensus or are difficult to quantify.
-We show in Fig.~\ref{fig:correlation} the resulting Pb-Pb correlation matrix $\mathrm{corr}(y_i,y_j)$ for the model (emulator) at a random parameter point $\x$ in the design space (left-side), along side the same correlation matrix for the experimental data (right-side) discussed previously.
+We show in Fig.~\ref{fig:correlation} the resulting Pb-Pb correlation matrix $\mathrm{corr}(y_i,y_j)$ for the model (emulator) at a random parameter point $\xv$ in the design space (left-side), along side the same correlation matrix for the experimental data (right-side) discussed previously.
 For additional information on the model emulator, we direct the reader to Appendix~\ref{app:validation} which includes several validation tests of the emulator prediction accuracy.
 
 \subsection{Bayesian calibration}
@@ -817,10 +827,10 @@ For additional information on the model emulator, we direct the reader to Append
 In order to calibrate the model on two different collision systems, we expand the likelihood function \eqref{eq:likelihood} into a joint likelihood
 \begin{equation}
   \label{eq:joint_likelihood}
-  P(E | H_\x) = P(E_\text{Pb-Pb} | H_\x) \cdot P(E_\text{$p$-Pb} | H_\x),
+  P(E | H_\xv) = P(E_\text{Pb-Pb} | H_\xv) \cdot P(E_\text{$p$-Pb} | H_\xv),
 \end{equation}
-where $E$ subsumes all evidence from the $p$-Pb and Pb-Pb collision systems and $H_\x$ is our hypothesis that $\x$ equals the true parameters $\x_\star$.
-We then perform Markov-chain Monte Carlo (MCMC) importance sampling on the posterior distribution in Eq.~\eqref{eq:bayes} to draw random samples for $P(H_\x | E)$, the estimate of the true model parameters given the model and the experimental data \cite{Goodman:2010en, FM:2013mc}.
+where $E$ subsumes all evidence from the $p$-Pb and Pb-Pb collision systems and $H_\xv$ is our hypothesis that $\xv$ equals the true parameters $\xv_\star$.
+We then perform Markov-chain Monte Carlo (MCMC) importance sampling on the posterior distribution in Eq.~\eqref{eq:bayes} to draw random samples for $P(H_\xv | E)$, the estimate of the true model parameters given the model and the experimental data \cite{Goodman:2010en, FM:2013mc}.
 For this we use an affine-invariant ensemble sampler which uses a large ensemble of interdependent walkers \cite{Goodman:2010en, FM:2013mc} and allow the MCMC chain to ``burn-in'' before generating \order{7} posterior samples.
 
 
@@ -860,7 +870,7 @@ The uncertainty in the posterior distribution could thus be improved by running 
 \end{fullpage}
 
 We now direct our attention to Fig.~\ref{fig:posterior} which shows the main result of this work, the posterior distribution of the model input parameters.
-Recall that the posterior $P(H_\x | E)$ is the probability that our hypothesis $H_\x$ for the true model parameters $\x_\star$ is correct, given the evidence $E$ provided by experiment.
+Recall that the posterior $P(H_\xv | E)$ is the probability that our hypothesis $H_\xv$ for the true model parameters $\xv_\star$ is correct, given the evidence $E$ provided by experiment.
 The present posterior has 15 dimensions, one for each parameter listed in Table~\ref{tab:design}, and thus its joint distribution cannot be summarized by one figure alone.
 We therefore sample the distribution and histogram the samples to project the distribution onto one or two dimensions at a time.
 Each diagonal panel is the distribution of a \emph{single} model parameter (marginalized over all others), and each lower-diagonal panel is the joint distribution of a \emph{pair} of model parameters (marginalized over all others).
@@ -994,9 +1004,9 @@ The $p$-Pb data, meanwhile, does not appear to provide any unique viscous constr
 We verified the emulator and tested the accuracy of our physics model framework using a single set of high-probability parameters selected from the Bayesian posterior.
 These parameters, listed in Table~\ref{tab:mode_params}, are the approximate ``best fit'' values of the calibrated model, commonly referred to as the \emph{maximum a posteriori} (MAP) estimate:
 \begin{equation}
-  \x_\mathrm{MAP} \equiv \operatorname*{arg\, max}_{\x} P(H_\x | E).
+  \xv_\mathrm{MAP} \equiv \operatorname*{arg\, max}_{\xv} P(H_\xv | E).
 \end{equation}
-We then ran \order{6} minimum-bias and multiplicity triggered events using the MAP estimate $\x_\mathrm{MAP}$ and computed all of the model observables listed in Sec.~\ref{sec:observables}.
+We then ran \order{6} minimum-bias and multiplicity triggered events using the MAP estimate $\xv_\mathrm{MAP}$ and computed all of the model observables listed in Sec.~\ref{sec:observables}.
 The resulting model calculations are shown in Fig.~\ref{fig:obs_map} alongside experimental data from CMS \cite{Chatrchyan:2013nka} and ALICE \cite{Adam:2015ptt, Adam:2016izf, Adam:2014qja, Abelev:2013bla}.
 The left and right columns show the results for the $p$-Pb and Pb-Pb collision systems respectively, and each row shows a different group of related observables.
 
@@ -1225,7 +1235,7 @@ This means that the truncation of $T^{\mu\nu}$ at the boundaries of the grid sho
 We enforce this requirement by finding an energy density cutoff $e_\text{min}$ for which the matter $e < e_\text{min}$ can be effectively discarded without significantly modifying the simulation observables.
 We then fix the maximum grid size $x_\text{max}$ such that it fully encloses the isotherm $T=T(e_\text{min})$ for the full lifetime of the fireball.
 
-We find that we can quickly estimate the maximum radius $R_\text{max} = |\x_\text{max}|^2$ of the spacetime hypersurface ${T = T(e_\text{min})}$ by running the event on a coarse-grained spatial grid with one-third the spatial resolution we would otherwise require to resolve typical hydrodynamic observables such as mean $p_T$ and flows.
+We find that we can quickly estimate the maximum radius $R_\text{max} = |\xv_\text{max}|^2$ of the spacetime hypersurface ${T = T(e_\text{min})}$ by running the event on a coarse-grained spatial grid with one-third the spatial resolution we would otherwise require to resolve typical hydrodynamic observables such as mean $p_T$ and flows.
 The simulation time of a single VISH2+1 event scales like ${\sim}n_x^3$ since $dx \propto d\tau$, and thus our ``pre-run'' event requires only ${\sim}1/27$th the time of a production event.
 We therefore run a coarse-grained pre-event on an excessively large grid for \emph{every} minimum-bias event to estimate $R_\text{max}$, then rerun the same event on a thrice finer grid with a trimmed spatial extent $x_\text{max} \equiv R_\text{max}$.
 See Fig.~\ref{fig:adaptive_grid} for a simple diagram of the procedure.
@@ -1250,7 +1260,7 @@ The procedure should generalize to other hydrodynamic codes, including those wit
   }
 \end{figure*}
 
-The emulator is a surrogate for the full physics simulation which generates probabilistic predictions for the model observables $\y_m$ at a given point $\x$.
+The emulator is a surrogate for the full physics simulation which generates probabilistic predictions for the model observables $\yv_m$ at a given point $\xv$.
 Here we validate these probabilistic predictions using a method known as k-fold cross validation.
 We first randomly partition our $d=500$ training points into $k=20$ equal sized subsamples or ``folds''.
 One of the subsamples is used to validate the emulator and the remaining $k-1$ subsamples are used to train it.
@@ -1270,7 +1280,7 @@ Moreover, since we include this uncertainty in the likelihood covariance matrix 
 This is an important point that bears repeating.
 The emulator uncertainty does not erode the veracity of the posterior distribution if it is correctly modeled and accounted for.
 
-More generally, we can perform the validation test in Fig.~\ref{fig:validation_example} for \emph{every} observable $y \in \y_m$ and check that each observable's normalized residuals ${z=(y_\text{pred} - y_\text{obs})/\sigma_\text{pred}}$ follow a unit normal distribution.
+More generally, we can perform the validation test in Fig.~\ref{fig:validation_example} for \emph{every} observable $y \in \yv_m$ and check that each observable's normalized residuals ${z=(y_\text{pred} - y_\text{obs})/\sigma_\text{pred}}$ follow a unit normal distribution.
 This test is applied to the $p$-Pb and Pb-Pb collision systems in Fig.~\ref{fig:validation_all}.
 The top row of each figure shows a box-plot for the normalized residuals of each observable compared to the quantiles of a unit normal distribution.
 The thin horizontal black lines correspond to the 10th and 90th percentiles of a unit normal distribution, and the gray band its interquartile range.

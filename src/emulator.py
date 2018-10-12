@@ -26,6 +26,7 @@ from sklearn.preprocessing import StandardScaler
 from . import cachedir, lazydict, model
 from .design import Design
 
+import matplotlib.pyplot as plt
 
 class _Covariance:
     """

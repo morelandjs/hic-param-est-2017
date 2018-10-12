@@ -2358,6 +2358,16 @@ def grid_error():
 
     set_tight(fig)
 
+@plot
+def energy_vs_yield():
+    fig = plt.figure(figsize=figsize(.5, aspect=1))
+
+    path = Path(workdir, 'model_output', 'map', 'PbPb5020.dat')
+    model_data = model.ModelData('PbPb5020', path)
+
+    for pt, ev in model_data.design_events:
+        x, y = [ev[k] for k in ('init_entropy', 'dNch_deta')]
+        plt.scatter(x[::1000], y[::1000])
 
 @plot
 def entropy_scaling():

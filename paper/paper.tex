@@ -143,13 +143,14 @@ Many of the components of the present model have been documented in previous stu
 \label{sec:initial_state}
 
 We model the initial state of $p$-Pb and Pb-Pb collisions at $\sqrts=5.02$~TeV using the boost-invariant \trento\ model \cite{Moreland:2014oya}.
-Generally speaking, the initial three-dimensional distribution of matter produced in relativistic nuclear collisions is \emph{not} boost-invariant; longitudinal entropy deposition fluctuates both locally point-to-point in the transverse plane as well as globally event-by-event due to asymmetries in the sampled density of participant matter \cite{Ke:2016jrd, Bozek:2010vz}.
+Generally speaking, the initial three-dimensional distribution of matter produced in relativistic nuclear collisions is \emph{not} boost-invariant.
+The longitudinal density of particle production fluctuates both locally point-to-point in the transverse plane as well as globally event-by-event due to asymmetries in the sampled density of participant matter \cite{Ke:2016jrd, Bozek:2010vz}.
 Nevertheless, boost-invariance has been shown to be a good approximation for both large and small collision systems when hydrodynamic observables are calculated from particles that are detected close to midrapidity \cite{Shen:2016zpp}.
 
 The \trento\ model operates in the ultrarelativistic limit with a Lorentz factor $\gamma \gg 1$ such that each nucleus appears as a thin sheet of nuclear density in the laboratory frame.
 The sheets of colliding nuclear density penetrate and pass through each other in time $\Delta t \approx D_\text{nucl} / (\gamma\, \beta_z)$ in the laboratory frame, where $D_\text{nucl}$ is the diameter of the nucleus in its rest frame, $\gamma$ is the usual Lorentz factor of the accelerated ions, and $\beta_z$ is their velocity along the beam axis.
 The resulting nuclear overlap time $\Delta t \lesssim 0.1\ \fmc$ at top RHIC and LHC energies, and thus it is safe to neglect the initial transverse dynamics which occur while the nuclei pass through each other.
-We therefore assume that the collision produces all secondary particles at uniform proper time $\tau_0 \ll 1~\fmc$, and that it deposits energy at midrapidity which is some function of the locally varying beam integrated density of each nucleus.
+We therefore assume that the collision produces all secondary particles at a uniform proper time $\tau_0 \ll 1\fmc$, and that it deposits energy at midrapidity which is a function of the locally varying beam-integrated density of each nucleus.
 
 Consider the collision of two protons, labeled $A$ and $B$, with three-dimensional densities $\rho_A$ and $\rho_B$ in their local rest frames.
 The proton-proton overlap function
@@ -214,30 +215,20 @@ of width $v$.
 The constituent positions $\xv_i$ are sampled independently (ignoring correlations) from a Gaussian radial distribution,
 \begin{equation}
   \label{eq:radial_dist}
-  P(\xv_i; \xv_{A,B}) = \frac{1}{(2\pi r^2)^{3/2}} \exp\left(-\frac{|\xv_i - \xv_{A,B}|^2}{2 r^2}\right),
+  \rho_\text{pos}(\xv_i; \xv_{A,B}) = \frac{1}{(2\pi r^2)^{3/2}} \exp\left(-\frac{|\xv_i - \xv_{A,B}|^2}{2 r^2}\right),
 \end{equation}
 where $\xv_{A,B}$ is the position of each proton, and $r$ is a parameter which varies the sampling radius of the constituent positions about each proton position.
 As a matter of convenience, we sample the proton positions \emph{before} determining the constituent positions.
 This leads to small discrepancies between the designated proton positions $\xv_{A,B}$, and the actual position of each proton's center-of-mass, owing to fluctuations in the constituent positions $\xv_i$.
-The sampling radius $r$ should thus be interpreted with care; it is \emph{not} the root-mean-square radius of the sampled nucleons.
+The sampling radius $r$ should thus be interpreted with care.
+It is \emph{not} the root-mean-square radius of the sampled nucleons.
 
-\begin{figure}
-  \begin{tikzpicture}
-    \node {\includegraphics{thickness}};
-    \node[label=above:{10 fm}] (a) at (0, 1.1) {};
-    \node (b) at (0, -1.1) {};
-    \draw [<->, semithick] (a) to (b);
-  \end{tikzpicture}
-  \caption{\label{fig:thickness} Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus. The nucleus on the left has Gaussian nucleons of width $0.8$~fm, while the nucleus on the right has composite nucleons, each containing six constituents of width $0.4$~fm.}
-\end{figure}
-
-The two protons $A$, $B$ are assigned a random impact parameter, and Eq.~\eqref{eq:pcoll} is used to sample their inelastic collision probability $P_\mathrm{coll}(b)$.
+The two protons $A$, $B$ are assigned a random impact parameter $\bv$, and Eq.~\eqref{eq:pcoll} is used to sample their inelastic collision probability $P_\mathrm{coll}(b)$.
 Note, this proton-proton inelastic collision probability has no direct knowledge of the individual constituent positions; it is only indirectly sensitive to their positions through the density $\rho_{A, B}$.
-The protons in this work are described by a \emph{single} density field.
-The constituents are simply used as a mechanism to generate deformity and fluctuations.
+The protons in this work are described by a \emph{single} density field; constituents are simply used as a mechanism to generate deformity and fluctuations.
 This is an important distinction between the present model and a similar nucleon substructure implementation known as the participant or ``wounded'' quark model which allows for a subset of quarks (constituents) to participate inside a single nucleon \cite{ANISOVICH1978477, Broniowski:2016pvx}.
 The proton, unlike the nucleus, cannot produce semi-stable spectator fragments in a high-energy collision.
-Any spectator quarks produced by a wounded quark model would be colored objects that necessarily contribute to secondary particle production as they fragment and recombine to form color-neutral hadrons.
+Any spectator quarks produced by a wounded quark model would be colored objects that necessarily contribute to secondary particle production as they fragment and recombine to form colorless hadrons.
 We correspondingly require that the nucleons in Eq.~\eqref{eq:rho} participate as singular objects, such that all spectator matter discarded by the simulation is appropriately color-neutral and inert.
 
 Hereafter, we switch to Milne coordinates $(\xv_\perp, \eta_s, \tau)$, where $\xv_\perp$ is a Cartesian coordinate $(x, y)$ in the transverse plane, $\eta_s = \tfrac{1}{2} \log[(t+z)/(t-z)]$ is the system's spacetime rapidity, and $\tau = \sqrt{t^2 - z^2}$ its proper time.
@@ -254,25 +245,25 @@ onto the transverse plane $\xv_\perp$ centered at $z=0$.
 This fluctuated proton density $\tilde{\rho}_{A,B}$ equals the proton density $\rho_{A,B}(\xv)$ in Eq.~\eqref{eq:rho} with additional weights $\gamma_i$ sampled from a gamma distribution with unit mean and variance $1/k$.
 These \emph{ad hoc} gamma random weights are necessary to describe the large fluctuations observed in minimum bias proton-proton collisions, although their exact physical origin is not well understood.
 
-The initial energy density $e$ deposited at midrapidity $\eta_s=0$ and proper time $\tau_0 \approx 0~\fmc$ is then some function,
+The energy density $e$ deposited at midrapidity $\eta_s=0$ and proper time $\tau_0 \ll 1~\fmc$ is then some function,
 \begin{equation}
   e(\xv_\perp, \eta_s=0, \tau_0) = f(\T_A, \T_B),
 \end{equation}
-of the local participant thicknesses $\T_A$, $\T_B$ in each nucleus.
+of the local participant thicknesses $\T_A$ and $\T_B$.
 A natural first guess for this mapping is an arithmetic mean,
 \begin{equation}
   e(\xv_\perp, \eta_s=0, \tau_0) = \text{const} \times \frac{\T_A + \T_B}{2},
 \end{equation}
 equal to a participant or ``wounded nucleon'' model for initial energy deposition up to meaningless factor of two in the overall normalization constant.
 This wounded nucleon scaling was in fact one of the first such mappings used as a proxy for initial particle production in relativistic heavy-ion collisions \cite{Bialas:1976ed}.
-It was quickly realized, however, that the wounded nucleon model predicts the wrong scaling for charged particle production as a function of collision centrality and hence the wrong scaling for initial energy deposition at midrapidity as a function of participant thicknesses $\T_A$ and $\T_B$ \cite{Kharzeev:2000ph}.
+It was quickly realized, however, that the wounded nucleon model predicts the wrong scaling for charged particle production as a function of collision centrality and hence the wrong scaling for initial energy deposition at midrapidity as a function of participant thicknesses $\T_A$ and $\T_B$ \cite{Kharzeev:2000ph} \footnote{Typically an entropy density $s$ is used, but the shortcomings of the wounded nucleon model are nonetheless the same when depositing energy.}.
 
 A simple remedy is to replace the arithmetic mean of the wounded nucleon model with a more flexible parametrization
 \begin{equation}
   \label{eq:gmean}
   e(\xv_\perp, \eta_s=0, \tau_0) = \text{const} \times \bigg( \frac{\T_A^p + \T_B^p}{2} \bigg)^{1/p},
 \end{equation}
-based on a family of functions known as the generalized mean(s)\footnote{Previous applications of the \trento\ model used the generalized mean ansatz to parametrize the initial entropy density $s(\xv_\perp, \eta_s=0, \tau_0)$, noting its approximate linear relation with the final charged particle density $d\nch/d\eta$ \cite{Moreland:2014oya, Bernhard:2016tnd}. In the present framework, the initial energy density $e(\xv_\perp, \eta_s=0, \tau_0)$ is approximately proportional to $d\nch/d\eta$ as well; hence, the generalized mean works equally well as a parametrization for either quantity. Here we use the energy density to make direct contact with the free-streaming equation Eq.~\eqref{energy-momentum}.}.
+based on a family of functions known as the generalized mean(s).
 This parametrization introduces a dimensionless parameter $p$ which varies the scaling behavior of initial energy deposition at midrapidity.
 For certain discrete values of $p$, it reduces to well known functional forms such as the arithmetic, geometric, and harmonic means:
 \begin{equation}
@@ -289,29 +280,47 @@ For certain discrete values of $p$, it reduces to well known functional forms su
   \label{eq:trento_p}
 \end{equation}
 
-Conveniently, it has been shown that the generalized mean ansatz is able to mimic the scaling behavior of certain saturation based initial condition models \cite{Bernhard:2016tnd}, and hence it should serve as a reasonable parametric form for exploring QGP entropy deposition, assuming imperfect knowledge of saturation effects in nature.
-Of course the model is \emph{not} a substitute for first principle theory calculations, and it may fail to reproduce nuanced features of \emph{ab initio} models such as the existence of short-range gluon field fluctuations \cite{Schenke:2012wb}.
+We note that previous applications of the \trento\ model \cite{Moreland:2014oya, Bernhard:2016tnd} used the generalized mean ansatz to parametrize the \emph{entropy} density $s(\xv_\perp, \eta_s=0, \tau_\text{hydro})$ at midrapidity, motivated (in part) by the approximate linear relation between initial entropy density $(dS/d\eta_s)\vert_{\eta_s=0}$ and final charged-particle density $(d\nch/d\eta_s)\vert_{\eta_s=0}$ \cite{Shen:2015qta}.
+These studies, however, assumed instant thermalization, an approximation which sets $u^\mu$, $\Pi$, and $\pi^{\mu\nu}$ identically to zero at the hydrodynamic starting time $\tau_\text{hydro}$.
+The present study, meanwhile, uses a pre-equilibrium free streaming stage to estimate $u^\mu$, $\Pi$, and $\pi^{\mu\nu}$ as a function of a variable free-streaming time $\taufs$.
+Strictly speaking, the entropy density ${s(\xv_\perp, \eta_s=0, \tau)}$ is ill defined prior to thermalization.
+Hence, it would not make sense to directly parametrize the entropy density at times $\tau_0 < \tau_\text{hydro}$ as required by the present study.
+We therefore reinterpret the quantity produced by the \trento\ model as an energy density $e(\xv_\perp, \eta_s=0, \tau_0)$ and free-stream this quantity to the hydrodynamic starting time $\tau_\text{hydro}$.
+This assumes, of course, that the model's parametrization for entropy density is also suitable as a parametrization for the energy density.
+To this point, we note that the arguments for the generalized mean ansatz are quite general, and that the energy density $dE/d\eta_s$ and entropy density $dS/d\eta_s$ share many similar qualities.
+For example, both are approximately conserved at midrapidity, and both scale approximately linearly with the final charged-particle density $d\nch/d\eta_s$.
 
-Equation~\eqref{eq:gmean} is a purely local function of nuclear density in the transverse plane and should (in principle) be equally valid for any pair of colliding nuclei at sufficiently high beam energy.
-The model readily generalizes from individual proton-proton collisions to arbitrary nucleus-nucleus collisions by summing the participant thicknesses $\T_{A,B}$ over all nucleons which participate in one or more inelastic collisions.
+\begin{figure}
+  \begin{tikzpicture}
+    \node {\includegraphics{thickness}};
+    \node[label=above:{10 fm}] (a) at (0, 1.1) {};
+    \node (b) at (0, -1.1) {};
+    \draw [<->, semithick] (a) to (b);
+  \end{tikzpicture}
+  \caption{\label{fig:thickness} Effect of nucleon substructure on the nuclear thickness function $T(x, y) \equiv \int dz\, \rho(x, y, z)$ of a $^{208}\mathrm{Pb}$ nucleus. The nucleus on the left has Gaussian nucleons of width $0.8$~fm, while the nucleus on the right has composite nucleons, each containing six constituents of width $0.4$~fm.}
+\end{figure}
+
+Up to this point we have restricted our attention to a single proton-proton collision.
+Equation~\eqref{eq:gmean} is a purely local function of nuclear density in the transverse plane and hence it should (in principle) be equally valid for any pair of colliding nuclei at sufficiently high beam energy.
+The \trento\ model readily generalizes from individual proton-proton collisions to arbitrary nucleus-nucleus collisions by summing the participant thicknesses $\T_{A,B}$ in Eq.~\eqref{eq:fluctuated_thick} over all nucleons which participate in one or more inelastic collisions.
 The only modeling difference between $p$-$p$, $p$-Pb, and Pb-Pb collisions is the number and the position of the nucleons.
+Figure~\ref{fig:thickness} shows the qualitative effect of adding nucleon substructure to a lead nucleus.
+Fluctuations emerge over the length scale of a nucleon, but the macroscopic geometry of the ion is largely unchanged.
 
 When applying the model to heavy-ions, we sample nucleon positions from a Woods-Saxon density distribution subject to a minimum distance criteria $|\xv_i - \xv_j| > d_\mathrm{min}$ between all pairs of nucleons $i$, $j$.
 The minimum distance algorithm, first described in Ref.~\cite{Bernhard:2018hnz}, uses a simple trick to resample the nucleon positions without modifying the target Woods-Saxon radial distribution.
 We first presample the radii of all nucleons in a given nucleus and sort them in ascending order.
 We then sample the solid angles of each nucleon one-by-one, starting with the nucleon closest to the center of the nucleus and working our way outwards.
 If a sampled nucleon position is too close to any of its previously placed neighbors, its solid angle is resampled until the minimum distance criteria is satisfied.
-Similar methods could be used to model correlations between individual constituents inside each nucleon, although the numerical implementation would be somewhat tedious.
+Similar methods could be used to model correlations between individual constituents inside each nucleon, although the implementation would be somewhat tedious.
 
-Figure~\ref{fig:thickness} shows the qualitative effect of nucleon substructure on a generic lead nuclear thickness function.
-
-\subsection{Pre-equilibrium dynamics}
-
-\begin{figure}[b]
+\begin{figure}
   \includegraphics{coupling}
   \caption{Cartoon of the free-streaming approximation for hydrodynamic initialization. The initial state is free-streamed for proper time $\taufs$ (zero coupling) before it is matched to hydrodynamics (strong coupling). This piecewise evolution approximates the more realistic scenario expected in nature where the medium's coupling strength smoothly changes as a function of time.}
   \label{fig:coupling}
 \end{figure}
+
+\subsection{Pre-equilibrium dynamics}
 
 There are of course two limiting cases for the strength of interactions inside the QGP medium immediately at the collision: infinitely weak coupling where the secondary partons free-stream without interacting, and infinitely strong coupling where the fluid's inter-particle mean free path effectively vanishes.
 Realistically, one expects the initial parton interactions to lie somewhere between these two extremes.
@@ -325,27 +334,17 @@ In general, these details will affect the dynamics predicted by the collisionles
   p^\mu \partial_\mu f(x, p) = 0,
 \end{equation}
 through its dependence on the underlying distribution function $f(x, p)$, and hence are necessary inputs for any free-streaming implementation.
-Equation~\eqref{freestream}, however, simplifies for massless partons with momentum distributions that are locally isotropic.
-Under this assumption, it was shown in Refs.~\cite{Broniowski:2008qk, Liu:2015nwa} that the energy-momentum tensor $T^{\mu\nu}$ of partons at midrapidity and time $\tau$ only depends on its spatial distribution at some earlier time $\tau_0$, but not its $p_\perp$-distribution, which could vary as a function of position.
-
-The entropy density for a gas of massless noninteracting particles is very nearly proportional to its particle density, and so we are able to recast the parametrization in Eq.~\eqref{eq:gmean} in the form
-\begin{equation}
-  \frac{dN}{d^2x_\perp d\eta}\,\bigg\vert_{\eta=0} = \, \text{Norm} \times \bigg(\frac{\T_A^p + \T_B^p}{2}\bigg)^{1/p},
-\end{equation}
-where the left-side is the initial density of free-streaming partons at midrapidity.
-The resulting free-streamed energy-momentum tensor $T^{\mu\nu}(x, y, \eta, \tau)$ at transverse coordinate $(x, y)$, midrapidity $\eta=0$, and proper time $\tau > \tau_0$ is then given by
+Equation~\eqref{freestream}, however, simplifies for a boost-invariant gas of massless noninteracting partons with locally isotropic transverse momentum distributions.
+Under these conditions, the energy-momentum tensor $T^{\mu\nu}(\xv_\perp, \eta_s=0, \tau)$ at transverse coordinate $\xv_\perp$ and time $\tau > \tau_0$ is given by \cite{Broniowski:2008qk, Liu:2015nwa},
 \begin{multline}
   \label{energy-momentum}
-  T^{\mu\nu}(x, y, 0, \tau) = \frac{1}{\tau} \int_{0}^{2\pi} d\phi\, n(x - \Delta \tau \cos \phi, y - \Delta \tau \sin \phi) \\ \times
-  \begin{bmatrix}
-    1 & \cos\phi & \sin\phi  & 0\\
-    \cos\phi & \cos^2\phi & \cos\phi\sin\phi & 0 \\
-    \sin\phi & \sin\phi \cos\phi & \sin^2\phi & 0\\
-    0 & 0 & 0 & 0
-  \end{bmatrix},
+  T^{\mu\nu}(\xv_\perp, \eta_s=0, \tau) =\\
+  \frac{\tau_0}{\tau} \int_{-\pi}^{\pi} d\phi_q\, \hat{q}^\mu \hat{q}^\nu e(\xv_\perp - (\tau - \tau_0)\hat{\mathbf{q}}_\perp, \eta_s=0, \tau_0),
 \end{multline}
-where $n$ is the local density of massless partons, and $\Delta\tau$ is the free-streaming time $\Delta\tau = \tau - \tau_0$.
-The solution \eqref{energy-momentum} can then be decomposed in hydrodynamic form
+where $\hat{q}^\mu = (1, \cos \phi_q, \sin \phi_q, 0)$ and $\hat{\mathbf{q}}_\perp = (\cos \phi_q, \sin \phi_q)$.
+Here we assume that $\tau_0 \ll 1~\fmc$ is small and define $\taufs \equiv \tau - \tau_0 \approx \tau$.
+We also combine the unknown constant in Eq.~\eqref{eq:gmean} with the pre-factor $\tau_0$ in Eq.~\eqref{energy-momentum} to produce a single normalization factor $\text{Norm} = \text{const} \times \tau_0$ with units of energy.
+The solution \eqref{energy-momentum} is then decomposed in hydrodynamic form,
 \begin{equation}
   \label{hydro-eqn}
   T^{\mu\nu} = e u^\mu u^\nu - (P + \Pi) \Delta^{\mu\nu} + \pi^{\mu\nu},
@@ -423,7 +422,7 @@ Although these details are somewhat mundane, they are critically important to th
 
 \subsection{Particlization and Boltzmann transport}
 
-We evolve the system hydrodynamically down to a pre-specified switching isotherm $T_{sw}$ at which point the medium is converted into particles using the Cooper-Frye formula \cite{PhysRevD.10.186}
+We evolve the system hydrodynamically down to a pre-specified switching isotherm $\Tsw$ at which point the medium is converted into particles using the Cooper-Frye formula \cite{PhysRevD.10.186}
 \begin{equation}
   \label{cooper-frye}
   E \frac{dN_i}{d^3p} = \frac{g_i}{(2\pi)^3} \int_\Sigma f_i(x, p)\, p^\mu\, d^3\sigma_\mu,
@@ -584,67 +583,14 @@ where $\Delta\yv = \yv_m(\xv) - \yv_e$ is the discrepancy of the model and exper
 For the prior $P(H_\xv)$, we specify ranges, i.e.\ minimum and maximum values, for each parameter which are listed in Table~\ref{tab:design}.
 We assume the prior distribution is constant and nonzero within each specified range and zero otherwise.
 The selected parameter ranges are intentionally wide to avoid clipping the calibrated posterior; for example, a previous analysis of the \trento\ model \cite{Bernhard:2016tnd} found $p \sim 0$, but we use a prior range $p \in [-1, 1]$ to account for differences in the present model, e.g.\ nucleon substructure, which could modify its posterior.
-Several of the model parameters require special care and are reparametrized accordingly:
 
-\begin{figure}
-  \begin{tikzpicture}
-    \draw[dashed] (0,0) circle (1.6cm);
-    \foreach \theta in {60, 180, 300}{
-      \draw ({\theta}:.85) circle (.73cm);
-    }
-    \coordinate (a) at (0, 0);
-    \coordinate (b) at (.8, 1.385);
-    \coordinate (c) at (.425, -.736);
-    \coordinate (d) at (-1.58, 0);
-    \coordinate (e) at (-.85, 0);
-    \draw[<->] (a) -- (b) node[midway, xshift=-1ex, yshift=.8ex]{$w$};
-    \draw[<->] (a) -- (c) node[midway, xshift=1ex, yshift=.8ex]{$r$};
-    \draw[<->] (d) -- (e) node[midway, yshift=1ex]{$v$};
-  \end{tikzpicture}
-  \caption{
-    \label{fig:nucleon_schematic}
-    Schematic illustrating the constituent sampling radius $r$, constituent width $v$, and nucleon width parameter $w = \sqrt{r^2 + v^2}$ for a nucleon with $n_c=3$ constituents.
-  }
-\end{figure}
-
-\begin{itemize}[leftmargin=1\parindent]
-  \item
-    The constituent fluctuations, modeled by the gamma random weights $\gamma_i$ in Eq.~\eqref{eq:fluctuated_thick}, generate overall nucleon fluctuations which are suppressed by the number of constituents $n_c$ inside the nucleon.
-    The observed nucleon fluctuation variance falls like $1 / n_c$ which means the natural range for the constituent fluctuations is larger when the number of constituents is larger and \emph{vice versa}.
-    We therefore reparametrize the constituent fluctuations using the standard deviation of the resulting nucleon fluctuations
-    \begin{equation}
-      \sigma_\mathrm{fluct} = 1 / \sqrt{k\, n_c},
-    \end{equation}
-    where $k$ is the shape parameter of the gamma distribution used to fluctuate each individual constituent.
-  \item
-    In Sec.~\ref{sec:initial_state} we parametrized nucleon substructure using three degrees of freedom:
-    \begin{enumerate*}[label=(\roman*)]
-      \item a parameter $v$ for the Gaussian width of each constituent,
-      \item a parameter $r$ for the Gaussian width of the radial distribution used to sample the constituent centers, and
-      \item a parameter $n_c$ to vary the number of constituents inside the nucleon.
-    \end{enumerate*}
-    In the limit $n_c \to \infty$, the composite nucleon's root-mean-square (RMS) radius is simply the convolution of its sampling radius $r$ and constituent width $v$ which add together in quadrature
-    \begin{equation}
-      \lim_{n_c \to\infty} r_\mathrm{RMS}\{\rho\} = \sqrt{r^2 + v^2}.
-    \end{equation}
-    We therefore choose to reparametrize the sampling radius $r$ in terms of a new variable
-    \begin{equation}
-      \label{eq:nucleon_width}
-      w = \sqrt{r^2 + v^2},
-    \end{equation}
-    which approximates the RMS radius of the nucleon when the number of sampled constituents is large (see Fig.~\ref{fig:nucleon_schematic} for an example proton).
-    We thus call $w$ a nucleon ``width'', although for smaller numbers of constituents, the \emph{actual} RMS radius of our sampled nucleons can be significantly smaller than our width parameter $w$ due to fluctuations in the nucleon's center of mass, and hence one should account for the difference when discussing the nucleon's posterior RMS radius.
-  \item
-    Equation~\eqref{eq:nucleon_width} requires the nucleon width to be larger than the constituent width, i.e. $w > v$, lest the sampling radius $r$ turn imaginary, and thus we cannot vary the nucleon width $w$ and the constituent width $v$ independently.
-    We therefore reparametrize the constituent width $v$ using a new variable $\X$ to interpolate between minimum and maximum allowed values:
-    \begin{equation}
-      \label{eq:struct_param}
-      v = v_\mathrm{min} + \X (v_\mathrm{max} - v_\mathrm{min}).
-    \end{equation}
-    Here we choose a minimum constituent width $v_\mathrm{min} = 0.2$~fm determined by computational limits and a maximum width $v_\mathrm{max} = w$ equal to the nucleon width.
-    Thus for $\X=0$, the nucleons consist of small, distinct hot spots, whereas for $\X=1$ the nucleon is a single Gaussian blob of width $w$.
-    The parameter $\X$ thus varies the granularity of the nucleon while keeping the number of constituents $n_c$ and approximate size of the nucleon $w$ fixed.
-\end{itemize}
+The constituent fluctuations, modeled by the gamma random weights $\gamma_i$ in Eq.~\eqref{eq:fluctuated_thick}, generate overall nucleon fluctuations which are suppressed by the number of constituents $n_c$ inside the nucleon.
+The observed nucleon fluctuation variance falls like $1 / n_c$ which means the natural range for the constituent fluctuations is larger when the number of constituents is larger and \emph{vice versa}.
+We therefore reparametrize the constituent fluctuations using the standard deviation of the resulting nucleon fluctuations
+\begin{equation}
+  \sigma_\mathrm{fluct} = 1 / \sqrt{k\, n_c},
+\end{equation}
+where $k$ is the shape parameter of the gamma distribution used to fluctuate each individual constituent.
 
 \subsection{Observables}
 \label{sec:observables}
@@ -687,23 +633,18 @@ When calculating these observables, we generate \order{4} minimum-bias events at
 
 However, for some observables such as $p$-Pb mean $p_T$ \cite{Abelev:2013bla} and flow cumulants $\vnk{n}{k}$ \cite{Chatrchyan:2013nka}, the experiments use a special high-multiplicity trigger to select rare, ultra-central events according to the number of charged particles produced or detector tracks offline.
 These high-multiplicity bins are too selective for our modest minimum-bias event sample, and so a different procedure is required.
-We exploit, for this purpose, the approximate correspondence
-\begin{equation}
-  \label{eq:bin_equiv}
-  \ntrk \sim \nch \propto N_\text{parton}
-\end{equation}
-between each event's initial secondary-parton density ${N_\text{parton} = \int d^2x\,n(\xv)}$ in Eq.~\eqref{energy-momentum} and its final-state event activity, characterized by $\nch$ or $\ntrk$ \cite{Abelev:2013bla, Chatrchyan:2013nka}.
+We exploit, for this purpose, the approximate monotonic relationship between each event's initial energy density $dE/d\eta_s$ and its final charged-particle density $d\ntrk/d\eta_s \sim d\nch/d\eta_s$ at midrapidity \cite{Abelev:2013bla, Chatrchyan:2013nka}.
 
 Consider, for example, an experimental multiplicity bin $(\nch^\text{low}, \nch^\text{high})$ with some kinematic cuts on $p_T$ and $\eta$.
-We rescale this bin by the average multiplicity $\langle \nch \rangle$ of the corresponding minimum-bias event sample, i.e.\
+We first rescale this bin by the average charged-particle multiplicity $\langle \nch \rangle$ of the full minimum-bias event sample,
 \begin{equation}
-  (\nch^\text{low}, \nch^\text{high}) \rightarrow (\nch^\text{low} / \langle \nch \rangle,\, \nch^\text{high} / \langle \nch \rangle)
+  (\nch^\text{low}, \nch^\text{high}) \rightarrow (\nch^\text{low} / \langle \nch \rangle,\, \nch^\text{high} / \langle \nch \rangle),
 \end{equation}
 in order to reexpress each bin edge as a unitless variable.
-These rescaled bins are then used to select initial condition events using the equivalence \eqref{eq:bin_equiv}:
+These rescaled bins are then used to select initial condition events according to their midrapidity energy density:
 \begin{equation}
   \label{eq:mult_trigger}
-  \left (\frac{N^\text{low}_\text{parton}}{\langle N_\text{parton} \rangle}, \frac{N^\text{high}_\text{parton}}{\langle N_\text{parton} \rangle} \right) \leftrightarrow \left (\frac{\nch^\text{low}}{\langle \nch \rangle}, \frac{\nch^\text{high}}{\langle \nch \rangle} \right ).
+  \left (\frac{(dE/d\eta_s)_\text{low}}{\langle dE/d\eta_s \rangle}, \frac{N^\text{high}_\text{parton}}{\langle N_\text{parton} \rangle} \right) \leftrightarrow \left (\frac{\nch^\text{low}}{\langle \nch \rangle}, \frac{\nch^\text{high}}{\langle \nch \rangle} \right ).
 \end{equation}
 
 Finally, we mimic the method used by experiment and apply \eqref{eq:mult_trigger} to select rare high-multiplicity events from a continuous stream of minimum-bias \trento\ events satisfying the correct relative multiplicity bin edges.

@@ -2509,7 +2509,7 @@ def posterior_proton_shape():
         'sampling_radius', 'parton_number', 'parton_width'
     ).T
 
-    fig = plt.figure(figsize=figsize(.5, aspect=1))
+    fig = plt.figure(figsize=figsize(.5, aspect=.833))
     ax = plt.gca()
 
     plt.hist2d(sampling_radius, parton_width, bins=100, cmap=plt.cm.Blues)

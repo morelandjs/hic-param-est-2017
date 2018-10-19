@@ -29,8 +29,6 @@ import numpy as np
 
 from . import cachedir, parse_system
 
-import matplotlib.pyplot as plt
-
 
 """
 Remove outlier design points. These points are near the edge of the
@@ -38,13 +36,9 @@ design and produce far too few particles to be physically reasonable.
 
 """
 bad_points = [
-    129, 392, 143, 273, 401, 276, 405, 153, 156, 285, 414, 159, 162, 418, 163,
-    421, 422, 296, 298, 429, 301, 308, 183, 184, 312, 442, 446, 319, 451, 453,
-    326, 199, 457, 330, 459, 460, 461, 334, 203, 464, 466,  83, 211, 338, 471,
-    472, 473, 346, 223, 355, 357, 360, 234, 363, 492, 107, 236, 367, 235, 498,
-    115, 242, 376, 249, 378
+    129, 162, 418, 451, 422, 199, 360, 234, 330, 363, 460, 461, 492, 273,
+    466, 498, 183, 249, 346, 319
 ]
-
 
 
 def generate_lhs(npoints, ndim, seed):
@@ -174,32 +168,39 @@ class Design:
         )
 
         # Version 1 of the manuscript parametrized nucleon substructure using
-        # 'nucleon_width' and 'nucleon_structure' parameters. In v2 of the
-        # manuscript, I reverted to a 'sampling_radius' and 'constituent_width'.
+        # 'nucleon_width' and 'nucleon_structure' parameters. In version 2 of the
+        # manuscript, I revert to a 'sampling_radius' and 'constituent_width'.
         # These new parameters are more physical and easier to understand.
-        self.array[:, 5] = .2 + self.array[:, 5]*(self.array[:, 3] - .2)
-        self.array[:, 3] = np.sqrt(self.array[:, 3]**2 - self.array[:, 5]**2)
-
-        design_changes = [
-            (3, 'sampling_radius', r'$r\ [\mathrm{fm}]$', (0.0, 1.2)),
-            (5, 'parton_width', r'$v\ [\mathrm{fm}]$', (0.2, 1.2))
+        nucleon_width, parton_struct = [
+            self.array[:, self.keys.index(k)]
+            for k in ('nucleon_width', 'parton_struct')
         ]
 
-        for index, key, label, (range_low, range_high) in design_changes:
-            self.keys[index] = key
-            self.labels[index] = label
-            self.range[index] = (range_low, range_high)
-            self.min[index] = range_low
-            self.max[index] = range_high
+        parton_width = .2 + parton_struct*(nucleon_width - .2)
+        sampling_radius = np.sqrt(nucleon_width**2 - parton_width**2)
 
-        # drop bad points
-        keep = [n not in bad_points for n in range(npoints)]
-        self.array = self.array[keep]
+        design_changes = [
+            ('nucleon_width', 'sampling_radius', sampling_radius, r'$r\ [\mathrm{fm}]$', (0.0, 1.2)),
+            ('parton_struct', 'parton_width', parton_width, r'$v\ [\mathrm{fm}]$', (0.2, 1.2))
+        ]
+
+        for key_old, key_new, points, label, (low, high) in design_changes:
+            index = self.keys.index(key_old)
+            self.keys[index] = key_new
+            self.array[:, index] = points
+            self.labels[index] = label
+            self.range[index] = (low, high)
+            self.min[index] = low
+            self.max[index] = high
 
         # convert constituent number to an integer and correct range
-        index = [i for i, k in enumerate(self.keys) if k == 'parton_number'][0]
+        index = self.keys.index('parton_number')
         self.array[:, index] = np.floor(self.array[:, index])
         self.range[index] = (1, 9)
+
+        # drop bad design points
+        keep = [n not in bad_points for n in range(npoints)]
+        self.array = self.array[keep]
 
         self.points = list(itertools.compress(self.points, keep))
         logging.debug(

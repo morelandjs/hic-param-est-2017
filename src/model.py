@@ -160,7 +160,7 @@ class ModelData:
             logging.debug('loading %s', f)
             d = np.fromfile(str(f), dtype=self.dtype)
             d.sort(order='dNch_deta')
-            return (f.stem, d)
+            return (f.stem, correct_yield(d))
 
         self.design_events = [load_events(f) for f in files]
         self.system = system
@@ -224,7 +224,7 @@ class ModelData:
                 return lambda events: flow.Cumulant(
                     events['flow'][detector]['N'],
                     *events['flow'][detector]['Qn'].T[1:]
-                ).flow(*nk, imaginary='zero')
+                ).flow(*nk, imaginary='negative')
 
             if obs.startswith('sc'):
                 mn = obs_stack.pop()
@@ -244,8 +244,6 @@ class ModelData:
             """
             trigger = events['trigger']
             minbias = (0, float('inf'))
-
-            events = correct_yield(events)
 
             if bin_type == 'cent':
                 """

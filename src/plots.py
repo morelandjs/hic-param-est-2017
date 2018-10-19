@@ -1723,7 +1723,7 @@ def validation_data(system, n_splits=20):
     """
     design = Design(system)
     kf = KFold(n_splits=n_splits)
-    npc = {'pPb5020': 7, 'PbPb5020': 8}[system]
+    npc = {'pPb5020': 4, 'PbPb5020': 8}[system]
 
     mean_folds = []
     cov_folds = []
@@ -2280,6 +2280,8 @@ def _diag_emu(system=default_system, pcs=None, params=None, label_all=True):
             if label_all or ax.is_first_col():
                 ax.set_ylabel('PC {}'.format(pc + 1))
 
+            ax.set_ylim(-4, 4)
+
     set_tight(fig, w_pad=.5, h_pad=.25)
 
 
@@ -2358,16 +2360,6 @@ def grid_error():
 
     set_tight(fig)
 
-@plot
-def energy_vs_yield():
-    fig = plt.figure(figsize=figsize(.5, aspect=1))
-
-    path = Path(workdir, 'model_output', 'map', 'PbPb5020.dat')
-    model_data = model.ModelData('PbPb5020', path)
-
-    for pt, ev in model_data.design_events:
-        x, y = [ev[k] for k in ('init_entropy', 'dNch_deta')]
-        plt.scatter(x[::1000], y[::1000])
 
 @plot
 def entropy_scaling():
@@ -2413,88 +2405,6 @@ def entropy_scaling():
     set_tight(fig)
 
 
-def rms_nucleon_width(number, radius, width, samples=10**3):
-    """
-    Find center-of-mass root-mean-square radius for an ensemble of
-    sampled protons with nucleon substructure.
-
-    """
-    # sample constituent positions
-    positions = np.random.normal(
-            scale=radius,
-            size=2*number*samples
-            ).reshape(number, 2, -1)
-
-    # recenter
-    centers = positions.mean(axis=0)
-    positions -= centers
-
-    # cartesian grid
-    r = np.arange(-4*radius, 4*radius, .2*width)
-    xx, yy = np.meshgrid(r, r)
-
-    # sum over all gaussian constituents
-    rho = np.zeros_like(r)
-    for pos in positions.T:
-        for (xi, yi) in pos.T:
-            rsq = (xx - xi)**2 + (yy - yi)**2
-            rho += np.exp(-rsq/(2*width**2)).sum(axis=0)
-
-    # return rms radius in com frame
-    return np.sqrt(np.average(r**2, weights=rho))
-
-@plot
-def rms_width():
-    R = rms_nucleon_width(3, .84, .3)
-    print(R)
-
-
-def correct_widths(number_values, width_values, struct_values):
-    """
-    This function calculates the rms width of the nucleon in its center of mass
-    frame, given the constituent number, sampling width and constituent
-    structure parameters.
-
-    """
-    design = Design(systems.pop())
-    param_ranges = dict(zip(design.keys, design.range))
-
-    width, struct = [
-        np.linspace(*param_ranges[k], 10)
-        for k in ('nucleon_width', 'parton_struct')
-    ]
-
-    nmin, nmax = param_ranges['parton_number']
-    number = list(range(nmin, nmax + 1))
-
-    cachefiles = [
-        Path(cachedir / 'nucleon' / '{0:02d}.pkl'.format(n)) for n in number
-    ]
-
-    if all([f.exists() for f in cachefiles]):
-        rms_width = {
-            n: pickle.load(open(f, 'rb'))
-            for n, f in enumerate(cachefiles, start=1)
-        }
-        parameters = zip(number_values, width_values, struct_values)
-        return [rms_width[int(n)](w, s)[0] for (n, w, s) in parameters]
-    else:
-        ncpu = multiprocessing.cpu_count()
-        for n, cachefile in enumerate(cachefiles, start=1):
-            logging.info("{} constituents".format(n))
-            args = [[n, w, s] for (w, s) in itertools.product(width, struct)]
-            rms_width = np.reshape(
-                    multiprocessing.Pool(ncpu).map(rms_nucleon_width, args),
-                    (len(width), len(struct))
-                    )
-
-            interp = interp2d(width, struct, rms_width, kind='cubic')
-            cachefile.parent.mkdir(parents=True, exist_ok=True)
-
-            with cachefile.open(mode='wb') as f:
-                pickle.dump(interp, f)
-
-
 @plot
 def posterior_proton_shape():
     """
@@ -2505,8 +2415,8 @@ def posterior_proton_shape():
 
     """
     chain = mcmc.Chain()
-    sampling_radius, parton_number, parton_width = chain.load(
-        'sampling_radius', 'parton_number', 'parton_width'
+    sampling_radius, parton_width = chain.load(
+        'sampling_radius', 'parton_width'
     ).T
 
     fig = plt.figure(figsize=figsize(.5, aspect=.833))
@@ -2514,10 +2424,6 @@ def posterior_proton_shape():
 
     plt.hist2d(sampling_radius, parton_width, bins=100, cmap=plt.cm.Blues)
 
-    #plt.annotate(
-    #    r'prior range', xy=(.5, .45), xycoords='data',
-    #    ha='center', va='center', color=offblack, rotation=45
-    #)
     plt.xlabel('Constituent sampling radius [fm]')
     plt.ylabel('Constituent width [fm]')
 
@@ -2581,8 +2487,6 @@ def trim_design_points():
             return True
         elif obs == 'dNch_deta':
             return any(y < 1)
-        elif obs == 'vnk':
-            return any(y < 0.002)
         else:
             return False
 

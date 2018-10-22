@@ -37,10 +37,16 @@
 \newcommand{\sigmaf}{\sigma_\text{fluct}}
 \newcommand{\taufs}{\tau_\text{fs}}
 \newcommand{\dmin}{d_\text{min}}
-\newcommand{\dTb}{\Delta T_\text{bulk}}
-\newcommand{\Tb}{T_\text{bulk}}
 \newcommand{\Tsw}{T_\text{switch}}
 \newcommand{\T}{\tilde{T}}
+
+\newcommand{\smin}{{(\eta/s)_\mathrm{min}}}
+\newcommand{\sslope}{{a_\mathrm{shear}}}
+\newcommand{\scrv}{{c_\mathrm{shear}}}
+\newcommand{\bmax}{{(\zeta/s)_\mathrm{max}}}
+\newcommand{\bloc}{{T_\text{bulk}}}
+\newcommand{\bwidth}{{\Delta T_\text{bulk}}}
+
 \newcommand{\bv}{\mathbf b}
 \newcommand{\xv}{\mathbf x}
 \newcommand{\yv}{\mathbf y}
@@ -159,7 +165,7 @@ The proton-proton overlap function
   \label{eq:tpp}
   T_{pp}(b) = \int dx\, dy \int dz_1\, \rho_A(x, y, z_1) \int dz_2\, \rho_B(x - b, y, z_2),
 \end{equation}
-describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$, where coordinate $(x, y)$ lies in the transverse plane and $z$ is parallel to the beam axis.
+describes the eikonal overlap of the two proton wave packets at fixed impact parameter $b$, where coordinate $(x, y)$ lies in the transverse plane and $z_{1,2}$ is parallel to the beam axis.
 Here we assume that each proton is comprised of smaller constituents---e.g.\ valence quarks, sea quarks, and small-x gluons---which may collide to produce secondary particles and contribute to the observed inelastic proton-proton cross section.
 
 Within a picture of independent pairwise collisions between the constituents, a Glauber model model may be used to calculate the probability $P_\mathrm{coll}$ that the two protons collide inelastically at impact parameter $b$. In the limit when the number of constituents is large, it yields the particularly simple form
@@ -222,7 +228,7 @@ where $\xv_{A,B}$ is the position of each proton, and $r$ is a parameter which v
 As a matter of convenience, we sample the proton positions \emph{before} determining the constituent positions.
 This leads to small discrepancies between the designated proton positions $\xv_{A,B}$ and the actual position of each proton's center-of-mass, owing to fluctuations in the constituent positions $\xv_i$.
 The sampling radius $r$ should thus be interpreted with care.
-It is \emph{not} the root-mean-square radius of the sampled nucleons.
+It is \emph{not} the Gaussian width of the sampled nucleons in their center-of-mass frame.
 
 The two protons $A$, $B$ are assigned a random impact parameter $\bv$, and Eq.~\eqref{eq:pcoll} is used to sample their inelastic collision probability $P_\mathrm{coll}(b)$.
 Note, this proton-proton inelastic collision probability has no direct knowledge of the individual constituent positions; it is only indirectly sensitive to their positions through the density $\rho_{A, B}$.
@@ -265,7 +271,7 @@ A natural first guess for this mapping is an arithmetic mean,
 \end{equation}
 equal to a participant or ``wounded nucleon'' model for initial energy deposition up to meaningless factor of two in the overall normalization constant.
 This wounded nucleon scaling was in fact one of the first such mappings used as a proxy for initial particle production in relativistic heavy-ion collisions \cite{Bialas:1976ed}.
-It was subsequently realized, however, that the wounded nucleon model predicts the wrong scaling for charged particle production as a function of collision centrality \cite{Kharzeev:2000ph} and hence the wrong scaling for initial energy deposition at midrapidity as a function of participant thicknesses $\T_A$ and $\T_B$\footnote{Typically an entropy density $s$ is used, but the shortcomings of the wounded nucleon model are qualitatively the same when depositing energy.}.
+It was subsequently realized, however, that the wounded nucleon model predicts the wrong scaling for charged particle production as a function of collision centrality \cite{Kharzeev:2000ph} and hence the wrong scaling for initial midrapidity energy\footnote{Typically an entropy density $s$ is used, but the shortcomings of the wounded nucleon model are qualitatively the same the energy density $e$ is used instead.} deposition as a function of participant density.
 
 A simple remedy is to replace the arithmetic mean of the wounded nucleon model with a more flexible parametrization
 \begin{equation}
@@ -295,7 +301,7 @@ The present study, meanwhile, uses a pre-equilibrium free streaming stage to est
 Strictly speaking, the system's entropy is ill defined prior to thermalization while the system free streams.
 We therefore reinterpret the quantity produced by the \trento\ model as an energy density $e(\xv_\perp, \eta_s=0, \tau_0)$ and free-stream this quantity to the hydrodynamic starting time $\tau_\text{hydro} \equiv \taufs$.
 This assumes, of course, that the model's parametrization for entropy density is also suitable as a parametrization for the energy density.
-To this point, we note that the arguments for the generalized mean ansatz are quite general \cite{Moreland:2015oya}, and that the energy density $dE/d\eta_s$ and entropy density $dS/d\eta_s$ share many similar qualities.
+To this point, we note that the arguments for the generalized mean ansatz are quite general \cite{Moreland:2014oya}, and that the energy density $dE/d\eta_s$ and entropy density $dS/d\eta_s$ share many similar qualities.
 For example, both are approximately conserved at midrapidity, and both scale approximately linearly with the final charged-particle density $d\nch/d\eta_s$.
 We thus expect the parametrization to be suitable for either quantity.
 
@@ -414,15 +420,15 @@ We parametrize the temperature dependence of the QGP viscosities in order to mar
 For the specific shear viscosity $\eta/s$, we use a modified linear ansatz
 \begin{equation}
   \label{eq:shear_viscosity}
-  (\eta/s)(T) = (\eta/s)_\mathrm{min} + (\eta/s)_\mathrm{slope}\cdot(T - T_c)\cdot(T/T_c)^{(\eta/s)_\mathrm{crv}},
+  (\eta/s)(T) = \smin + \sslope \cdot(T - T_c)\cdot \left ( \frac{T}{T_c} \right)^\scrv,
 \end{equation}
-where $\eta/s$ min, slope, and curvature are tunable parameters, and $T_c=0.154$~GeV is the pseudocritical transition temperature of the HotQCD EoS.
+where $\smin$, $\sslope$, and $\scrv$ are tunable parameters, and $T_c=0.154$~GeV is the pseudocritical transition temperature of the HotQCD EoS.
 While for the specific bulk viscosity $\zeta/s$, we use an unnormalized Cauchy distribution
 \begin{equation}
   \label{eq:bulk_viscosity}
-  (\zeta/s)(T) = \frac{(\zeta/s)_\text{max}}{1 + \left(\dfrac{T - T_\text{bulk}}{\Delta T_\text{bulk}}\right)^2},
+  (\zeta/s)(T) = \frac{\bmax}{1 + \left(\dfrac{T - \bloc}{\bwidth}\right)^2},
 \end{equation}
-described by a tunable maximum $(\zeta/s)_\text{max}$, width $\dTb$, and location parameter $\Tb$.
+described by a tunable maximum $\bmax$, temperature width $\bwidth$, and temperature location parameter $\bloc$.
 Figure~\ref{fig:viscosity_dof} shows several of the possible curves parametrized by Eqs.~\eqref{eq:shear_viscosity} and \eqref{eq:bulk_viscosity}, although many more are possible.
 
 The aforementioned hydrodynamic equations are solved numerically using the boost-invariant VISH2+1 viscous hydrodynamics code \cite{Song:2007ux, Shen:2014vra}.
@@ -548,20 +554,20 @@ where $\Delta\yv = \yv(\xv) - \yv_e$ is the discrepancy of the model and experim
   \begin{tabular}{lll}
     Parameter         & Description                        & Range             \\
     \paddedhline
-    Norm              & Normalization factor                 & 9--28           \\
-    $p$               & Entropy deposition parameter         & $-1$ to $+1$    \\
+    Norm              & Normalization factor                 & 9--28 GeV       \\
+    $p$               & Energy deposition parameter         & $-1$ to $+1$     \\
     $\sigmaf$         & Nucleon fluctuation std.\ dev.\      & 0--2            \\
     $r$               & Constituent sampling radius          & 0--1.2 fm       \\
     $n_c$             & Number of nucleon constituents       & 1--9            \\
     $v$               & Constituent width                    & 0.2--1.2 fm     \\
     $\dmin$           & Minimum inter-nucleon distance       & 0--1.7 fm       \\
     $\taufs$          & Free-streaming time                  & 0.1--1.5 \fmc   \\
-    $\eta/s$ min      & Minimum value of $\eta/s$ (at $T_c$) & 0--0.2          \\
-    $\eta/s$ slope    & Slope of $\eta/s$ above $T_c$        & 0--8 GeV$^{-1}$ \\
-    $\eta/s$ crv      & Curvature of $\eta/s$ above $T_c$    & $-1$ to $+1$    \\
-    $\zeta/s$ max     & Maximum value of $\zeta/s$           & 0--0.1          \\
-    $\dTb$            & Width of $\zeta/s$ peak              & 0--0.1 GeV      \\
-    $\Tb$             & Temperature of $\zeta/s$ maximum     & 150--200 MeV    \\
+    $\smin$           & Minimum value of $\eta/s$ (at $T_c$) & 0--0.2          \\
+    $\sslope$         & Slope of $\eta/s$ above $T_c$        & 0--8 GeV$^{-1}$ \\
+    $\scrv$           & Curvature of $\eta/s$ above $T_c$    & $-1$ to $+1$    \\
+    $\bmax$           & Maximum value of $\zeta/s$           & 0--0.1          \\
+    $\bwidth$         & Width of $\zeta/s$ peak              & 0--0.1 GeV      \\
+    $\bloc$           & Temperature of $\zeta/s$ maximum     & 150--200 MeV    \\
     $\Tsw$            & Switching/particlization temp.       & 135--165 MeV    \\
   \end{tabular}
   \end{ruledtabular}
@@ -642,11 +648,11 @@ However, for some observables such as $p$-Pb mean $p_T$ \cite{Abelev:2013bla} an
 These high-multiplicity bins are too selective for our modest minimum bias event sample, and so a different procedure is required.
 We exploit, for this purpose, the approximate monotonic relation between each event's initial transverse energy density,
 \begin{equation}
-  \frac{dE_T}{d\eta_s} \bigg\vert_{\eta_s=0} = \tau_0 \int d^2x_\perp e(\xv_\perp, \eta_s=0, \tau_0).
+  \frac{dE_T}{d\eta_s} \bigg\vert_{\eta_s=0} = \tau_0 \int d^2x_\perp e(\xv_\perp, \eta_s=0, \tau_0),
 \end{equation}
 and its final charged-particle density $(d\nch/d\eta) \vert_{\eta=0}$ at midrapidity.
 
-Consider, for example, a single multiplicity bin $[\nch^\text{low}, \nch^\text{high}]$ which selects events from a minimum bias event sample with $p_T^\text{min} < p_T < p_T^\text{max}$ and $|\eta| < \Delta \eta$.
+Consider, for example, a single multiplicity bin $[\nch^\text{low}, \nch^\text{high}]$ which selects events from a minimum bias event sample with $p_T^\text{min} < p_T < p_T^\text{max}$ and $|\eta| < \eta^\text{max}$.
 Let $\langle\nch\rangle$ denote the average charged-particle multiplicity of these events.
 We first rescale the experimental multiplicity bin edges,
 \begin{equation}
@@ -658,7 +664,7 @@ These bin edges are then associated with a pair of transverse energy bin edges,
   \label{eq:mult_trigger}
   \left [\frac{E_T^\text{min}}{\langle E_T \rangle}, \frac{E_T^\text{max}}{\langle E_T \rangle} \right] \leftrightarrow \left [\frac{\nch^\text{low}}{\langle \nch \rangle}, \frac{\nch^\text{high}}{\langle \nch \rangle} \right ],
 \end{equation}
-where $E_T \propto (dE_T/d\eta_s) \vert_{\eta_s=0}$ is the midrapidity transverse energy of a single event, and $\langle E_T \rangle$ is the corresponding average over the minimum bias event sample.
+where $E_T \propto (dE_T/d\eta_s) \vert_{\eta_s=0}$ is the midrapidity transverse energy of a single event in the desired kinematic range, and $\langle E_T \rangle$ is the corresponding average transverse energy over the full minimum bias event sample.
 
 Finally, we mimic the method used by experiment and apply Eq.~\eqref{eq:mult_trigger} to select rare high-multiplicity events from a continuous stream of minimum-bias \trento\ events satisfying the correct bin edges.
 This of course means that, in addition to running a large sample of minimum-bias events for centrality binned observables, we must also generate (much like experiment) a separate sample of multiplicity triggered events.
@@ -821,14 +827,14 @@ Evidently the $p$-Pb model predictions are far more sensitive to modeling uncert
       \multicolumn{2}{c}{Initial condition / Pre-eq}     & \multicolumn{2}{c}{QGP medium}              \\
       \cmidrule(r){1-2}                                    \cmidrule(l){3-4}
       \addlinespace[.4ex]
-      Norm       & \est{20.0}{2.4}{2.4}          & $\eta/s$ min     & \est{0.10}{0.07}{0.07}            \\[1.1ex]
-      $p$        & \est{0.013}{0.155}{0.144}     & $\eta/s$ slope   & \est{1.11}{1.11}{1.42} GeV$^{-1}$ \\[1.1ex]
-      $\sigmaf$  & \est{0.93}{0.27}{0.26}        & $\eta/s$ crv     & \est{-0.14}{0.86}{0.81}           \\[1.1ex]
-      $r$        & \est{0.88}{0.23}{0.25} fm     & $\zeta/s$ max    & \est{0.026}{0.026}{0.033}         \\[1.1ex]
-      $n_c$      & \est{6.3}{3.1}{2.7}           & $\dTb$           & \est{0.033}{0.033}{0.048} GeV     \\[1.1ex]
-      $v$       & \est{0.51}{0.18}{0.26} fm      & $\Tb$            & \est{0.176}{0.020}{0.024} GeV     \\[1.1ex]
-      $\dmin$    & \est{1.13}{0.51}{0.55} fm     & $\Tsw$           & \est{0.149}{0.013}{0.014} GeV     \\[1.1ex]
-      $\taufs$   & \est{0.37}{0.27}{0.33} \fmc   & \\
+      Norm       & \est{20.0}{2.5}{2.6} GeV      & $\smin$     & \est{0.08}{0.07}{0.07}            \\[1.1ex]
+      $p$        & \est{0.002}{0.180}{0.157}     & $\sslope$   & \est{1.24}{1.24}{1.46} GeV$^{-1}$ \\[1.1ex]
+      $\sigmaf$  & \est{0.91}{0.33}{0.32}        & $\scrv$     & \est{-0.09}{0.91}{0.80}           \\[1.1ex]
+      $r$        & \est{0.88}{0.23}{0.26} fm     & $\bmax$     & \est{0.026}{0.026}{0.032}         \\[1.1ex]
+      $n_c$      & \est{6.0}{3.4}{3.0}           & $\bwidth$   & \est{0.035}{0.035}{0.043} GeV     \\[1.1ex]
+      $v$        & \est{0.52}{0.20}{0.28} fm     & $\bloc$     & \est{0.174}{0.024}{0.020} GeV     \\[1.1ex]
+      $\dmin$    & \est{1.12}{0.49}{0.58} fm     & $\Tsw$      & \est{0.149}{0.014}{0.013} GeV     \\[1.1ex]
+      $\taufs$   & \est{0.47}{0.37}{0.55} \fmc   & \\
       \addlinespace[.4ex]
       \bottomrule
     \end{tabular}
@@ -875,11 +881,11 @@ For example, the fictitious parameter estimate $q=2.45_{-0.15}^{+0.20}$ reports 
   }
 \end{figure}
 
-The \trento\ normalization factor ${\text{Norm} = 20.2^{+2.2}_{-2.2}}$ and energy deposition parameter $p=0.013^{+0.144}_{-0.155}$ are well constrained by the present analysis.
+The \trento\ normalization factor ${\text{Norm} = 20.0^{+2.6}_{-2.5}}$ and energy deposition parameter $p=0.002^{+0.157}_{-0.180}$ are well constrained by the present analysis.
 Moreover, Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb} show that the model predictions using these values nicely describe both the $p$-Pb and Pb-Pb calibration observables.
 While it would not be surprising to fit one or two of these observables using a narrow range of parameter values, the quality of the combined fit (more on this later) and the number of observables described is highly non-trivial.
 For example, consider the ratio of the $p$-Pb charged-particle yield to the Pb-Pb charged-particle yield.
-As the energy deposition parameter $p$ trends toward positive (negative) infinity, particle production scales like the maximum (minimum) of local nuclear overlap density.
+As the energy deposition parameter $p$ trends toward positive (negative) infinity, particle production scales like the maximum (minimum) of the two nuclear thickness functions.
 This has a much stronger effect on the highly asymmetric $p$-Pb system than it does on the Pb-Pb system; hence the parameter $p$ strongly affects the ratio of the two average yields.
 
 It is therefore compelling that $p \sim 0$ correctly describes the charged-particle yield $d\nch/d\eta$ of both systems, while simultaneously describing the centrality dependence of $\vnk{n}{k}$, an observable which is also known to strongly depend on $p$ \cite{Bernhard:2018hnz}.
@@ -902,13 +908,12 @@ Evidently, both prescriptions prefer geometric mean scaling, but each prescripti
   }
 \end{figure}
 
-Continuing down the diagonal in Fig.~\ref{fig:posterior}, we see that the constituent sampling radius $r=0.88_{-0.23}^{+0.25}$~fm, and the constituent width $v=0.51_{-0.18}^{+0.26}$~fm.
-Their joint posterior distribution is shown in Fig.~\ref{fig:posterior_proton_shape}, illustrating the constraining power of the analysis.
-Recall that the parameter $r$ controls the dispersion of the constituent positions, while $v$ varies each constituent's Gaussian width.
-We emphasize that $r$ is model parameter, not a physical one.
-It describes the radius of the constituent position sampling distribution, \emph{not} the average proton radius, a quantity that's measured in the proton's center-of-mass frame.
-For example, when $n_c=1$, our model describes each nucleon as a single Gaussian of width $v$, yet the parameter $r$ could nevertheless assume any value within its prior.
-Despite this idiosyncrasy, one can easily calculate a physical nucleon width \emph{ex post facto}, given specific values for $r$, $v$, and $n_c$.
+Continuing down the diagonal in Fig.~\ref{fig:posterior}, we see that the constituent sampling radius $r=0.88_{-0.23}^{+0.26}$~fm, and the constituent width $v=0.52_{-0.20}^{+0.28}$~fm.
+Figure~\ref{fig:posterior_proton_shape} shows the joint posterior distribution of both parameters, illustrating the constraining power of the Bayesian analysis.
+While the sampling radius $r$ varies the size of the nucleons, we caution that its specific meaning should be interpreted with care; it specifies a computational \emph{sampling} radius, not a physical nucleon width.
+Consider, for instance, a single nucleon with $n_c = 2$ constituents.
+If the two constituents positions land on the same side of the nucleon, the effective nucleon size will be smaller than the Gaussian sampling radius $r$.
+Despite this idiosyncrasy, one can easily define a physical nucleon width in the nucleon center-of-mass frame \emph{ex post facto}, given specific values for the sampling radius $r$, constituent width $v$, and constituent number $n_c$.
 
 \begin{figure*}
   \includegraphics{region_shear_bulk}
@@ -920,8 +925,11 @@ Despite this idiosyncrasy, one can easily calculate a physical nucleon width \em
   }
 \end{figure*}
 
-For example, using the MAP estimate $r=0.88$~fm, $n_c=6$, and $v=0.51$~fm, we obtain a Gaussian nucleon width $w = 0.88$~fm, corresponding to a three-dimensional root-mean-square radius $R_p = \sqrt{3} w = 1.52$~fm.
-This estimate is consistent with the nucleon width extracted by a similar Bayesian analysis lacking nucleon substructure \note.
+For example, using the median parameter estimates $r=0.88$~fm, $n_c=6$, and $v=0.52$~fm, we can generate a large ensemble of random nucleon configurations and average their density in each nucleon's center-of-mass frame.
+This produces an ensemble-averaged nucleon density $\langle \rho \rangle$ of Gaussian width $w = 0.96$~fm, i.e.\
+
+obtain an ensemble-averaged Gaussian nucleon width $w = 0.96$~fm, corresponding to a three-dimensional root-mean-square radius $R_p = \sqrt{3} w = 1.66$~fm.
+This estimate is consistent with the larger nucleon width extracted by a similar Bayesian analysis lacking nucleon substructure \cite{Bernhard:2018hnz}.
 This is perhaps the single largest difference between our work and the conclusions of recent saturation-based calculations which constrained the event-by-event fluctuations of the proton using a color-dipole picture of vector meson production \cite{Mantysaari:2016ykx, Mantysaari:2016jaz}.
 Those studies find that the measured coherent and incoherent $J/\Psi$ spectra at HERA prefer a compact gluon distribution inside each nucleon, with a Gaussian width $w_g \approx 0.4$~fm which is roughly \emph{half} the Gaussian width preferred by our analysis.
 Evidently, it may be necessary to place an informative prior on our nucleon substructure parameters in order to resolve the apparent tension between our parameter values and those needed to describe DIS measurements at HERA.
@@ -941,7 +949,7 @@ The only modeling difference is the inclusion of nucleon substructure in the pre
 Several calibration details, however, are different between the two analyses.
 This work used a modest number of $p$-Pb and Pb-Pb observables at $\sqrts=5.02$~TeV (limited by availability), whereas Ref.~\cite{Bernhard:2018hnz} calibrated on a much larger number of Pb-Pb observables at $\sqrts=2.76$ and 5.02~TeV.
 
-The posterior free-streaming time $\taufs=0.37_{-0.27}^{+0.33}\ \fmc$ obtained in this work is significantly smaller than the previous estimate $\taufs=1.16_{-0.25}^{+0.29}\ \fmc$ quoted in Ref.~\cite{Bernhard:2018hnz}.
+The posterior free-streaming time $\taufs=0.47_{-0.37}^{+0.55}~\fmc$ obtained in this work is significantly smaller than the previous estimate $\taufs=1.16_{-0.25}^{+0.29}\ \fmc$ quoted in Ref.~\cite{Bernhard:2018hnz}.
 We point out that the present study is missing several important observables which could affect the estimated free-streaming time, e.g.\ the Pb-Pb mean $p_T$ and mean $p_T$ fluctuations at $\sqrts=5.02$~TeV.
 Nevertheless, it appears that the inclusion of nucleon substructure significantly reduces the maximum allowed free-streaming time, although more work is needed to establish if this is indeed the case.
 
@@ -964,13 +972,13 @@ The $p$-Pb data, meanwhile, does not appear to provide any unique viscous constr
     \begin{tabular}{ll@{\hspace{2em}}ll}
       \multicolumn{2}{c}{Initial condition / Pre-eq} & \multicolumn{2}{c}{QGP medium} \\
       \paddedhline
-      Norm     & 20.            & $\eta/s$ min      & 0.11           \\
-      $p$      & 0.0            & $\eta/s$ slope    & 1.6 GeV$^{-1}$ \\
-      $k$      & 0.19           & $\eta/s$ curv     & -0.29          \\
-      $n_c$    & 6              & $\zeta/s$ max     & 0.032          \\
-      $r$      & 0.81 fm        & $\dTb$            & 0.024 GeV      \\
-      $v$      & 0.43 fm        & $\Tb$             & 175 MeV        \\
-      $\dmin$  & 0.81 fm        & $\Tsw$            & 151 MeV        \\
+      Norm     & 20. GeV        & $\smin$      & 0.11           \\
+      $p$      & 0.0            & $\sslope$    & 1.6 GeV$^{-1}$ \\
+      $k$      & 0.19           & $\scrv$      & -0.29          \\
+      $n_c$    & 6              & $\bmax$      & 0.032          \\
+      $r$      & 0.81 fm        & $\bwidth$    & 0.024 GeV      \\
+      $v$      & 0.43 fm        & $\bloc$      & 175 MeV        \\
+      $\dmin$  & 0.81 fm        & $\Tsw$       & 151 MeV        \\
       $\taufs$ & 0.37 \fmc
     \end{tabular}
   \end{ruledtabular}
@@ -1101,10 +1109,10 @@ Here we summarize our key findings about the model:
     This agrees with a similar Bayesian analysis which was calibrated to Pb-Pb observables at $\sqrts=2.76$ and 5.02~TeV using a hybrid model without nucleon substructure \cite{Bernhard:2018hnz}.
     We note that our result is in significant tension with an estimate for the effective nucleon width based on the gluon distribution extracted from HERA data \cite{Rezaeian:2012ji}.
   \item
-    We obtain an estimate $v=0.47_{-0.15}^{+0.20}$~fm for the Gaussian width of the constituent hot spots inside each nucleon.
+    We obtain an estimate $v=0.52_{-0.20}^{+0.28}$~fm for the Gaussian width of the constituent hot spots inside each nucleon.
     This is considerably larger than the length scales typically associated with nucleon substructure, and it may help explain the seemingly unreasonable success of hydrodynamics in small collision systems.
   \item
-    Our posterior estimate for the pre-equilibrium free-streaming time is $\taufs=0.37_{-0.27}^{+0.33}\ \fmc$.
+    Our posterior estimate for the pre-equilibrium free-streaming time is $\taufs=0.47_{-0.37}^{+0.55}~\fmc$.
     This is significantly shorter than the estimate obtained from a similar Bayesian study in Ref.~\cite{Bernhard:2018hnz}, which reported $\taufs=1.16_{-0.25}^{+0.29}\ \fmc$.
     It is not clear whether the difference is a result of nucleon substructure or the different observables used to calibrate each analysis.
   \item
@@ -1143,7 +1151,7 @@ All software used in this work is open source:
 \medskip
 
 \begin{acknowledgments}
-  JSM thanks Berndt M\"uller, Weiyao Ke, Bj\"orn Schenke, and Heikki M\"antysaari for helpful discussions and clarifying comments.
+  JSM thanks Ulrich Heinz, Jamie Nagle, Berndt M\"uller, Weiyao Ke, Bj\"orn Schenke, and Heikki M\"antysaari for helpful discussions and clarifying comments.
   This research was completed using 6 million CPU hours provided by the National Energy Research Scientific Computing Center (NERSC), a U.S. Department of Energy Office of Science User Facility operated under Contract No. DE-AC02-05CH11231.
   JSM and SAB are supported by the U.S.\ Department of Energy Grant No.\ DE-FG02-05ER41367 and JEB by NSF Grant No.\ NSF-ACI-1550225.
 \end{acknowledgments}

@@ -706,7 +706,7 @@ def find_map():
 
     res = minimize(
         lambda x: -chain.log_posterior(full_x(x))[0],
-        x0=np.median(chain.load(*opt_params, thin=1000), axis=0),
+        x0=np.median(chain.load(*opt_params, thin=1), axis=0),
         tol=1e-8,
         bounds=[
             (a + 1e-6*(b - a), b - 1e-6*(b - a))
@@ -1200,7 +1200,7 @@ def posterior_parton_number():
     ax.fill_between(x, y, color=plt.cm.Blues(0.15), zorder=-10)
     ax.spines['left'].set_visible(False)
 
-    ax.set_xlabel('Constituent number')
+    ax.set_xlabel('Constituent number $n_c$')
     ax.set_xticks([1, 3, 5, 7, 9])
     ax.set_yticks([])
     ax.set_ylim(0, 1.01*y.max())
@@ -1241,7 +1241,7 @@ def _region(ax, name, chain, cmap=plt.cm.Blues, legend=False, title=False):
     Tc = .154
 
     samples = chain.load(
-        *['{}s_{}'.format(var, k) for k in keys], thin=100
+        *['{}s_{}'.format(var, k) for k in keys], thin=1
     )
 
     T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
@@ -1336,7 +1336,7 @@ def region_shear_bulk(cmap=plt.cm.Blues):
                 lambda T, m, w, T0: m / (1 + ((T - T0)/w)**2),
                 .08)
         ], axes):
-            samples = chain.load(*['{}s_{}'.format(var, k) for k in keys], thin=100)
+            samples = chain.load(*['{}s_{}'.format(var, k) for k in keys], thin=1)
 
             T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
 
@@ -2424,8 +2424,8 @@ def posterior_proton_shape():
 
     plt.hist2d(sampling_radius, parton_width, bins=100, cmap=plt.cm.Blues)
 
-    plt.xlabel('Constituent sampling radius [fm]')
-    plt.ylabel('Constituent width [fm]')
+    plt.xlabel('Constituent sampling radius $r$ [fm]')
+    plt.ylabel('Constituent width $v$ [fm]')
 
     ax.set_aspect('equal')
     set_tight(fig, pad=.2)

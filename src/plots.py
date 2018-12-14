@@ -246,12 +246,12 @@ def format_system(system):
     return '{} {} {}eV'.format('-'.join(proj), energy, prefix)
 
 
-def darken(rgb, amount=.5):
+def darken(color_hex, amount=.5):
     """
     Darken a color by the given amount in HSLuv space.
 
     """
-    H, S, L = hsluv.rgb_to_hsluv(rgb)
+    H, S, L = hsluv.hex_to_hsluv(color_hex)
     return hsluv.hsluv_to_rgb((H, S, (1 - amount)*L))
 
 

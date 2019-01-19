@@ -251,8 +251,9 @@ def darken(color_hex, amount=.5):
     Darken a color by the given amount in HSLuv space.
 
     """
-    H, S, L = hsluv.hex_to_hsluv(color_hex)
-    return hsluv.hsluv_to_rgb((H, S, (1 - amount)*L))
+    return color_hex
+    #H, S, L = hsluv.hex_to_hsluv(color_hex)
+    #return hsluv.hsluv_to_rgb((H, S, (1 - amount)*L))
 
 
 def obs_color_hsluv(obs, subobs):
@@ -447,6 +448,11 @@ def observables(system):
         figsize=figsize(1, aspect=.6),
     )
 
+    title = dict(
+        pPb5020=r'$p$-Pb 5.02 TeV',
+        PbPb5020=r'Pb-Pb 5.02 TeV',
+    )
+
     for (posterior, plot), ax in zip(
             itertools.product([False, True], plots), axes.flat):
 
@@ -519,14 +525,9 @@ def observables(system):
             ax.set_xlabel(plot['xlabel'][system])
             if ax.is_first_col():
                 ax.set_ylabel('Posterior samples')
-
-    title = dict(
-        pPb5020=r'$p$-Pb 5.02 TeV',
-        PbPb5020=r'Pb-Pb 5.02 TeV',
-    )
-
-    fig.suptitle(title[system], va='top')
-    set_tight(fig, rect=[0, 0, 1, .9])
+                ax.annotate(title[system], xy=(.1, .1),
+                            xycoords='axes fraction',ha='left', va='bottom')
+    set_tight()
 
 
 @plot
@@ -1322,7 +1323,7 @@ def region_shear_bulk(cmap=plt.cm.Blues):
     Tmin, Tmax = .150, .300
     Tc = .154
 
-    prj_path = Path('/home/jsm55/prj', 'mcmc', 'chain.hdf')
+    prj_path = Path('/home/morelandjs/research/chains/jonah_nature.hdf')
     energies = (mcmc.Chain(prj_path), plt.cm.Blues, .6, 'Pb-Pb 2.76, 5.02 TeV')
     nuclei = (mcmc.Chain(), plt.cm.Oranges, .25, 'p-Pb, Pb-Pb 5.02 TeV')
     handles = []
@@ -2299,7 +2300,7 @@ def diag_emu_partial():
     )
 
 
-@plot
+#@plot
 def grid_error():
     """
     Scatter plot observables calculated on a grid with grid scale = 0.2 against
@@ -2422,7 +2423,7 @@ def posterior_proton_shape():
     fig = plt.figure(figsize=figsize(.5, aspect=.833))
     ax = plt.gca()
 
-    plt.hist2d(sampling_radius, parton_width, bins=100, cmap=plt.cm.Blues)
+    plt.hist2d(sampling_radius, parton_width, bins=50, cmap=plt.cm.Blues)
 
     plt.xlabel('Constituent sampling radius $r$ [fm]')
     plt.ylabel('Constituent width $v$ [fm]')

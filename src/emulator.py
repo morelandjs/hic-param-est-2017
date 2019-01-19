@@ -74,7 +74,7 @@ class Emulator:
     pPb5020 = [
         ('dNch_deta', [None]),
         ('mean_pT', [None]),
-        ('vnk', [(2, 2), (3, 2), (4, 2)]),
+        ('vnk', [(2, 2), (3, 2)]),
     ]
 
     def __init__(self, system, npc=7, nrestarts=0, exclude_points=[]):

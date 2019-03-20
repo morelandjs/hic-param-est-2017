@@ -155,7 +155,7 @@ def plot(f):
 
 
 
-def figsize(relwidth=1, aspect=.618, refwidth=6.5):
+def figsize(relwidth=1, aspect=.618, refwidth=4.98):
     """
     Return figure dimensions from a relative width (to a reference width) and
     aspect ratio (default: 1/golden ratio).
@@ -243,7 +243,7 @@ def format_system(system):
     else:
         prefix = 'G'
 
-    return '{} {} {}eV'.format('-'.join(proj), energy, prefix)
+    return '{} {} {}eV'.format('-'.join(proj).replace('p', '$p$'), energy, prefix)
 
 
 def darken(color_hex, amount=.5):
@@ -348,7 +348,7 @@ def _observables_plots():
                 r'$dN_\mathrm{ch}/d\eta,\ dN/dy,\ dE_T/d\eta\ [\mathrm{GeV}]$'
             ),
             xlim=dict(
-                pPb5020=(0, 60),
+                pPb5020=(0, 59),
                 PbPb5020=(0, 80),
             ),
             ylim=(1e2, 1e5),
@@ -363,44 +363,30 @@ def _observables_plots():
         dict(
             title='Mean $p_T$',
             xlabel=dict(
-                pPb5020=r'$n_\mathrm{ch} / \langle n_\mathrm{ch} \rangle$',
+                pPb5020=r'$N_\mathrm{ch} / \langle N_\mathrm{ch} \rangle$',
                 PbPb5020='Centrality %'
             ),
-            ylabel=r'$\langle p_T \rangle$ [GeV]',
+            ylabel=r'$\langle p_T \rangle\ [\mathrm{GeV}]$',
             xlim=dict(
-                pPb5020=(1, 6),
+                pPb5020=(1, 6.5),
                 PbPb5020=(0, 80),
             ),
-            ylim=(0, 1.5),
+            ylim=(0, 1.65),
             subplots=[
                 ('mean_pT', None, dict(label='ch')),
-                *id_parts_plots('iden_mean_pT')
+                *id_parts_plots('iden_mean_pT'),
             ]
-        ),
-        dict(
-            title='Mean $p_T$ fluctuations',
-            xlabel=dict(
-                pPb5020=r'$n_\mathrm{ch} / \langle n_\mathrm{ch} \rangle$',
-                PbPb5020='Centrality %'
-            ),
-            ylabel=r'$\delta p_T/\langle p_T \rangle$',
-            xlim=dict(
-                pPb5020=(1, 6),
-                PbPb5020=(0, 80),
-            ),
-            ylim=(0, 0.05),
-            subplots=[('pT_fluct', None, dict())]
         ),
         dict(
             title='Flow cumulants',
             xlabel=dict(
-                pPb5020=(r'$n_\mathrm{trk}^\mathrm{offline}/'
-                         r'\langle n_\mathrm{trk}^\mathrm{offline} \rangle$'),
+                pPb5020=(r'$N_\mathrm{trk}^\mathrm{offline}/'
+                         r'\langle N_\mathrm{trk}^\mathrm{offline} \rangle$'),
                 PbPb5020='Centrality %',
             ),
             ylabel=r'$v_n\{2\}$',
             xlim=dict(
-                pPb5020=(1, 6),
+                pPb5020=(1, 6.5),
                 PbPb5020=(0, 80),
             ),
             ylim=(0, .15),
@@ -445,7 +431,7 @@ def observables(system):
 
     fig, axes = plt.subplots(
         nrows=2, ncols=len(plots),
-        figsize=figsize(1, aspect=.6),
+        figsize=figsize(1.2, aspect=.55),
     )
 
     title = dict(
@@ -552,8 +538,7 @@ def observables_map():
 
     ylim = {
         'Yields': (1e-1, 1e5),
-        'Mean $p_T$': (0, 1.7),
-        'Mean $p_T$ fluctuations': (0, 0.05),
+        'Mean $p_T$': (0, 1.65),
         'Flow cumulants': (0, .12),
     }
 
@@ -569,18 +554,18 @@ def observables_map():
                 ],
                 legend=True
             )
-    fig = plt.figure(figsize=figsize(0.88, 1.5))
+    fig = plt.figure(figsize=figsize(1.1, 1.3))
 
-    yields, mean_pT, mean_pT_fluct, flows = [
+    yields, mean_pT, flows = [
         gridspec.GridSpecFromSubplotSpec(
             2, 2, gs, height_ratios=[5, 1] if n == 0 else [3, 1],
-            hspace=0.1, wspace=.14
+            hspace=0.1, wspace=.05
         ) for n, gs in enumerate(
-            gridspec.GridSpec(4, 1, height_ratios=[6, 4, 4, 4])
+            gridspec.GridSpec(3, 1, height_ratios=[1.3, 1, 1])
         )
     ]
 
-    gridspecs = [yields, mean_pT, mean_pT_fluct, flows]
+    gridspecs = [yields, mean_pT, flows]
     rows = zip(plots, gridspecs)
 
     for nrow, (plot, gs) in enumerate(rows):
@@ -605,9 +590,18 @@ def observables_map():
 
                 if 'label' in opts:
                     xmin, xmax = plot['xlim'][system]
+                    xloc = x[-1] + .03*(xmax - xmin)
+                    yloc = y[-1]
+                    if system == 'pPb5020' and subobs == (2, 4):
+                        yloc = .035
+                    if system == 'PbPb5020':
+                        if subobs == 'kaon':
+                            yloc += .05
+                        elif subobs == 'pion':
+                            yloc -= .05
                     ax.text(
-                        x[-1] + .03*(xmax - xmin), y[-1], opts['label'],
-                        color=darken(color), ha='left', va='center'
+                        xloc, yloc, opts['label'],
+                        color=darken(color), ha='left', va='center',
                     )
 
                 try:
@@ -630,7 +624,8 @@ def observables_map():
 
                 ax.errorbar(
                     x, yexp, yerr=yerrstat, fmt='o',
-                    capsize=0, mfc='.25', mec='.25', mew=.2, zorder=1000
+                    capsize=0, mfc='.25', mec='.25', mew=.2, zorder=1000,
+                    color='.25'
                 )
 
                 ax.fill_between(
@@ -681,7 +676,7 @@ def observables_map():
             ratio_ax.get_yticklabels()[0].set_verticalalignment('bottom')
             ratio_ax.get_yticklabels()[-1].set_verticalalignment('top')
 
-    set_tight(fig, h_pad=.5, rect=[0, 0, .97, 1])
+    set_tight(fig, h_pad=0, rect=[0, 0, .98, 1])
 
 
 #@plot
@@ -841,18 +836,46 @@ def find_map():
 
 
 @plot
+def pT_fluct():
+    """
+    Mean pT fluctuations
+
+    """
+    fig, axes = plt.subplots(figsize=figsize(1, 0.4), ncols=2, sharey=True)
+
+    systems = ['pPb5020', 'PbPb5020']
+    xlabels = [r'$N_\mathrm{ch}/\langle N_\mathrm{ch} \rangle$', 'Centrality %']
+    titles = ['$p$-Pb 5.02 TeV', 'Pb-Pb 5.02 TeV']
+    obs = 'pT_fluct'
+
+    for ax, system, xlabel, title in zip(axes, systems, xlabels, titles):
+        x = model.map_data[system][obs][None]['x']
+        y = model.map_data[system][obs][None]['Y']
+
+        ax.plot(x, y)
+
+        auto_ticks(ax, nbins=7, minor=2)
+
+        ax.set_xlabel(xlabel)
+        if ax.is_first_col():
+            ax.set_ylabel(r'$\delta p_T / \langle p_T \rangle$')
+
+        ax.set_ylim(0, 0.05)
+        ax.set_title(title)
+
+    set_tight()
+
+
+@plot
 def flow_corr():
     """
     Symmetric cumulants SC(m, n) at the MAP point compared to experiment.
 
     """
-    fig, axes = plt.subplots(
-        figsize=figsize(0.5, 1.2), sharex=True,
-        nrows=2, gridspec_kw=dict(height_ratios=[4, 5])
-    )
+    fig, axes = plt.subplots(figsize=figsize(1.2, 0.4), ncols=2)
 
     observables = ['sc', 'sc_normed']
-    ylims = [(-2.5e-6, 2.5e-6), (-.9, .8)]
+    ylims = [(-2.5e-6, 2.5e-6), (-.9, .9)]
     labels = ['(4,2)', '(3,2)']
     system = 'PbPb5020'
 
@@ -868,25 +891,23 @@ def flow_corr():
             y = model.map_data[system][obs][mn]['Y']
 
             ax.plot(x, y, color=getattr(plt.cm, cmap)(.7))
-            ax.text(1.02*x[-1], y[-1], lbl, va='center', ha='left')
+            ax.text(1.03*x[-1], y[-1], lbl, va='center', ha='left')
 
         ax.axhline(
-            0, color='.5', lw=plt.rcParams['xtick.major.width'],
+            0, color='black', lw=plt.rcParams['xtick.minor.width'],
             zorder=-100
         )
 
         ax.set_xlim(0, 80)
         ax.set_ylim(*ylim)
 
+        if ax.is_last_col():
+            ax.set_yticks([-0.8, -0.4, 0, 0.4, 0.8])
+
         auto_ticks(ax, nbins=7, minor=2)
 
-        if ax.is_first_col():
-            ax.set_ylabel(label('m', 'n', normed='normed' in obs))
-
-        if ax.is_first_row():
-            ax.set_title('Pb-Pb 5.02 TeV')
-        else:
-            ax.set_xlabel('Centrality %')
+        ax.set_ylabel(label('m', 'n', normed='normed' in obs))
+        ax.set_xlabel('Centrality %')
 
 
     # MAP estimate for Pb-Pb collisions at 5.02 TeV, calibrated to Pb-Pb
@@ -917,16 +938,18 @@ def flow_corr():
 
     for ax, obs in zip(axes, [SC, NSC]):
         x, y42, y32 = obs.T
-        ax.plot(x, y42, color=plt.cm.Blues(.7), linestyle='dashed')
-        ax.plot(x, y32, color=plt.cm.Oranges(.7), linestyle='dashed')
+        ax.plot(x, y42, color=plt.cm.Blues(.9), linestyle='dashed')
+        ax.plot(x, y32, color=plt.cm.Oranges(.9), linestyle='dashed')
 
     solid_line = lines.Line2D([], [], color=offblack)
     dashed_line = lines.Line2D([], [], linestyle='dashed', color=offblack)
 
     handles = [solid_line, dashed_line]
-    labels = ["p-Pb, Pb-Pb 5.02 TeV", "Pb-Pb 2.76, 5.02 TeV"]
+    labels = ["$p$-Pb, Pb-Pb 5.02 TeV", "Pb-Pb 2.76, 5.02 TeV"]
+    leg = plt.legend(handles, labels, loc=8, title='Bayesian calibration on:',
+                     fontsize=fontsize['small'])
+    plt.setp(leg.get_title(), fontsize=fontsize['small'])
 
-    plt.legend(handles, labels, loc=8, title='Bayesian calibration on:')
 
     set_tight(fig)
 
@@ -984,7 +1007,7 @@ def _posterior(
     )))
     ndim = len(params)
 
-    data = chain.load(*keys).T
+    data = chain.load(*keys, thin=100).T
 
     cmap = plt.get_cmap(cmap)
     cmap.set_bad('white')
@@ -1013,9 +1036,6 @@ def _posterior(
         ax.set_xlim(lim)
         ax.set_ylim(lim)
 
-        if key == 'dmin3':
-            samples = samples**(1/3)
-
         ax.annotate(
             format_ci(samples), (.62, .92), xycoords='axes fraction',
             ha='center', va='bottom', fontsize=fontsize['large']
@@ -1034,21 +1054,24 @@ def _posterior(
 
     for key, label, axb, axl in zip(keys, labels, axes[-1], axes[:, 0]):
         for axis in [axb.xaxis, axl.yaxis]:
-            axis.set_label_text(
-                label.replace(r'\ [', '$\n$['),
-            )
-            axis.set_tick_params(labelsize=fontsize['tiny'])
-            if key == 'dmin3':
-                ticks = [0., 1.2, 1.5, 1.7]
-                axis.set_ticklabels(list(map(str, ticks)))
-                axis.set_ticks([t**3 for t in ticks])
+            if key not in ['dmin3', 'sampling_radius', 'parton_width']:
+                axis.set_label_text(
+                    label.replace(r'\ [', '$\n$['),
+                )
             else:
-                axis.set_major_locator(ticker.LinearLocator(3))
-                if axis.axis_name == 'x' and any(
-                        len(str(round(x, 5))) > 4 for x in axis.get_ticklocs()
-                ):
-                    for t in axis.get_ticklabels():
-                        t.set_rotation(30)
+                axis.set_label_text(label)
+
+            if key == 'dmin3':
+                axis.set_ticks([0.0, 2.46, 4.91])
+
+            axis.set_tick_params(labelsize=fontsize['tiny'])
+            axis.set_major_locator(ticker.LinearLocator(3))
+
+            if axis.axis_name == 'x' and key in [
+                    'norm', 'dmin3', 'zetas_max',
+                    'zetas_width', 'zetas_t0', 'Tswitch']:
+                for t in axis.get_ticklabels():
+                    t.set_rotation(30)
 
         axb.get_xticklabels()[0].set_horizontalalignment('left')
         axb.get_xticklabels()[-1].set_horizontalalignment('right')
@@ -1056,7 +1079,7 @@ def _posterior(
         axl.get_yticklabels()[-1].set_verticalalignment('top')
 
     set_tight(
-        fig, pad=0, w_pad=pad_subplots, h_pad=pad_subplots,
+        fig, pad=0.7, w_pad=pad_subplots, h_pad=pad_subplots,
         rect=(0, 0, rect_r, rect_t)
     )
 
@@ -1178,7 +1201,7 @@ def posterior_parton_number():
     Posterior distribution on the number of constituents.
 
     """
-    plt.figure(figsize=figsize(.5, .75))
+    plt.figure(figsize=figsize(.55, .75))
     ax = plt.axes()
 
     data = mcmc.Chain().load('parton_number').ravel()
@@ -1317,7 +1340,7 @@ def region_shear_bulk(cmap=plt.cm.Blues):
     temperature-dependent shear and bulk viscosity.
 
     """
-    fig, axes = plt.subplots(ncols=2, figsize=figsize(1, .4))
+    fig, axes = plt.subplots(ncols=2, figsize=figsize(1.2, .4))
     ax_shear, ax_bulk = axes
 
     Tmin, Tmax = .150, .300
@@ -1325,7 +1348,7 @@ def region_shear_bulk(cmap=plt.cm.Blues):
 
     prj_path = Path('/home/morelandjs/research/chains/jonah_nature.hdf')
     energies = (mcmc.Chain(prj_path), plt.cm.Blues, .6, 'Pb-Pb 2.76, 5.02 TeV')
-    nuclei = (mcmc.Chain(), plt.cm.Oranges, .25, 'p-Pb, Pb-Pb 5.02 TeV')
+    nuclei = (mcmc.Chain(), plt.cm.Oranges, .25, '$p$-Pb, Pb-Pb 5.02 TeV')
     handles = []
 
     for zorder, (chain, cmap, darkness, label) in enumerate([nuclei, energies]):
@@ -1386,11 +1409,16 @@ def region_shear_bulk(cmap=plt.cm.Blues):
 
     line = lines.Line2D([], [], color=offblack, label='Posterior median')
     band = patches.Patch(color='.85', label='90% credible region')
-    ax_shear.legend(handles=[band, line], loc='upper left')
-    labels = ["p-Pb, Pb-Pb 5.02 TeV", "Pb-Pb 2.76, 5.02 TeV"]
+    ax_shear.legend(
+        handles=[band, line], loc='upper left',
+        bbox_to_anchor=(0.0, 1.0), fontsize=fontsize['small']
+    )
+
+    labels = ["$p$-Pb, Pb-Pb 5.02 TeV", "Pb-Pb 2.76, 5.02 TeV"]
     ax_bulk.legend(
         handles, labels, loc='upper right', markerfirst=False,
-        bbox_to_anchor=(1, 1.05), title='Bayesian calibration on:'
+        bbox_to_anchor=(1.05, 1.04), title='Bayesian calibration on:',
+        fontsize=fontsize['small']
     )
 
     set_tight(w_pad=.2)
@@ -1760,7 +1788,7 @@ def validation_all(system):
 
     """
     fig, (ax_box, ax_rms) = plt.subplots(
-        nrows=2, figsize=figsize(1, aspect=.4),
+        nrows=2, figsize=figsize(1.1, aspect=.6),
         gridspec_kw=dict(height_ratios=[1.5, 1])
     )
 
@@ -1840,7 +1868,7 @@ def validation_all(system):
     ax_rms.set_xticks([])
     ax_rms.set_yticks(np.arange(0, 21, 5))
     ax_rms.set_ylim(0, 20)
-    ax_rms.set_ylabel('Frac. error')
+    ax_rms.set_ylabel('RMS frac. error')
 
     for y in ax_rms.get_yticks():
         ax_rms.axhline(y, color='.5', zorder=-10)
@@ -1874,7 +1902,7 @@ def validation_example(
 
     """
     fig, axes = plt.subplots(
-        ncols=2, figsize=figsize(.8, aspect=.6),
+        ncols=2, figsize=figsize(.9, aspect=.6),
         gridspec_kw=dict(width_ratios=[3, 1])
     )
 
@@ -2120,7 +2148,7 @@ def correlation_matrices(system=default_system):
     emu_cov = emu.predict(X, return_cov=True)[1].array[0]
 
     fig, axes = plt.subplots(
-        ncols=3, figsize=figsize(1, .47),
+        ncols=3, figsize=figsize(1.1, .47),
         gridspec_kw=dict(width_ratios=[1, 1, .02])
     )
 
@@ -2145,7 +2173,7 @@ def correlation_matrices(system=default_system):
         ax.set_yticks(ticks)
         ax.set_xticklabels(ticklabels)
         ax.set_yticklabels(ticklabels)
-        ax.set_title(title, y=1.05)
+        ax.set_title(title, y=1.1)
 
         ax.tick_params(
             bottom=False, top=False, left=False, right=False,
@@ -2420,10 +2448,10 @@ def posterior_proton_shape():
         'sampling_radius', 'parton_width'
     ).T
 
-    fig = plt.figure(figsize=figsize(.5, aspect=.833))
+    fig = plt.figure(figsize=figsize(.55, aspect=.833))
     ax = plt.gca()
 
-    plt.hist2d(sampling_radius, parton_width, bins=50, cmap=plt.cm.Blues)
+    plt.hist2d(sampling_radius, parton_width, bins=60, cmap=plt.cm.Blues)
 
     plt.xlabel('Constituent sampling radius $r$ [fm]')
     plt.ylabel('Constituent width $v$ [fm]')

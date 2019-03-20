@@ -546,7 +546,7 @@ def trento_thickness():
 
 
 @plot
-def trento_entropy():
+def trento_entropy(p=0):
     """
     Reduced thickness function for an example event
 
@@ -556,6 +556,12 @@ def trento_entropy():
     ax.set_axis_off()
     fig.add_axes(ax)
 
+    def gmean(X, Y, p):
+        if abs(p) < 1e-6:
+            return np.sqrt(X*Y)
+        else:
+            return (.5*(X**p + Y**p))**(1./p)
+
     # spectators
     x, y, z = zip(*spect)
     ax.scatter(
@@ -564,7 +570,7 @@ def trento_entropy():
     )
 
     # initial entropy profile
-    thickr = np.sqrt(thicka*thickb)
+    thickr = gmean(thicka, thickb, p)
     ax.imshow(thickr, cmap=cmap_to_alpha(), extent=(-xmax, xmax, -xmax, xmax),
         origin='lower', zorder=2)
 

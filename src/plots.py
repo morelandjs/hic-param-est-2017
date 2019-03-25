@@ -411,6 +411,128 @@ def _observables_plots():
     ]
 
 
+def _observables(posterior=False):
+    """
+    Model observables at all design points or drawn from the posterior with
+    experimental data points.
+    """
+    plots = _observables_plots()
+    plots.pop(2)
+
+    plot_fixes = [
+        dict(
+            ylabel=r'$dN_\mathrm{ch}/d\eta$',
+            ylim=(1, 1e4),
+            height_ratio=1,
+            subplots=[
+                ('dNch_deta', None, dict(label=r'$N_\mathrm{ch}$', scale=1))
+            ]
+        ),
+        dict(
+            subplots=[('mean_pT', None, dict(label='ch'))]
+        ),
+        dict()
+    ]
+
+    for a, b in zip(plots, plot_fixes):
+        for k, v in b.items():
+            a[k] = v
+
+    fig, axes = plt.subplots(
+        nrows=len(plots), ncols=len(systems),
+        figsize=figsize(.8, aspect=1.1),
+    )
+
+    if posterior:
+        samples = mcmc.Chain().samples(100)
+
+    for (plot, system), ax in zip(itertools.product(plots, systems), axes.flat):
+        for obs, subobs, opts in plot['subplots']:
+            color = obs_color(obs, subobs)
+            scale = opts.get('scale')
+
+            try:
+                model_data = model.data[system][obs][subobs]
+                x = model_data['x']
+                Y = (samples[system][obs][subobs]
+                     if posterior else model_data['Y'])
+            except KeyError:
+                continue
+
+            if scale is not None:
+                Y = Y*scale
+
+            for y in Y:
+                ax.plot(x, y, color=color, alpha=.2, lw=.3)
+
+            try:
+                dset = expt.data[system][obs][subobs]
+            except KeyError:
+                print(system, obs, subobs, 'not found')
+                pass
+            else:
+                x = dset['x']
+                y = dset['y']
+                yerr = np.sqrt(sum(
+                    e**2 for e in dset['yerr'].values()
+                ))
+
+                if scale is not None:
+                    y = y*scale
+                    yerr = yerr*scale
+
+                ax.errorbar(
+                    x, y, yerr=yerr, fmt='o',
+                    capsize=0, mfc='.25', mec='.25', mew=.2, zorder=1000
+                )
+
+                xmin, xmax = plot['xlim'][system]
+
+                ax.text(
+                    x[-1] + .03*(xmax - xmin), y[-1], opts['label'],
+                    color=darken(color), ha='left', va='center'
+                )
+
+        auto_ticks(ax, 'x', nbins=4, minor=2)
+
+        if plot.get('yscale') == 'log':
+            ax.set_yscale('log')
+            ax.minorticks_off()
+        else:
+            auto_ticks(ax, 'y', nbins=4, minor=2)
+
+        if ax.is_first_row():
+            ax.set_title(format_system(system), va='top')
+
+        if ax.is_first_col():
+            ax.set_ylabel(plot['ylabel'])
+        else:
+            ax.set_yticklabels([])
+
+        if ax.is_last_col():
+            ax.text(
+                1.02, .5, plot['title'],
+                transform=ax.transAxes, ha='left', va='center',
+                size=plt.rcParams['axes.labelsize'], rotation=-90
+            )
+
+        ax.set_xlabel(plot['xlabel'][system])
+        ax.set_xlim(*plot['xlim'][system])
+        ax.set_ylim(plot['ylim'])
+
+    set_tight(fig, rect=[0, 0, .97, 1])
+
+
+@plot
+def observables_design():
+    _observables(posterior=False)
+
+
+@plot
+def observables_posterior():
+    _observables(posterior=True)
+
+
 def observables(system):
     """
     Model observables at all design points or drawn from the posterior with

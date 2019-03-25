@@ -984,7 +984,9 @@ def _posterior(
     )))
     ndim = len(params)
 
-    data = chain.load(*keys).T
+    #data = chain.load(*keys, thin=1000).T
+    xlo, xhi = map(np.array, zip(*ranges))
+    data = np.random.uniform(low=xlo, high=xhi, size=(2000000, 15)).T
 
     cmap = plt.get_cmap(cmap)
     cmap.set_bad('white')
@@ -1013,8 +1015,8 @@ def _posterior(
         ax.set_xlim(lim)
         ax.set_ylim(lim)
 
-        if key == 'dmin3':
-            samples = samples**(1/3)
+        #if key == 'dmin3':
+        #    samples = samples**(1/3)
 
         ax.annotate(
             format_ci(samples), (.62, .92), xycoords='axes fraction',
@@ -1034,11 +1036,14 @@ def _posterior(
 
     for key, label, axb, axl in zip(keys, labels, axes[-1], axes[:, 0]):
         for axis in [axb.xaxis, axl.yaxis]:
+            if key == 'dmin3':
+                label = r'$d$ min$^3$'
             axis.set_label_text(
                 label.replace(r'\ [', '$\n$['),
             )
             axis.set_tick_params(labelsize=fontsize['tiny'])
-            if key == 'dmin3':
+            #if key == 'dmin3':
+            if key == None:
                 ticks = [0., 1.2, 1.5, 1.7]
                 axis.set_ticklabels(list(map(str, ticks)))
                 axis.set_ticks([t**3 for t in ticks])

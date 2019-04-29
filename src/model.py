@@ -160,7 +160,7 @@ class ModelData:
             logging.debug('loading %s', f)
             d = np.fromfile(str(f), dtype=self.dtype)
             d.sort(order='dNch_deta')
-            return (f.stem, d)
+            return (f.stem, correct_yield(d))
 
         self.design_events = [load_events(f) for f in files]
         self.system = system
@@ -193,6 +193,7 @@ class ModelData:
             """
             obs_stack = list(keys)
             obs = obs_stack.pop()
+            logging.info('calculating observable: %s', obs)
 
             if obs in ['dNch_deta', 'dET_deta']:
                 return lambda events: events[obs].mean()
@@ -223,7 +224,7 @@ class ModelData:
                 return lambda events: flow.Cumulant(
                     events['flow'][detector]['N'],
                     *events['flow'][detector]['Qn'].T[1:]
-                ).flow(*nk, imaginary='zero')
+                ).flow(*nk, imaginary='negative')
 
             if obs.startswith('sc'):
                 mn = obs_stack.pop()
@@ -243,8 +244,6 @@ class ModelData:
             """
             trigger = events['trigger']
             minbias = (0, float('inf'))
-
-            events = correct_yield(events)
 
             if bin_type == 'cent':
                 """
@@ -354,6 +353,12 @@ def _data(system, dataset='main'):
     empty = obs_like(data['vnk'][(2, 2)])
     for obs in ['sc', 'sc_normed', 'sc_central', 'sc_normed_central']:
         data = dict({obs: {(3, 2): empty, (4, 2): empty}}, **data)
+
+    # missing flows
+    if system == 'pPb5020':
+        flow_dict = data['vnk'].copy()
+        flow_dict[(2, 4)] = empty
+        data['vnk'] = flow_dict
 
     data = ModelData(system, *files).observables_like(data)
 

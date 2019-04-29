@@ -36,13 +36,9 @@ design and produce far too few particles to be physically reasonable.
 
 """
 bad_points = [
-    129, 392, 143, 273, 401, 276, 405, 153, 156, 285, 414, 159, 162, 418, 163,
-    421, 422, 296, 298, 429, 301, 308, 183, 184, 312, 442, 446, 319, 451, 453,
-    326, 199, 457, 330, 459, 460, 461, 334, 203, 464, 466, 83, 211, 338, 471,
-    472, 473, 346, 223, 355, 357, 360, 234, 363, 492, 107, 236, 367, 235, 498,
-    115, 242, 376, 249, 378
+    129, 162, 418, 451, 422, 199, 360, 234, 330, 363, 460, 461, 492, 273,
+    466, 498, 183, 249, 346, 319
 ]
-
 
 
 def generate_lhs(npoints, ndim, seed):
@@ -125,20 +121,20 @@ class Design:
         self.type = 'validation' if validation else 'main'
 
         self.keys, labels, self.range = map(list, zip(*[
-            ('norm',          r'{Norm}',                      (    9,     28)),
+            ('norm',          r'{Norm} [{GeV}]',              (    9,     28)),
             ('trento_p',      r'p',                           ( -1.0,    1.0)),
             ('fluct_std',     r'\sigma {fluct}',              (  0.0,    2.0)),
             ('nucleon_width', r'w [{fm}]',                    (  0.4,    1.2)),
-            ('parton_number', r'n {constit}',                 (    1,     10)),
+            ('parton_number', r'n_c',                         (    1,     10)),
             ('parton_struct', r'\chi {struct}',               (  0.0,    1.0)),
             ('dmin3',         r'd {min} [{fm}]',              (  0.0, 1.7**3)),
             ('tau_fs',        r'\tau {fs} [{fm}/c]',          (  0.1,    1.5)),
             ('etas_min',      r'\eta/s {min}',                (  0.0,    0.2)),
-            ('etas_slope',    r'\eta/s {slope} [{GeV}^{-1}]', (  0.0,    8.0)),
-            ('etas_crv',      r'\eta/s {crv}',                ( -1.0,    1.0)),
+            ('etas_slope',    r'a {shear} [{GeV}^{-1}]',      (  0.0,    8.0)),
+            ('etas_crv',      r'c {shear}',                   ( -1.0,    1.0)),
             ('zetas_max',     r'\zeta/s {max}',               (  0.0,    0.1)),
-            ('zetas_width',   r'\zeta/s {width} [{GeV}]',     (  0.0,    0.1)),
-            ('zetas_t0',      r'\zeta/s T_0 [{GeV}]',         (0.150,  0.200)),
+            ('zetas_width',   r'\Delta \!T {bulk} [{GeV}]',   (  0.0,    0.1)),
+            ('zetas_t0',      r'T {bulk} [{GeV}]',            (0.150,  0.200)),
             ('Tswitch',       r'T {switch} [{GeV}]',          (0.135,  0.165)),
         ]))
 
@@ -171,19 +167,45 @@ class Design:
             npoints=npoints, ndim=self.ndim, seed=seed
         )
 
-        keep = [n not in bad_points for n in range(npoints)]
-        self.array = self.array[keep]
+        # Version 1 of the manuscript parametrized nucleon substructure using
+        # 'nucleon_width' and 'nucleon_structure' parameters. In version 2 of the
+        # manuscript, I revert to a 'sampling_radius' and 'constituent_width'.
+        # These new parameters are more physical and easier to understand.
+        nucleon_width, parton_struct = [
+            self.array[:, self.keys.index(k)]
+            for k in ('nucleon_width', 'parton_struct')
+        ]
+
+        parton_width = .2 + parton_struct*(nucleon_width - .2)
+        sampling_radius = np.sqrt(nucleon_width**2 - parton_width**2)
+
+        design_changes = [
+            ('nucleon_width', 'sampling_radius', sampling_radius, r'$r\ [\mathrm{fm}]$', (0.0, 1.2)),
+            ('parton_struct', 'parton_width', parton_width, r'$v\ [\mathrm{fm}]$', (0.2, 1.2))
+        ]
+
+        for key_old, key_new, points, label, (low, high) in design_changes:
+            index = self.keys.index(key_old)
+            self.keys[index] = key_new
+            self.array[:, index] = points
+            self.labels[index] = label
+            self.range[index] = (low, high)
+            self.min[index] = low
+            self.max[index] = high
 
         # convert constituent number to an integer and correct range
-        index = [i for i, k in enumerate(self.keys) if k == 'parton_number'][0]
+        index = self.keys.index('parton_number')
         self.array[:, index] = np.floor(self.array[:, index])
         self.range[index] = (1, 9)
+
+        # drop bad design points
+        keep = [n not in bad_points for n in range(npoints)]
+        self.array = self.array[keep]
 
         self.points = list(itertools.compress(self.points, keep))
         logging.debug(
             'removed outlier design points: {}'.format(bad_points)
         )
-
 
     def __array__(self):
         return self.array
@@ -274,7 +296,8 @@ def main():
     args = parser.parse_args()
 
     for system in systems:
-        Design(system, validation=False).write_files(args.inputs_dir)
+        #Design(system, validation=False).write_files(args.inputs_dir)
+        Design(system, validation=False)
 
     logging.info('wrote all files to %s', args.inputs_dir)
 

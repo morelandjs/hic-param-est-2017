@@ -21,7 +21,7 @@ from sklearn.decomposition import PCA
 from sklearn.externals import joblib
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, RobustScaler
 
 from . import cachedir, lazydict, model
 from .design import Design
@@ -138,7 +138,7 @@ class Emulator:
             ) +
             kernels.WhiteKernel(
                 noise_level=.1**2,
-                noise_level_bounds=(.01**2, 1)
+                noise_level_bounds=(.01**2, 10)
             )
         )
 

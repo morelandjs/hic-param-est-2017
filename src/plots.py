@@ -246,13 +246,14 @@ def format_system(system):
     return '{} {} {}eV'.format('-'.join(proj), energy, prefix)
 
 
-def darken(rgb, amount=.5):
+def darken(color_hex, amount=.5):
     """
     Darken a color by the given amount in HSLuv space.
 
     """
-    H, S, L = hsluv.rgb_to_hsluv(rgb)
-    return hsluv.hsluv_to_rgb((H, S, (1 - amount)*L))
+    return color_hex
+    #H, S, L = hsluv.hex_to_hsluv(color_hex)
+    #return hsluv.hsluv_to_rgb((H, S, (1 - amount)*L))
 
 
 def obs_color_hsluv(obs, subobs):
@@ -569,6 +570,11 @@ def observables(system):
         figsize=figsize(1, aspect=.6),
     )
 
+    title = dict(
+        pPb5020=r'$p$-Pb 5.02 TeV',
+        PbPb5020=r'Pb-Pb 5.02 TeV',
+    )
+
     for (posterior, plot), ax in zip(
             itertools.product([False, True], plots), axes.flat):
 
@@ -641,14 +647,9 @@ def observables(system):
             ax.set_xlabel(plot['xlabel'][system])
             if ax.is_first_col():
                 ax.set_ylabel('Posterior samples')
-
-    title = dict(
-        pPb5020=r'$p$-Pb 5.02 TeV',
-        PbPb5020=r'Pb-Pb 5.02 TeV',
-    )
-
-    fig.suptitle(title[system], va='top')
-    set_tight(fig, rect=[0, 0, 1, .9])
+                ax.annotate(title[system], xy=(.1, .1),
+                            xycoords='axes fraction',ha='left', va='bottom')
+    set_tight()
 
 
 @plot
@@ -828,7 +829,7 @@ def find_map():
 
     res = minimize(
         lambda x: -chain.log_posterior(full_x(x))[0],
-        x0=np.median(chain.load(*opt_params, thin=1000), axis=0),
+        x0=np.median(chain.load(*opt_params, thin=1), axis=0),
         tol=1e-8,
         bounds=[
             (a + 1e-6*(b - a), b - 1e-6*(b - a))
@@ -1127,6 +1128,7 @@ def _posterior(
         interp = PchipInterpolator(x, y)
         x = np.linspace(x[0], x[-1], 10*x.size)
         y = interp(x)
+
         ax.plot(x, y, linewidth=1, color=line_color)
         ax.fill_between(x, lim[0], y, color=fill_color, zorder=-10)
 
@@ -1321,7 +1323,7 @@ def posterior_parton_number():
     ax.fill_between(x, y, color=plt.cm.Blues(0.15), zorder=-10)
     ax.spines['left'].set_visible(False)
 
-    ax.set_xlabel('Constituent number')
+    ax.set_xlabel('Constituent number $n_c$')
     ax.set_xticks([1, 3, 5, 7, 9])
     ax.set_yticks([])
     ax.set_ylim(0, 1.01*y.max())
@@ -1335,15 +1337,6 @@ def posterior_freestreaming():
         'tau_fs',
         'Free streaming time [fm/$c$]',
         [.1, .8, 1.5]
-    )
-
-
-@plot
-def posterior_structure():
-    posterior_parameter(
-        'parton_struct',
-        '$\chi_\mathrm{struct}$',
-        [0, .5, 1]
     )
 
 
@@ -1371,7 +1364,7 @@ def _region(ax, name, chain, cmap=plt.cm.Blues, legend=False, title=False):
     Tc = .154
 
     samples = chain.load(
-        *['{}s_{}'.format(var, k) for k in keys], thin=100
+        *['{}s_{}'.format(var, k) for k in keys], thin=1
     )
 
     T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
@@ -1452,7 +1445,7 @@ def region_shear_bulk(cmap=plt.cm.Blues):
     Tmin, Tmax = .150, .300
     Tc = .154
 
-    prj_path = Path('/home/jsm55/prj', 'mcmc', 'chain.hdf')
+    prj_path = Path('/home/morelandjs/research/chains/jonah_nature.hdf')
     energies = (mcmc.Chain(prj_path), plt.cm.Blues, .6, 'Pb-Pb 2.76, 5.02 TeV')
     nuclei = (mcmc.Chain(), plt.cm.Oranges, .25, 'p-Pb, Pb-Pb 5.02 TeV')
     handles = []
@@ -1466,7 +1459,7 @@ def region_shear_bulk(cmap=plt.cm.Blues):
                 lambda T, m, w, T0: m / (1 + ((T - T0)/w)**2),
                 .08)
         ], axes):
-            samples = chain.load(*['{}s_{}'.format(var, k) for k in keys], thin=100)
+            samples = chain.load(*['{}s_{}'.format(var, k) for k in keys], thin=1)
 
             T = np.linspace(Tc if name == 'shear' else Tmin, Tmax, 1000)
 
@@ -1853,7 +1846,7 @@ def validation_data(system, n_splits=20):
     """
     design = Design(system)
     kf = KFold(n_splits=n_splits)
-    npc = {'pPb5020': 7, 'PbPb5020': 8}[system]
+    npc = {'pPb5020': 4, 'PbPb5020': 8}[system]
 
     mean_folds = []
     cov_folds = []
@@ -2410,6 +2403,8 @@ def _diag_emu(system=default_system, pcs=None, params=None, label_all=True):
             if label_all or ax.is_first_col():
                 ax.set_ylabel('PC {}'.format(pc + 1))
 
+            ax.set_ylim(-4, 4)
+
     set_tight(fig, w_pad=.5, h_pad=.25)
 
 
@@ -2427,7 +2422,7 @@ def diag_emu_partial():
     )
 
 
-@plot
+#@plot
 def grid_error():
     """
     Scatter plot observables calculated on a grid with grid scale = 0.2 against
@@ -2533,87 +2528,6 @@ def entropy_scaling():
     set_tight(fig)
 
 
-def rms_nucleon_width(args, samples=10**3):
-    """
-    Find center-of-mass root-mean-square radius for an ensemble of
-    sampled protons with nucleon substructure.
-
-    """
-    # unpack arguments
-    number, radius, struct = args
-    width = .2 + struct*(radius - .2)
-
-    # sample constituent positions
-    positions = np.random.normal(
-            scale=np.sqrt(radius**2 - width**2),
-            size=2*number*samples
-            ).reshape(number, 2, -1)
-
-    # recenter
-    centers = positions.mean(axis=0)
-    positions -= centers
-
-    # cartesian grid
-    r = np.arange(-4*radius, 4*radius, .2*width)
-    xx, yy = np.meshgrid(r, r)
-
-    # sum over all gaussian constituents
-    rho = np.zeros_like(r)
-    for pos in positions.T:
-        for (xi, yi) in pos.T:
-            rsq = (xx - xi)**2 + (yy - yi)**2
-            rho += np.exp(-rsq/(2*width**2)).sum(axis=0)
-
-    # return rms radius in com frame
-    return np.sqrt(np.average(r**2, weights=rho))
-
-
-def correct_widths(number_values, width_values, struct_values):
-    """
-    This function calculates the rms width of the nucleon in its center of mass
-    frame, given the constituent number, sampling width and constituent
-    structure parameters.
-
-    """
-    design = Design(systems.pop())
-    param_ranges = dict(zip(design.keys, design.range))
-
-    width, struct = [
-        np.linspace(*param_ranges[k], 10)
-        for k in ('nucleon_width', 'parton_struct')
-    ]
-
-    nmin, nmax = param_ranges['parton_number']
-    number = list(range(nmin, nmax + 1))
-
-    cachefiles = [
-        Path(cachedir / 'nucleon' / '{0:02d}.pkl'.format(n)) for n in number
-    ]
-
-    if all([f.exists() for f in cachefiles]):
-        rms_width = {
-            n: pickle.load(open(f, 'rb'))
-            for n, f in enumerate(cachefiles, start=1)
-        }
-        parameters = zip(number_values, width_values, struct_values)
-        return [rms_width[int(n)](w, s)[0] for (n, w, s) in parameters]
-    else:
-        ncpu = multiprocessing.cpu_count()
-        for n, cachefile in enumerate(cachefiles, start=1):
-            logging.info("{} constituents".format(n))
-            args = [[n, w, s] for (w, s) in itertools.product(width, struct)]
-            rms_width = np.reshape(
-                    multiprocessing.Pool(ncpu).map(rms_nucleon_width, args),
-                    (len(width), len(struct))
-                    )
-
-            interp = interp2d(width, struct, rms_width, kind='cubic')
-            cachefile.parent.mkdir(parents=True, exist_ok=True)
-
-            with cachefile.open(mode='wb') as f:
-                pickle.dump(interp, f)
-
-
 @plot
 def posterior_proton_shape():
     """
@@ -2624,47 +2538,19 @@ def posterior_proton_shape():
 
     """
     chain = mcmc.Chain()
-    nucleon_radius, parton_number, parton_struct = chain.load(
-        'nucleon_width', 'parton_number',  'parton_struct'
+    sampling_radius, parton_width = chain.load(
+        'sampling_radius', 'parton_width'
     ).T
 
-    min_width = .2
-    parton_width = min_width + parton_struct*(nucleon_radius - min_width)
-
-    # print parton width 90% credible region
-    median = np.median(parton_width)
-    cred_low, cred_high = mcmc.credible_interval(parton_width)
-    parton_width_est = 'parton width = {:.2f} -{:.2f} +{:.2f} fm'.format(
-        median, median - cred_low, cred_high - median
-    )
-    logging.info(parton_width_est)
-
-    fig = plt.figure(figsize=figsize(.5, aspect=1.25))
+    fig = plt.figure(figsize=figsize(.5, aspect=.833))
     ax = plt.gca()
 
-    plt.hist2d(nucleon_radius, parton_width, bins=100, cmap=plt.cm.Blues)
+    plt.hist2d(sampling_radius, parton_width, bins=50, cmap=plt.cm.Blues)
 
-    plt.fill_between([.4, 1.2], [.4, 1.2], [1.2, 1.2], color='white')
-
-    plt.plot([.4, .4], [.2, .4], linestyle='dashed', clip_on=False, color=offblack)
-    plt.plot([.4, 1.2], [.4, 1.2], linestyle='dashed', color=offblack)
-
-    plt.annotate(
-        r'prior range', xy=(.5, .45), xycoords='data',
-        ha='center', va='center', color=offblack, rotation=45
-    )
-
-    plt.xticks([.4, .6, .8, 1, 1.2])
-    plt.yticks([.2, .4, .6, .8, 1, 1.2])
-    plt.xlabel('Nucleon width [fm]')
-    plt.ylabel('Constituent width [fm]', rotation=-90, labelpad=15)
+    plt.xlabel('Constituent sampling radius $r$ [fm]')
+    plt.ylabel('Constituent width $v$ [fm]')
 
     ax.set_aspect('equal')
-    ax.spines['left'].set_visible(False)
-    ax.spines['right'].set_visible(True)
-    ax.yaxis.set_label_position('right')
-    ax.yaxis.tick_right()
-
     set_tight(fig, pad=.2)
 
 
@@ -2724,8 +2610,6 @@ def trim_design_points():
             return True
         elif obs == 'dNch_deta':
             return any(y < 1)
-        elif obs == 'vnk':
-            return any(y < 0.002)
         else:
             return False
 

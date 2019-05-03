@@ -143,7 +143,7 @@ class Design:
         #   - escape spaces
         #   - surround with $$
         self.labels = [
-            re.sub(r'({[A-Za-z]+})', r'\mathrm\1', i)
+            re.sub(r'({[A-Za-z]+})', r'\\mathrm\1', i)
             .replace(' ', r'\ ')
             .join('$$')
             for i in labels

@@ -21,7 +21,7 @@ from sklearn.decomposition import PCA
 from sklearn.externals import joblib
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from sklearn.gaussian_process import kernels
-from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.preprocessing import StandardScaler
 
 from . import cachedir, lazydict, model
 from .design import Design
@@ -234,7 +234,7 @@ class Emulator:
     def predict(self, X, return_cov=False):
         """
         Predict model output at `X`.
-        X must be a 2D array-like with shape ``(nsamples, ndim)``.  It is passed
+        X must be a 2D array-like with shape ``(nsamples, ndim)``. It is passed
         directly to sklearn :meth:`GaussianProcessRegressor.predict`.
         If `return_cov` is true, return a tuple ``(mean, cov)``, otherwise only
         return the mean.

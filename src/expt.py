@@ -4,11 +4,9 @@ Prints all data when run as a script.
 """
 
 from collections import defaultdict
-import copy
 import logging
 import pickle
 import re
-from statistics import mean
 from urllib.request import urlopen
 
 import numpy as np
@@ -228,7 +226,7 @@ def pPb5020_yield():
 
     y, stat, sys = np.array([[
         (y['value'], y['errors'][0]['symerror'], y['errors'][1]['symerror'])
-        for (x, y) in zip(dset.x('$\eta_{lab}$'), dset.y(name))
+        for (x, y) in zip(dset.x(r'$\eta_{lab}$'), dset.y(name))
         if eta_lab_min < x['low'] and x['high'] < eta_lab_max
     ] for name in dset.names[:-drop_bins]]).T
 
@@ -285,10 +283,10 @@ def pPb5020_mean_pT():
     )
 
 
-def pPb5020_flows(mode):
+def pPb5020_flows(n, k):
     """
-    The CMS p+Pb flows are not posted on HEP data so the data files are included
-    in the git repo parent directory under expt.
+    The CMS p+Pb flows are not posted on HEP data so the data files
+    are included in the git repo parent directory under expt.
 
     reference: https://inspirehep.net/record/1231945
 
@@ -296,16 +294,14 @@ def pPb5020_flows(mode):
     # Mean Ntrk offline 0-100% centrality
     Ntrk_avg = 40.
 
-    # Drop top-5 most central bins
-    xlo, xhi, x, y, stat, sys = np.loadtxt(
-        'expt/CMS_pPb5020_v{}2_sub.txt'.format(mode)
-    )[:-5].T
+    Ntrk_lo, Ntrk_hi, Ntrk, vnk, stat, sys = np.loadtxt(
+        f'expt/CMS_pPb5020_v{n}{k}.txt').T
 
     return dict(
-        mult=list(zip(xlo/Ntrk_avg, xhi/Ntrk_avg)),
-        x=x/Ntrk_avg,
-        y=y,
-        yerr=dict(stat=stat, sys=sys),
+        mult=list(zip(Ntrk_lo/Ntrk_avg, Ntrk_hi/Ntrk_avg)),
+        x=Ntrk/Ntrk_avg,
+        y=vnk,
+        yerr=dict(stat=stat, sys=sys)
     )
 
 
@@ -331,44 +327,41 @@ def _data():
     """
     data = {s: {} for s in systems}
 
-    if 'pPb5020' in systems:
+    # pPb5020 dNch/deta
+    data['pPb5020']['dNch_deta'] = {None: pPb5020_yield()}
 
-        # pPb5020 dNch/deta
-        data['pPb5020']['dNch_deta'] = {None: pPb5020_yield()}
+    # pPb5020 mean pT
+    data['pPb5020']['mean_pT'] = {None: pPb5020_mean_pT()}
 
-        # pPb5020 mean pT
-        data['pPb5020']['mean_pT'] = {None: pPb5020_mean_pT()}
+    # pPb5020 flows
+    data['pPb5020']['vnk'] = {
+        (n, k): pPb5020_flows(n, k)
+        for (n, k) in [(2, 2), (3, 2), (2, 4)]
+    }
 
-        # pPb5020 flows
-        data['pPb5020']['vnk'] = {}
-        for mode in 2, 3:
-            data['pPb5020']['vnk'][mode, 2] = pPb5020_flows(mode)
+    # PbPb5020 dNch/deta
+    name = r'$\mathrm{d}N_\mathrm{ch}/\mathrm{d}\eta$'
+    data['PbPb5020']['dNch_deta'] = {None: HEPData(1410589, 2).dataset(name)}
 
-    if 'PbPb5020' in systems:
+    # PbPb5020 flows
+    system, tables_nk = (
+        'PbPb5020', [
+            (1, [(2, 2), (2, 4)]),
+            (2, [(3, 2), (4, 2)]),
+        ]
+    )
 
-        # PbPb5020 dNch/deta
-        name = r'$\mathrm{d}N_\mathrm{ch}/\mathrm{d}\eta$'
-        data['PbPb5020']['dNch_deta'] = {None: HEPData(1410589, 2).dataset(name)}
+    data[system]['vnk'] = {}
 
-        # PbPb5020 flows
-        system, tables_nk = (
-            'PbPb5020', [
-                (1, [(2, 2), (2, 4)]),
-                (2, [(3, 2), (4, 2)]),
-            ]
-        )
-
-        data[system]['vnk'] = {}
-
-        for table, nk in tables_nk:
-            d = HEPData(1419244, table)
-            for n, k in nk:
-                data[system]['vnk'][n, k] = d.dataset(
-                    'V{}{{{}{}}}'.format(
-                        n, k, ', |DELTAETA|>1' if k == 2 else ''
-                    ),
-                    maxcent=(70 if n == 2 else 50)
-                )
+    for table, nk in tables_nk:
+        d = HEPData(1419244, table)
+        for n, k in nk:
+            data[system]['vnk'][n, k] = d.dataset(
+                'V{}{{{}{}}}'.format(
+                    n, k, ', |DELTAETA|>1' if k == 2 else ''
+                ),
+                maxcent=(70 if n == 2 else 50)
+            )
 
     return data
 

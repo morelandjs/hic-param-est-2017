@@ -2484,7 +2484,7 @@ def grid_error():
     set_tight(fig)
 
 
-@plot
+#@plot
 def entropy_scaling():
     """
     Plot initial entropy vs final dNch/deta
@@ -2554,7 +2554,7 @@ def posterior_proton_shape():
     set_tight(fig, pad=.2)
 
 
-@plot
+#@plot
 def statistics(system='pPb5020'):
     """
     Event statistics in each p-Pb trigger bin

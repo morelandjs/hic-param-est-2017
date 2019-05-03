@@ -34,9 +34,9 @@ collision event generator
 
 Of course, if you have a different data organization scheme and/or format,
 that's fine.  Modify the code for your needs.
+
 """
 
-import copy
 import logging
 from pathlib import Path
 import pickle
@@ -47,12 +47,12 @@ from sklearn.externals import joblib
 
 from . import workdir, cachedir, systems, lazydict, expt
 from .design import Design
-from .correct import correct_yield, correct_centrality
+from .correct import correct_yield
 
 
 def pT_fluct(events):
     """
-    Compute the relative mean pT fluctuation \sqrt{C_m}/M(p_T)_m, defined in
+    Compute the relative mean pT fluctuation \\sqrt{C_m}/M(p_T)_m, defined in
     Eqs. (2-3) of the ALICE paper https://inspirehep.net/record/1307102.
 
     """
@@ -149,9 +149,14 @@ class ModelData:
         ('dET_deta', float_t),
         ('mean_pT', [('N', float_t), ('pT', float_t)]),
         ('iden_dN_dy', [(s, float_t) for s in species]),
-        ('iden_mean_pT', [(s, [('N', float_t), ('pT', float_t)]) for s in species]),
-        ('pT_fluct', [('N', int_t), ('sum_pT', float_t), ('sum_pTsq', float_t)]),
-        ('flow', [(d, [('N', int_t), ('Qn', complex_t, 8)]) for d in ('alice', 'cms')]),
+        ('iden_mean_pT', [(s, [
+            ('N', float_t), ('pT', float_t)
+        ]) for s in species]),
+        ('pT_fluct', [
+            ('N', int_t), ('sum_pT', float_t), ('sum_pTsq', float_t)
+        ]),
+        ('flow', [(d, [('N', int_t), ('Qn', complex_t, 8)])
+                  for d in ('alice', 'cms')]),
     ])
 
     def __init__(self, system, *files):
@@ -292,7 +297,7 @@ def _data(system, dataset='main'):
         - 'map' (maximum a posteriori, i.e. "best-fit" point)
 
     """
-    if dataset not in {'main', 'validation', 'map'}:
+    if dataset not in {'main', 'map'}:
         raise ValueError('invalid dataset: {}'.format(dataset))
 
     files = (

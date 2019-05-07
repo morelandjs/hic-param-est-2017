@@ -336,7 +336,7 @@ def _data():
     # pPb5020 flows
     data['pPb5020']['vnk'] = {
         (n, k): pPb5020_flows(n, k)
-        for (n, k) in [(2, 2), (3, 2), (2, 4)]
+        for (n, k) in [(2, 2), (3, 2)]
     }
 
     # PbPb5020 dNch/deta

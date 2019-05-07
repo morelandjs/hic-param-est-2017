@@ -2547,8 +2547,8 @@ def posterior_proton_shape():
 
     plt.hist2d(sampling_radius, parton_width, bins=50, cmap=plt.cm.Blues)
 
-    plt.xlabel('Constituent sampling radius $r$ [fm]')
-    plt.ylabel('Constituent width $v$ [fm]')
+    plt.xlabel('Constituent position radius $r_{cp}$ [fm]')
+    plt.ylabel('Constituent width $w_c$ [fm]')
 
     ax.set_aspect('equal')
     set_tight(fig, pad=.2)

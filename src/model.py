@@ -359,12 +359,6 @@ def _data(system, dataset='main'):
     for obs in ['sc', 'sc_normed', 'sc_central', 'sc_normed_central']:
         data = dict({obs: {(3, 2): empty, (4, 2): empty}}, **data)
 
-    # missing flows
-    if system == 'pPb5020':
-        flow_dict = data['vnk'].copy()
-        flow_dict[(2, 4)] = empty
-        data['vnk'] = flow_dict
-
     data = ModelData(system, *files).observables_like(data)
 
     logging.info('writing cache file %s', cachefile)

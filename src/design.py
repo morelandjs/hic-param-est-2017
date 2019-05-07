@@ -130,11 +130,11 @@ class Design:
             ('dmin3',         r'd {min} [{fm}]',              (  0.0, 1.7**3)),
             ('tau_fs',        r'\tau {fs} [{fm}/c]',          (  0.1,    1.5)),
             ('etas_min',      r'\eta/s {min}',                (  0.0,    0.2)),
-            ('etas_slope',    r'a {shear} [{GeV}^{-1}]',      (  0.0,    8.0)),
-            ('etas_crv',      r'c {shear}',                   ( -1.0,    1.0)),
+            ('etas_slope',    r'\eta/s {slope} [{GeV}^{-1}]', (  0.0,    8.0)),
+            ('etas_crv',      r'\eta/s {crv}',                ( -1.0,    1.0)),
             ('zetas_max',     r'\zeta/s {max}',               (  0.0,    0.1)),
-            ('zetas_width',   r'\Delta \!T {bulk} [{GeV}]',   (  0.0,    0.1)),
-            ('zetas_t0',      r'T {bulk} [{GeV}]',            (0.150,  0.200)),
+            ('zetas_width',   r'\zeta/s {width} [{GeV}]',     (  0.0,    0.1)),
+            ('zetas_t0',      r'\zeta/s T_{peak} [{GeV}]',    (0.150,  0.200)),
             ('Tswitch',       r'T {switch} [{GeV}]',          (0.135,  0.165)),
         ]))
 
@@ -180,8 +180,8 @@ class Design:
         sampling_radius = np.sqrt(nucleon_width**2 - parton_width**2)
 
         design_changes = [
-            ('nucleon_width', 'sampling_radius', sampling_radius, r'$r\ [\mathrm{fm}]$', (0.0, 1.2)),
-            ('parton_struct', 'parton_width', parton_width, r'$v\ [\mathrm{fm}]$', (0.2, 1.2))
+            ('nucleon_width', 'sampling_radius', sampling_radius, r'$r_{cp}\ [\mathrm{fm}]$', (0.0, 1.2)),
+            ('parton_struct', 'parton_width', parton_width, r'$w_c\ [\mathrm{fm}]$', (0.2, 1.2))
         ]
 
         for key_old, key_new, points, label, (low, high) in design_changes:

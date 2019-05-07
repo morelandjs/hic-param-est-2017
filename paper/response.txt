@@ -2,9 +2,7 @@ Thank you for the constructive criticisms and comments. We have significantly re
 
 Response to the specific concerns of the referee:
 
-"A parton model of the proton has direct consequences not only for heavy-ion collisions, but also for p+p collisions. The authors should present predictions for p+p scattering using the most probable
-parameters (or using the posterior distribution of parameters w, v, n_c) for the differential elastic p+p scattering cross section. The prediction can be compared to parametrized data at 5TeV. As a proxy
-for the p+p data the parametrization from Phys. Rev. D88 (2013) 094019 can be used."
+"A parton model of the proton has direct consequences not only for heavy-ion collisions, but also for p+p collisions. The authors should present predictions for p+p scattering using the most probable parameters (or using the posterior distribution of parameters w, v, n_c) for the differential elastic p+p scattering cross section. The prediction can be compared to parametrized data at 5 TeV. As a proxy for the p+p data the parametrization from Phys. Rev. D88 (2013) 094019 can be used."
 
 We agree that it would be interesting to explore the consequences of our proton structure parameters on p-p observables. However, doing so properly would involve significant work beyond the scope of the present study. We therefore believe that such an analysis would be more appropriate for an independent follow-up study. With this in mind, we've made all software, methods, and data open source to the broader community.
 
@@ -16,7 +14,7 @@ One exception is the constituent number $n_c$ which we limit for practical consi
 
 "For the model predictions from the posterior experimental data (even preliminary) should be added, whenever available."
 
-We've been careful to include all available data (public or otherwise), but it is possible that we missed a dataset. In response to your suggestion, we've sent an email to the ALICE collaboration to request their preliminary data, e.g. Pb-Pb mean pT, which could be added to the posterior predictions where data is missing. Unfortunately, I have not heard back from them yet, and I do not believe it is their policy to share preliminary data. If you can direct us to a specific dataset, we would be happy to include it in the maximum a posteriori observable plot.
+We've been careful to include all available data (public or otherwise), but it is possible that we missed a dataset. In response to your suggestion, we sent an email to the ALICE collaboration to request their preliminary data, e.g. Pb-Pb mean pT, which could be added to the posterior predictions where data is missing. Unfortunately, it is not their policy to share preliminary data, and our request was denied. If you can direct us to a specific dataset, we would be happy to include it in the maximum a posteriori observable plot.
 
 Additional changes to the manuscript:
 

@@ -23,6 +23,7 @@ import logging
 import multiprocessing
 from pathlib import Path
 import pickle
+import subprocess
 import tempfile
 import warnings
 
@@ -2625,6 +2626,90 @@ def trim_design_points():
                         bad_points.add(point)
 
     print('{} bad points\n{}'.format(len(bad_points), bad_points))
+
+
+def run_cmd(*args):
+    """
+    Run and log a subprocess.
+
+    """
+    cmd = ' '.join(args)
+    logging.info('running command: %s', cmd)
+
+    try:
+        proc = subprocess.run(
+            cmd.split(), check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True
+        )
+    except subprocess.CalledProcessError as e:
+        logging.error(
+            'command failed with status %d:\n%s',
+            e.returncode, e.output.strip('\n')
+        )
+        raise
+    else:
+        logging.debug(
+            'command completed successfully:\n%s',
+            proc.stdout.strip('\n')
+        )
+        return proc
+
+
+def trento_pcoll(impact_parameter):
+    """
+    Returns collision probability at the specified
+    impact parameter.
+
+    """
+    proc = run_cmd(
+            'trento p p',
+            '--number-events 100000',
+            '--reduced-thickness 0',
+            '--fluctuation 0.19',
+            '--nucleon-width 0.855',
+            '--constit-width 0.43',
+            '--constit-number 6',
+            '--cross-section 7.0',
+            '--b-min {}'.format(impact_parameter),
+            '--b-max {}'.format(impact_parameter),
+            '--ncoll'
+    )
+
+    ncoll = np.loadtxt(proc.stdout.splitlines(), usecols=2)
+    return np.count_nonzero(ncoll) / ncoll.size
+
+
+@plot
+def inelasticity_profile():
+    """
+    proton-proton inelasticity density as a function of collision impact
+    parameter.
+
+    """
+    fig = plt.figure(figsize=figsize(.5, aspect=.7))
+    ncpu = multiprocessing.cpu_count()
+
+    # inelasticity density at 7 TeV by Alba Ontoso et. al.
+    fname = workdir / 'expt/inelasticity_density_lhc.txt'
+    b_values, Pcoll = np.loadtxt(fname).T
+    plt.plot(b_values, Pcoll, label=r'$7$ TeV, Glauber fit')
+
+    # trento inelasticity density at 5.02 TeV
+    b_values = np.linspace(0, 5, 20)
+    p = multiprocessing.Pool(ncpu)
+    Pcoll = np.array(p.map(trento_pcoll, b_values))
+    plt.plot(b_values, Pcoll/Pcoll[0],
+             label='$5.02$ TeV, MAP estimate')
+
+    plt.xlabel(r'Impact parameter $b$ [fm]')
+    plt.ylabel(r'$G_\mathrm{inel}(b) / G_\mathrm{inel}(0)$')
+    plt.xlim(0.0, 4.0)
+    plt.ylim(0.0, 1.2)
+    plt.legend(title='LHC $p$-$p$ collisions',
+               loc=1, bbox_to_anchor=(1.05,1.05))
+    set_tight(fig)
 
 
 if __name__ == '__main__':

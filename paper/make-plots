@@ -1,21 +1,16 @@
 #!/usr/bin/env python3
 
 from collections import OrderedDict
-from itertools import chain, product
 import logging
+import multiprocessing
 import os
 from pathlib import Path
+import subprocess
 import warnings
 
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from matplotlib import lines
-from matplotlib import patches
-from matplotlib import ticker
-from matplotlib import cm
-from matplotlib.colors import ListedColormap
 
 
 # golden ratio
@@ -100,6 +95,35 @@ plotdir.mkdir(exist_ok=True)
 plot_functions = {}
 
 np.random.seed(6)
+
+
+def run_cmd(*args):
+    """
+    Run and log a subprocess.
+
+    """
+    cmd = ' '.join(args)
+    logging.info('running command: %s', cmd)
+
+    try:
+        proc = subprocess.run(
+            cmd.split(), check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True
+        )
+    except subprocess.CalledProcessError as e:
+        logging.error(
+            'command failed with status %d:\n%s',
+            e.returncode, e.output.strip('\n')
+        )
+        raise
+    else:
+        logging.debug(
+            'command completed successfully:\n%s',
+            proc.stdout.strip('\n')
+        )
+        return proc
 
 
 def plot(f):
@@ -225,7 +249,6 @@ def thickness():
                 ])
 
                 grid_center = .5*np.array(thickness.shape)
-                shift = np.round(grid_center - event_center).astype(int)
 
                 ax.imshow(thickness, cmap=cmap_to_alpha(),
                           extent=(-10, 10, -10, 10))
@@ -278,7 +301,6 @@ def viscosity_dof():
         ax.set_ylim(*ylim)
 
     set_tight(h_pad=.5)
-
 
 
 if __name__ == '__main__':

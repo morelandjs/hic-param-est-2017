@@ -1,0 +1,107 @@
+We've added new material to address gaps in the manuscript identified
+by the previous referee report. The referee's comments are quoted below.
+
+  I do not understand why the authors do not quote the values for some
+  basic quantities related to the model used. Quantities such as the
+  proton-proton cross section, the p-p wounding profile or p-p elastic
+  differential cross section have nothing to do with the application of
+  the hydrodynamic evolution in the dynamics. These are basic elements
+  of the model. If the authors take at face value quantities such as the
+  constituent position radius, the number of constituents, the width of
+  constituent, why they claim that it is premature to calculate the
+  proton-proton cross section in the model.
+
+  The p-p inelasticity (wounding) profile can be obtained simply by
+  counting the number of p-p interactions at different impact
+  parameters, its integral gives the p-p inelastic cross section. The
+  reader should know if the model using subnuclear degrees of freedom
+  fulfills basic consistency checks at the level of nucleon-nucleon
+  interactions. For example one expects the n-n cross section to be
+  around 40-70mb for RHIC-LHC energies, what is the value of this cross
+  section in the model presented.
+
+  Before the paper could be published the authors should include a
+  calculation of
+
+  1) the p-p inelasticity profile
+
+  2) the p-p inelastic cross section (parameterization/interpolation of
+  the experimental scattering amplitude can be used to compare to the
+  data, see the paper quoted in my previous report) for the best
+  parameters obtained at 5.02 TeV.
+
+We agree with the assessment of the referee and acknowledge that the
+previous version of the manuscript lacked a satisfactory discussion of
+proton-proton observables. We have addressed this criticism by discussing
+the aforementioned quantities in the revised version of the manuscript.
+Our responses to the referee requests, listed in order, are as follows:
+
+Paraphrased referee request 1)
+  The model should fit the experimentally measured inelastic proton-proton
+  cross section.
+
+We should have explained this in the original manuscript more clearly.
+We do indeed fit the experimentally measured inelastic proton-proton
+cross section for every combination of proton substructure parameters.
+This constraint is enforced numerically by Trento at run-time by tuning
+the constituent opacity parameter to fit the experimental p-p cross section
+at the chosen beam energy. We've added some dicussion following Eq. 3,
+attached below, to clarify this procedure.
+
+  We tune $\sigma_\mathrm{eff}$ in the present work to fit the experimental
+  inelastic nucleon-nucleon cross section $\sigma_\text{NN}^\text{inel}=
+  7.0$~fm$^2$ at $\sqrts=5.02$~TeV for comparison with our chosen datasets
+  \cite{ALICE:2012xs}. The resulting \trento\ inelastic nucleon-nucleon
+  cross section agrees with the experimental value to better than 2\%
+  accuracy, as verified by one of the model's standard unit tests.
+
+Paraphrased referee request 2)
+  The authors should compute the model's predicted proton-proton
+  inelasticity density and compare it to estimates extracted from
+  experimental measurements of the proton-proton scattering amplitude.
+
+We followed the referee's suggestion and computed the proton-proton
+inelasticity density predicted by our model and Bayesian posterior. We
+compare our prediction to estimates obtained by fitting parametrizations
+to the experimentally measured proton-proton differential scattering
+amplitude at 7 TeV. The result of this comparison, summarized by Fig. 10,
+suggests that our protons are somewhat oversized. This observation was
+already mentioned in the original manuscript, but we have expanded on it
+to reflect the additional comparison to data. Our additions to the text
+are attached below.
+
+  Additional constraints on the proton size and shape are provided by the
+  proton-proton inelasticity density $G_\mathrm{inel}(b) =
+  d^2\sigma_\mathrm{inel}(b)/d^2b$, which measures the proton-proton
+  inelastic collision probability as a function of its impact parameter.
+  We compare in Fig~\ref{fig:inelasticity_profile} the normalized
+  proton-proton inelasticity density $G_\mathrm{inel}(b) /
+  G_\mathrm{inel}(0)$ at $\sqrts=5.02$~TeV predicted by \trento\ using the
+  present study's posterior median parameters with a calculation that
+  extracted the proton-proton inelasticity density using a parametrization
+  fit to the proton-proton differential scattering amplitude at $\sqrts=7$~TeV
+  \cite{Albacete:2016pmp}. Our Bayesian median estimate (orange line)
+  prefers a larger width for the proton-proton normalized inelasticity
+  density compared to that of reference \cite{Albacete:2016pmp}, and this
+  trend is \emph{opposite} what one would expect based on the difference
+  in beam energy alone. This suggests that our posterior estimate for the
+  proton radius is somewhat oversized. Nevertheless, it is fascinating that
+  the present Bayesian estimate is as close as it is, given that the model
+  is fit to quantities which are not typically used to extract the
+  proton-proton inelasticity density.
+
+We also revised our discussion of the proton width parameter in the Summary
+and Conclusions section.
+
+  The present Bayesian analysis prefers larger nucleons, w ∼ 1 fm, in
+  agreement with a similar Bayesian analysis calibrated to Pb-Pb data at
+  $\sqrt{s_{NN}} = 2.76$ and 5.02 TeV using a hybrid model without nucleon
+  substructure [49]. We note that our result is in significant tension with
+  an estimate for the effective nucleon width based on the gluon distribution
+  extracted from HERA data [93]. Our model calculations also predict a broader
+  proton-proton inelasticity density at $\sqrt{s_{NN}} = 5.02$ TeV than
+  supported by the data [37]. This suggests that our reconstructed
+  protons are somewhat oversized.
+
+We thank the referee for the constructive criticisms which have greatly
+improved the manuscript.

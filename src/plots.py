@@ -2694,7 +2694,7 @@ def inelasticity_profile():
     # inelasticity density at 7 TeV by Alba Ontoso et. al.
     fname = workdir / 'expt/inelasticity_density_lhc.txt'
     b_values, Pcoll = np.loadtxt(fname).T
-    plt.plot(b_values, Pcoll, label=r'$7$ TeV, Glauber fit')
+    plt.plot(b_values, Pcoll, label=r'$7$ TeV, Fit to $d(\sigma/dt)(t)$')
 
     # trento inelasticity density at 5.02 TeV
     b_values = np.linspace(0, 5, 20)

@@ -854,7 +854,38 @@ The $p$-Pb yields, mean $p_T$, and flow cumulants all vary wildly within the cho
 For instance, we can turn the $p$-Pb flows completely \emph{off} with suitably chosen parameters which is not possible in the Pb-Pb system.
 Evidently the $p$-Pb model predictions are far more sensitive to modeling uncertainties.
 
-\begin{table}[t]
+Conversely, the calibrated (posterior sampled) emulator predictions (bottom row of Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb}) are far better constrained and nicely track the experimental data points.
+We emphasize here that the posterior parameter values are obtained from a \emph{simultaneous} calibration to $p$-Pb and Pb-Pb data, and thus they are self-consistent between the two systems.
+The spread in the posterior samples reflects different sources of model and experimental uncertainty as well as tension in the optimal fit parameters which describe each observable.
+We demonstrate later in the text that a single set of model parameters well describes all of the calibration data, and thus we believe that much of the spread in the posterior samples is uncertainty contributed by our emulator.
+
+We also note that although the $p$-Pb posterior samples have a somewhat larger spread than the Pb-Pb samples, the percentage uncertainty of the $p$-Pb emulator is similar to that of the Pb-Pb emulator, and thus the difference is likely due to the larger variance of the $p$-Pb training data.
+The uncertainty in the posterior distribution could thus be improved by running the calibration with more design points or with a narrower range of parameter values to increase the density of the training points and reduce interpolation uncertainty.
+
+We now direct our attention to Fig.~\ref{fig:posterior} which shows the main result of this work, the posterior distribution of the model input parameters.
+Recall that the posterior $P(\xv | E)$ is the probability that our hypothesis $\xv = \xv_\star$ is correct, given the evidence $E$ provided by the predictions of the model and the experimental data.
+The present posterior has 15 dimensions, one for each parameter listed in Table~\ref{tab:design}, and thus its joint distribution cannot be summarized by one figure alone.
+We therefore sample the distribution and histogram the samples to project the distribution onto one or two dimensions at a time.
+
+\begin{fullpage}
+  \centering
+  \vspace*{10pt}
+  \makebox[\textwidth]{
+    \includegraphics[width=.95\paperwidth]{posterior}
+  }
+  \captionof{figure}{
+    \label{fig:posterior}
+    Bayesian posterior distribution of the model input parameters.
+    The diagonal panels show the marginalized distributions of individual model parameters, while off-diagonal panels show the joint distributions for pairs of model parameters, visualizing their correlations.
+    The marginalized distribution medians and 90\% credible intervals are annotated along the diagonal.
+  }
+\end{fullpage}
+
+Each diagonal panel is the distribution of a \emph{single} model parameter (marginalized over all others), and each lower-diagonal panel is the joint distribution of a \emph{pair} of model parameters (marginalized over all others).
+We also report numeric estimates for each parameter's median value and 90\% credible interval and annotate their values along the distribution diagonal (see Table~\ref{tab:post_param}).
+For example, the fictitious parameter estimate $q=2.45_{-0.15}^{+0.20}$ reports a median value $\tilde{q}=2.45$ and 90\% credible interval $2.30 < q < 2.65$.
+
+\begin{table}
   \caption{
     \label{tab:post_param}
     Posterior parameter estimates corresponding to Fig.~\ref{fig:posterior}.
@@ -882,37 +913,6 @@ Evidently the $p$-Pb model predictions are far more sensitive to modeling uncert
     \end{tabular}
   \end{ruledtabular}
 \end{table}
-
-Conversely, the calibrated (posterior sampled) emulator predictions (bottom row of Figs.~\ref{fig:obs_pbpb} and \ref{fig:obs_ppb}) are far better constrained and nicely track the experimental data points.
-We emphasize here that the posterior parameter values are obtained from a \emph{simultaneous} calibration to $p$-Pb and Pb-Pb data, and thus they are self-consistent between the two systems.
-The spread in the posterior samples reflects different sources of model and experimental uncertainty as well as tension in the optimal fit parameters which describe each observable.
-We demonstrate later in the text that a single set of model parameters well describes all of the calibration data, and thus we believe that much of the spread in the posterior samples is uncertainty contributed by our emulator.
-
-\begin{fullpage}
-  \centering
-  \vspace*{10pt}
-  \makebox[\textwidth]{
-    \includegraphics[width=.95\paperwidth]{posterior}
-  }
-  \captionof{figure}{
-    \label{fig:posterior}
-    Bayesian posterior distribution of the model input parameters.
-    The diagonal panels show the marginalized distributions of individual model parameters, while off-diagonal panels show the joint distributions for pairs of model parameters, visualizing their correlations.
-    The marginalized distribution medians and 90\% credible intervals are annotated along the diagonal.
-  }
-\end{fullpage}
-
-\noindent
-We also note that although the $p$-Pb posterior samples have a somewhat larger spread than the Pb-Pb samples, the percentage uncertainty of the $p$-Pb emulator is similar to that of the Pb-Pb emulator, and thus the difference is likely due to the larger variance of the $p$-Pb training data.
-The uncertainty in the posterior distribution could thus be improved by running the calibration with more design points or with a narrower range of parameter values to increase the density of the training points and reduce interpolation uncertainty.
-
-We now direct our attention to Fig.~\ref{fig:posterior} which shows the main result of this work, the posterior distribution of the model input parameters.
-Recall that the posterior $P(\xv | E)$ is the probability that our hypothesis $\xv = \xv_\star$ is correct, given the evidence $E$ provided by the predictions of the model and the experimental data.
-The present posterior has 15 dimensions, one for each parameter listed in Table~\ref{tab:design}, and thus its joint distribution cannot be summarized by one figure alone.
-We therefore sample the distribution and histogram the samples to project the distribution onto one or two dimensions at a time.
-Each diagonal panel is the distribution of a \emph{single} model parameter (marginalized over all others), and each lower-diagonal panel is the joint distribution of a \emph{pair} of model parameters (marginalized over all others).
-We also report numeric estimates for each parameter's median value and 90\% credible interval and annotate their values along the distribution diagonal (see Table~\ref{tab:post_param}).
-For example, the fictitious parameter estimate $q=2.45_{-0.15}^{+0.20}$ reports a median value $\tilde{q}=2.45$ and 90\% credible interval $2.30 < q < 2.65$.
 
 \subsection{Initial condition properties}
 
@@ -966,15 +966,15 @@ Evidently, it may be necessary to place an informative prior on our nucleon subs
   \includegraphics{inelasticity_profile}
   \caption{
     \label{fig:inelasticity_profile}
-    Glauber model estimates of the normalized proton-proton inelasticity density $G_\mathrm{inel}(b) = d^2\sigma_\mathrm{inel}/d^2b$ at two different LHC beam energies.
-    Blue line: A multi-source Glauber model fit to LHC data at $\sqrts=7$~TeV \cite{Albacete:2016pmp}.
-    Orange line: \trento\ model predictions at $\sqrts=5.02$~TeV using median parameters from the present study's Bayesian posterior.
+    Estimates of the normalized proton-proton inelasticity density $G_\mathrm{inel}(b) = d^2\sigma_\mathrm{inel}/d^2b$ at two different LHC beam energies.
+    Blue line: Inelasticity density obtained by fitting a parametric form to LHC data at $\sqrts=7$~TeV \cite{Albacete:2016pmp}.
+    Orange line: \trento\ predictions at $\sqrts=5.02$~TeV using median parameters from the present study's Bayesian posterior.
   }
 \end{figure}
 
 Additional constraints on the proton size and shape are provided by the proton-proton inelasticity density $G_\mathrm{inel}(b) = d^2\sigma_\mathrm{inel}(b)/d^2b$, which measures the proton-proton inelastic collision probability as a function of its impact parameter.
-We compare, in Fig~\ref{fig:inelasticity_profile}, the normalized proton-proton inelasticity density $G_\mathrm{inel}(b) / G_\mathrm{inel}(0)$ at $\sqrts=5.02$~TeV predicted by \trento\ using the present study's posterior median parameters with a calculation from reference \cite{Albacete:2016pmp}, which extracted the proton-proton inelasticity density from LHC data at $\sqrts=7$~TeV using a multi-source Glauber model \cite{Albacete:2016pmp}.
-Our Bayesian median estimate (orange line) prefers a larger width for the proton-proton normalized inelasticity density compared to that of reference \cite{Albacete:2016pmp}, which is \emph{opposite} the trend one would expect based on the differences in beam energies alone.
+We compare in Fig~\ref{fig:inelasticity_profile} the normalized proton-proton inelasticity density $G_\mathrm{inel}(b) / G_\mathrm{inel}(0)$ at $\sqrts=5.02$~TeV predicted by \trento\ using the present study's posterior median parameters with a calculation that extracted the proton-proton inelasticity density using a parametrization fit to proton-proton differential scattering data at $\sqrts=7$~TeV \cite{Albacete:2016pmp}.
+Our Bayesian median estimate (orange line) prefers a larger width for the proton-proton normalized inelasticity density compared to that of reference \cite{Albacete:2016pmp}, and this trend is \emph{opposite} what one would expect based on the difference in beam energy alone.
 This suggests that our posterior estimate for the proton radius is somewhat oversized.
 Nevertheless, it is fascinating that the present Bayesian estimate is as close as it is, given that the model is fit to quantities which are not typically used to extract the proton-proton inelasticity density.
 
@@ -1101,6 +1101,14 @@ We emphasize that multiple aspects of the two analyses are different such as the
 Thus we can only speculate what might have caused the large difference in the MAP estimate for the symmetric flow cumulants.
 Two reasonable culprits would be the inclusion of nucleon substructure and the large difference in the preferred pre-equilibrium free streaming time determined by the two studies.
 
+\section{Summary and conclusions}
+\label{sec:summary}
+
+Relativistic heavy-ion collisions produce long-range multiparticle correlations which are commonly explained by the existence of hydrodynamic flow \cite{deSouza:2015ena}.
+This narrative is evidenced by the global, self-consistent, and highly non-trivial quantitative agreement of hydrodynamic models with a large number of heavy-ion bulk observables \cite{Niemi:2015qia, Bernhard:2016tnd, Gale:2012rq}.
+Naturally, such descriptions rely on the validity of hydrodynamic approximations, and these approximations begin to break down in the so-called dilute limit where discrete particle degrees-of-freedom dominate and continuous field descriptions of the medium cease to make sense.
+Tell-tale signatures of hydrodynamic collectivity were thus generally expected to vanish in smaller nuclear collision systems, e.g.\ $p$-$p$ and $p$-Pb collisions, where the number of produced particles is orders of magnitude smaller than a typical Pb-Pb collision.
+
 \begin{fullpage}
   {\centering\includegraphics{observables_map}\par}
   \captionof{figure}{
@@ -1121,14 +1129,6 @@ Two reasonable culprits would be the inclusion of nucleon substructure and the l
     In general, most model parameters are somewhat different between the two studies.
   }
 \end{figure}
-
-\section{Summary and conclusions}
-\label{sec:summary}
-
-Relativistic heavy-ion collisions produce long-range multiparticle correlations which are commonly explained by the existence of hydrodynamic flow \cite{deSouza:2015ena}.
-This narrative is evidenced by the global, self-consistent, and highly non-trivial quantitative agreement of hydrodynamic models with a large number of heavy-ion bulk observables \cite{Niemi:2015qia, Bernhard:2016tnd, Gale:2012rq}.
-Naturally, such descriptions rely on the validity of hydrodynamic approximations, and these approximations begin to break down in the so-called dilute limit where discrete particle degrees-of-freedom dominate and continuous field descriptions of the medium cease to make sense.
-Tell-tale signatures of hydrodynamic collectivity were thus generally expected to vanish in smaller nuclear collision systems, e.g.\ $p$-$p$ and $p$-Pb collisions, where the number of produced particles is orders of magnitude smaller than a typical Pb-Pb collision.
 
 These expectations were upended, however, when long-range multiparticle correlations were detected in high-multiplicity $p$-Pb collisions and found to be similar in magnitude to those observed in Pb-Pb collisions \cite{CMS:2012qk, Abelev:2012ola, Aad:2012gla}.
 Nuclear collision systems which were previously thought to be too small for hydrodynamic flow, were subsequently found to generate the same collectivity used to justify hydrodynamic flow in heavy-ion collisions.
@@ -1172,10 +1172,12 @@ Here we summarize our key findings about the model:
   \item
     The present Bayesian analysis prefers larger nucleons, $w \sim 1$~fm, in agreement with a similar Bayesian analysis calibrated to Pb-Pb data at $\sqrts=2.76$ and 5.02~TeV using a hybrid model without nucleon substructure \cite{Bernhard:2018hnz}.
     We note that our result is in significant tension with an estimate for the effective nucleon width based on the gluon distribution extracted from HERA data \cite{Rezaeian:2012ji}.
+    Our model calculations also predict a broader proton-proton inelasticity density at $\sqrts=5.02$~TeV than supported by the data \cite{Albacete:2016pmp}.
+    This suggests that our reconstructed protons are somewhat oversized.
   \item
     We obtain an estimate $\wc=0.52_{-0.20}^{+0.28}$~fm for the Gaussian width of the constituent hot spots inside each nucleon.
     This width is considerably larger than the length scales typically associated with nucleon substructure.
-    It may help explain the seemingly unreasonable success of hydrodynamics in small collision systems.
+    However, it is natural to wonder if this estimate is oversized, given the aforementioned comments regarding our extracted nucleon width.
   \item
     We report an estimate $\taufs=0.47_{-0.37}^{+0.55}~\fmc$ for the model's pre-equilibrium free streaming time.
     This is significantly shorter than the estimate obtained from a similar Bayesian study in Ref.~\cite{Bernhard:2018hnz}, which found $\taufs=1.16_{-0.25}^{+0.29}~\fmc$.
@@ -1195,8 +1197,8 @@ Specifically, we are missing the transverse energy, identified particle yields, 
 These observables would certainly influence the quality of the combined fit and correspondingly our estimates for the model parameters.
 
 Similarly, the results would greatly benefit from additional beam energies and collision systems.
-Notably absent is data from RHIC which includes measurements for $p$-Au, $d$-Au, $^3$He-Au, Cu-Cu, Cu-Au, Au-Au, and \mbox{U-U} collision systems at $\sqrts=200$~GeV.
-This data would undoubtedly help constrain the model parameters and would enable more stringent tests of the calibrated model predictions.
+For example, future studies should incorporate proton-proton collisions at top LHC energies, as well as the numerous collisions systems studied at top RHIC energy.
+Such data would undoubtedly improve constraints on the model parameters and would enable more stringent tests of the calibrated model predictions.
 The RHIC data may also help elucidate the beam-energy dependence of the model parameters which would be worth investigating.
 We leave these improvements for future studies.
 
